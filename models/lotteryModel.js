@@ -1,7 +1,6 @@
 // models/Lottery.js
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
-import Ticket from "./ticketModel.js";
 
 const Lottery = sequelize.define(
   "Lottery",

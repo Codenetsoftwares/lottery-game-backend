@@ -10,8 +10,8 @@ export const validateAdminCreate = [
   body("role")
     .notEmpty()
     .withMessage("Role is required")
-    .isIn([string.Admin])
-    .withMessage('Invalid role. Must be Admin"'),
+    .isIn([string.Admin, string.SubAdmin, string.User])
+    .withMessage('Invalid role'),
 ];
 
 export const validateAdminLogin = [
@@ -19,3 +19,47 @@ export const validateAdminLogin = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
+export const validateCreateLottery = [
+  body("name").notEmpty().withMessage("Name is required"),
+  body("date").isISO8601().withMessage("Valid date is required"),
+  body("firstPrize")
+    .isInt({ min: 1 })
+    .withMessage("First prize must be a positive integer"),
+  body("sem").isInt({ min: 1 }).withMessage("Sem must be a positive integer"),
+  body("price")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Price must be a positive integer if provided"),
+];
+
+export const validateGetAllLotteries = [
+  query("sem")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("SEM must be a positive integer"),
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Page must be a positive integer"),
+  query("pageSize")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Page size must be a positive integer"),
+];
+
+
+export const validateGetLotteryById = [
+  param("lotteryId")
+    .isUUID()
+    .withMessage("Invalid Lottery ID. Must be a valid UUID."),
+];
+
+
+export const validatePurchaseLotteryTicket = [
+  body("userId")
+    .isUUID()
+    .withMessage("Invalid User ID. Must be a valid UUID."),
+  body("lotteryId")
+    .isUUID()
+    .withMessage("Invalid Lottery ID. Must be a valid UUID."),
+];
