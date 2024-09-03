@@ -6,7 +6,7 @@ import customErrorHandler from "../utills/customErrorHandler.js";
 
 export const adminRoutes = (app) => {
 
-    app.post('/api/create-admin', validateAdminCreate, customErrorHandler, authorize([string.Admin]), createAdmin);
+    app.post('/api/create-admin', validateAdminCreate, customErrorHandler, createAdmin);
     app.post('/api/login', validateAdminLogin, customErrorHandler, login);
 
 
