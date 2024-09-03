@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 import { string } from '../constructor/string.js';
 import { statusCode } from '../utills/statusCodes.js';
 import { apiResponseErr } from '../utills/response.js';
-import { Admin } from '../models/adminModel.js';
-import { User } from '../models/userModel.js';
+import Admin from '../models/adminModel.js';
+
 
 // const tokenBlacklist = new Set();
 
@@ -11,10 +11,8 @@ export const authorize = (roles) => {
   return async (req, res, next) => {
     try {
       const authToken = req?.headers?.authorization;
-      console.log(authToken);
       if (!authToken) {
-        console.log('Hello');
-        return apiResponseErr(null, false, statusCode.unauthorize, 'Token not found', res);
+        return apiResponseErr(null, false, statusCode.unauthorize, 'Unauthorize', res);
       }
 
       const tokenParts = authToken.split(' ');
@@ -37,7 +35,6 @@ export const authorize = (roles) => {
       let user;
       try {
         user = jwt.verify(tokenParts[1], process.env.JWT_SECRET_KEY);
-        console.log(user);
       } catch (error) {
         return apiResponseErr(null, false, statusCode.unauthorize, 'Token verification failed', res);
       }
@@ -57,15 +54,15 @@ export const authorize = (roles) => {
       if (roles.includes(string.Admin)) {
         existingUser = await Admin.findOne({
           where: {
-            userId: user.userId,
+            adminId: user.adminId,
           },
         });
       }
 
-      if (roles.includes(string.User)) {
-        existingUser = await User.findOne({
+      if (roles.includes(string.SubAdmin)) {
+        existingUser = await Admin.findOne({
           where: {
-            userId: user.userId,
+            adminId: user.adminId,
           },
         });
       }

@@ -29,7 +29,7 @@ export const createAdmin = async (req, res) => {
     }
 
     const newAdmin = await Admin.create({
-      userId: uuidv4(),
+      adminId: uuidv4(),
       userName,
       password,
       role,
@@ -81,7 +81,7 @@ export const login = async (req, res) => {
     }
 
     const userResponse = {
-      userId: existingUser.id, // assuming 'id' is the primary key
+      adminId: existingUser.adminId, // assuming 'id' is the primary key
       userName: existingUser.userName,
       role: existingUser.role,
     };

@@ -16,11 +16,7 @@ const Lottery = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    endDate: {
+    date: {
       type: DataTypes.DATE,
       allowNull: false,
     },
@@ -28,22 +24,7 @@ const Lottery = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    secondPrize: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    thirdPrize: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    fourthPrize: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    fifthPrize: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+  
     sem: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -55,7 +36,7 @@ const Lottery = sequelize.define(
     },
     price: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

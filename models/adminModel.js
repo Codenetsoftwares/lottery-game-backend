@@ -10,6 +10,11 @@ const Admin = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    adminId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      
+    },
     userName: {
       type: DataTypes.STRING,
       allowNull: false,

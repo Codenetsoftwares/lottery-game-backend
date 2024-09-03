@@ -19,20 +19,3 @@ export const validateAdminLogin = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
-// export const validatePurchaseTicket = [
-//   body("lotteryId")
-//     .notEmpty()
-//     .withMessage("lotteryId is required")
-//     .isInt()
-//     .withMessage("Lottery ID must be an integer"),
-//   body("userId")
-//     .notEmpty()
-//     .withMessage("userId is required")
-//     .isInt()
-//     .withMessage("User ID must be an integer"),
-//   body("ticketCount")
-//     .notEmpty()
-//     .withMessage("ticketCount is required")
-//     .isInt({ min: 1 })
-//     .withMessage("Ticket count must be a positive integer"),
-// ];

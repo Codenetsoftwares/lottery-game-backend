@@ -9,21 +9,14 @@ export const createLottery = async (req, res) => {
   try {
     const {
       name,
-      startDate,
-      endDate,
+      date,
       firstPrize,
-      secondPrize,
-      thirdPrize,
-      fourthPrize,
-      fifthPrize,
-      sem,
-      price,
+      sem
     } = req.body;
 
     const ticket = await Ticket.findOne({
       order: [['createdAt', 'DESC']], 
     });
-  console.log("Testing....",ticket)
     if (!ticket) {
       return apiResponseErr(
         null,
@@ -36,17 +29,11 @@ export const createLottery = async (req, res) => {
 
     const lottery = await Lottery.create({
       name,
-      startDate,
-      endDate,
+      date:Date.now(),
       firstPrize,
-      secondPrize,
-      thirdPrize,
-      fourthPrize,
-      fifthPrize,
       ticketNumber: ticket.ticketNumber,
-      sem,
-      price,
-    });
+      sem
+    })
 
     await ticket.destroy({
       ticketNumber: lottery.ticketNumber 
@@ -60,7 +47,6 @@ export const createLottery = async (req, res) => {
       res
     );
   } catch (error) {
-    console.error("object",error)
     return apiResponseErr(
       null,
       false,
@@ -74,7 +60,17 @@ export const createLottery = async (req, res) => {
 //get all lottery Api
 export const getAllLotteries = async (req, res) => {
   try {
-    const lotteries = await Lottery.findAll();
+    const { sem } = req.query; // Destructure sem and price from query parameters
+
+    const whereConditions = {};
+
+    // Add conditions to the where object based on the provided query parameters
+    if (sem) {
+      whereConditions.sem = sem; // Filter by sem if provided
+    }
+    const lotteries = await Lottery.findAll({
+      where: whereConditions, // Use the where object in the query
+    });
 
     return apiResponseSuccess(
       lotteries,
@@ -93,6 +89,7 @@ export const getAllLotteries = async (req, res) => {
     );
   }
 };
+
 
 // Get a specific lottery by ID
 export const getLotteryById = async (req, res) => {
