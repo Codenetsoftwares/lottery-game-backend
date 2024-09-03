@@ -110,132 +110,132 @@ export const login = async (req, res) => {
   }
 };
 
-// export const lotteryDraw = async (req, res) => {
-//   const { lotteryId } = req.params;
+export const lotteryDraw = async (req, res) => {
+  const { lotteryId } = req.params;
 
-//   try {
-//     // Find the lottery by its ID
-//     const lottery = await Lottery.findByPk(lotteryId);
-//     if (!lottery) {
-//       return apiResponseErr(
-//         null,
-//         false,
-//         statusCode.badRequest,
-//         "Lottery not found",
-//         res
-//       );
-//     }
+  try {
+    // Find the lottery by its ID
+    const lottery = await Lottery.findByPk(lotteryId);
+    if (!lottery) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Lottery not found",
+        res
+      );
+    }
 
-//     // Retrieve all tickets for the specified lottery
-//     const tickets = await Ticket.findAll({ where: { lotteryId } });
-//     if (tickets.length === 0) {
-//       return apiResponseErr(
-//         null,
-//         false,
-//         statusCode.badRequest,
-//         "No tickets available for this lottery",
-//         res
-//       );
-//     }
+    // Retrieve all tickets for the specified lottery
+    const tickets = await Ticket.findAll({ where: { lotteryId } });
+    if (tickets.length === 0) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "No tickets available for this lottery",
+        res
+      );
+    }
 
-//     // Shuffle the tickets to randomly select potential winners
-//     const shuffledTickets = tickets.sort(() => 0.5 - Math.random());
+    // Shuffle the tickets to randomly select potential winners
+    const shuffledTickets = tickets.sort(() => 0.5 - Math.random());
 
-//     // Extract ticket numbers
-//     const ticketNumbers = shuffledTickets.map((ticket) => ticket.ticketNumber);
+    // Extract ticket numbers
+    const ticketNumbers = shuffledTickets.map((ticket) => ticket.ticketNumber);
 
-//     // Logic for each prize
-//     const firstPrizeTicket = ticketNumbers[0]; // The first shuffled ticket
+    // Logic for each prize
+    const firstPrizeTicket = ticketNumbers[0]; // The first shuffled ticket
 
-//     // Find tickets for second to fifth prizes
-//     const secondPrizeTicket = ticketNumbers.find(
-//       (ticket) =>
-//         ticket !== firstPrizeTicket &&
-//         ticket.slice(-5) === firstPrizeTicket.slice(-5)
-//     );
+    // Find tickets for second to fifth prizes
+    const secondPrizeTicket = ticketNumbers.find(
+      (ticket) =>
+        ticket !== firstPrizeTicket &&
+        ticket.slice(-5) === firstPrizeTicket.slice(-5)
+    );
 
-//     const thirdPrizeTicket = ticketNumbers.find(
-//       (ticket) =>
-//         ticket !== firstPrizeTicket &&
-//         ticket !== secondPrizeTicket &&
-//         ticket.slice(-4) === firstPrizeTicket.slice(-4)
-//     );
+    const thirdPrizeTicket = ticketNumbers.find(
+      (ticket) =>
+        ticket !== firstPrizeTicket &&
+        ticket !== secondPrizeTicket &&
+        ticket.slice(-4) === firstPrizeTicket.slice(-4)
+    );
 
-//     const fourthPrizeTicket = ticketNumbers.find(
-//       (ticket) =>
-//         ticket !== firstPrizeTicket &&
-//         ticket !== secondPrizeTicket &&
-//         ticket !== thirdPrizeTicket &&
-//         ticket.slice(-4) === firstPrizeTicket.slice(-4)
-//     );
+    const fourthPrizeTicket = ticketNumbers.find(
+      (ticket) =>
+        ticket !== firstPrizeTicket &&
+        ticket !== secondPrizeTicket &&
+        ticket !== thirdPrizeTicket &&
+        ticket.slice(-4) === firstPrizeTicket.slice(-4)
+    );
 
-//     const fifthPrizeTicket = ticketNumbers.find(
-//       (ticket) =>
-//         ticket !== firstPrizeTicket &&
-//         ticket !== secondPrizeTicket &&
-//         ticket !== thirdPrizeTicket &&
-//         ticket !== fourthPrizeTicket &&
-//         ticket.slice(-4) === firstPrizeTicket.slice(-4)
-//     );
+    const fifthPrizeTicket = ticketNumbers.find(
+      (ticket) =>
+        ticket !== firstPrizeTicket &&
+        ticket !== secondPrizeTicket &&
+        ticket !== thirdPrizeTicket &&
+        ticket !== fourthPrizeTicket &&
+        ticket.slice(-4) === firstPrizeTicket.slice(-4)
+    );
 
-//     // If any prize ticket is not found, handle accordingly
-//     if (
-//       !secondPrizeTicket ||
-//       !thirdPrizeTicket ||
-//       !fourthPrizeTicket ||
-//       !fifthPrizeTicket
-//     ) {
-//       return apiResponseErr(
-//         null,
-//         false,
-//         statusCode.badRequest,
-//         "Not enough tickets with matching criteria",
-//         res
-//       );
-//     }
+    // If any prize ticket is not found, handle accordingly
+    if (
+      !secondPrizeTicket ||
+      !thirdPrizeTicket ||
+      !fourthPrizeTicket ||
+      !fifthPrizeTicket
+    ) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Not enough tickets with matching criteria",
+        res
+      );
+    }
 
-//     // Create the result in the database
-//     const result = await Result.create({
-//       lotteryId,
-//       firstPrizeTicket,
-//       secondPrizeTicket,
-//       thirdPrizeTicket,
-//       fourthPrizeTicket,
-//       fifthPrizeTicket,
-//     });
+    // Create the result in the database
+    const result = await Result.create({
+      lotteryId,
+      firstPrizeTicket,
+      secondPrizeTicket,
+      thirdPrizeTicket,
+      fourthPrizeTicket,
+      fifthPrizeTicket,
+    });
 
-//     // Prize amounts for each prize
-//     const prizeAmounts = {
-//       firstPrize: "Rs 1 Crore",
-//       secondPrize: "Rs 9,000",
-//       thirdPrize: "Rs 450",
-//       fourthPrize: "Rs 250",
-//       fifthPrize: "Rs 120",
-//     };
+    // Prize amounts for each prize
+    const prizeAmounts = {
+      firstPrize: "Rs 1 Crore",
+      secondPrize: "Rs 9,000",
+      thirdPrize: "Rs 450",
+      fourthPrize: "Rs 250",
+      fifthPrize: "Rs 120",
+    };
 
-//     // Respond with success message and result
-//     return res.status(statusCode.success).json({
-//       data: {
-//         result,
-//         prizes: {
-//           firstPrize: prizeAmounts.firstPrize,
-//           secondPrize: prizeAmounts.secondPrize,
-//           thirdPrize: prizeAmounts.thirdPrize,
-//           fourthPrize: prizeAmounts.fourthPrize,
-//           fifthPrize: prizeAmounts.fifthPrize,
-//         },
-//       },
-//       success: true,
-//       responseCode: statusCode.success,
-//       errMessage: "Lottery results drawn successfully",
-//     });
-//   } catch (error) {
-//     return apiResponseErr(
-//       null,
-//       false,
-//       statusCode.internalServerError,
-//       error.message,
-//       res
-//     );
-//   }
-// };
+    // Respond with success message and result
+    return res.status(statusCode.success).json({
+      data: {
+        result,
+        prizes: {
+          firstPrize: prizeAmounts.firstPrize,
+          secondPrize: prizeAmounts.secondPrize,
+          thirdPrize: prizeAmounts.thirdPrize,
+          fourthPrize: prizeAmounts.fourthPrize,
+          fifthPrize: prizeAmounts.fifthPrize,
+        },
+      },
+      success: true,
+      responseCode: statusCode.success,
+      errMessage: "Lottery results drawn successfully",
+    });
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};

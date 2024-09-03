@@ -7,13 +7,11 @@ export const createTicket = async (req, res) => {
   try {
     // Generate a random ticket number
     const ticketNumber = generateTicketNumber();
-    console.log(ticketNumber)
 
     // Create and save the ticket in the database
     const ticket = await Ticket.create({
       ticketNumber,
     });
-    console.log(ticket)
     return apiResponseSuccess(
       ticket,
       true,

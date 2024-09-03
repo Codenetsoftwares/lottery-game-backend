@@ -20,24 +20,20 @@ export const createLottery = async (req, res) => {
       price,
     } = req.body;
 
-    // Find an available ticket from the Ticket table
     const ticket = await Ticket.findOne({
-      where: {
-        used: false, // Assuming you have a 'used' flag to indicate if a ticket has already been assigned to a lottery
-      },
+      order: [['createdAt', 'DESC']], 
     });
-
+  console.log("Testing....",ticket)
     if (!ticket) {
       return apiResponseErr(
         null,
         false,
         statusCode.notFound,
-        "No available ticket found",
+        "Ticket not found",
         res
       );
     }
 
-    // Create and save the lottery in the database with the found ticket number
     const lottery = await Lottery.create({
       name,
       startDate,
@@ -52,9 +48,9 @@ export const createLottery = async (req, res) => {
       price,
     });
 
-    // Mark the ticket as used
-    ticket.used = true;
-    await ticket.save();
+    await ticket.destroy({
+      ticketNumber: lottery.ticketNumber 
+    });
 
     return apiResponseSuccess(
       lottery,
@@ -64,6 +60,7 @@ export const createLottery = async (req, res) => {
       res
     );
   } catch (error) {
+    console.error("object",error)
     return apiResponseErr(
       null,
       false,

@@ -1,6 +1,7 @@
 // models/Lottery.js
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
+import Ticket from "./ticketModel.js";
 
 const Lottery = sequelize.define(
   "Lottery",
@@ -47,6 +48,11 @@ const Lottery = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    ticketNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
     price: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -58,9 +64,3 @@ const Lottery = sequelize.define(
 );
 
 export default Lottery;
-
-
-
-
-
-
