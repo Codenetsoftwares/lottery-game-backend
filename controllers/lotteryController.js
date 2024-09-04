@@ -3,8 +3,11 @@ import Lottery from "../models/lotteryModel.js";
 import Ticket from "../models/ticketModel.js";
 import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utills/response.js";
 import { statusCode } from "../utills/statusCodes.js";
-import LotteryPurchase from "../models/lotteryPurchaseModel.js";
+// import LotteryPurchase from "../models/lotteryPurchaseModel.js";
 import Admin from "../models/adminModel.js";
+import axios from "axios";
+import LotteryPurchase from "../models/lotteryPurchaseModel.js";
+
 //import axios from "axios";
 
 // Create Lottery API
@@ -118,12 +121,12 @@ export const getAllLotteries = async (req, res) => {
 export const getLotteryById = async (req, res) => {
   try {
     const { lotteryId } = req.params;
-
+    console.log("lotteryId", lotteryId)
     // Find lottery by lotteryId (UUID)
     const lottery = await Lottery.findOne({
       where: { lotteryId }, // Assuming 'lotteryId' is the column name
     });
-
+    console.log("object", lottery)
     if (!lottery) {
       return apiResponseErr(
         null,
@@ -136,15 +139,11 @@ export const getLotteryById = async (req, res) => {
 
     // Calculate lottery amount (sem * price)
     const lotteryAmount = lottery.price * lottery.sem; // Assuming 'price' and 'sem' are columns in the Lottery model
+    console.log("lotteryAmount", lotteryAmount)
 
-    // Include the lottery amount in the response
-    const responsePayload = {
-      // Convert the lottery instance to a plain object
-      lotteryAmount, // Add the calculated lottery amount
-    };
 
     return apiResponseSuccess(
-      responsePayload,
+      lotteryAmount,
       true,
       statusCode.success,
       "Lottery retrieved successfully",
@@ -162,23 +161,12 @@ export const getLotteryById = async (req, res) => {
 };
 
 
-export const purchaseLotteryTicket = async (req, res) => {
+export const createPurchase = async (req, res) => {
   try {
     const { userId, lotteryId } = req.body;
-    // Validate user existence by making a request to the external user application
-    // const userResponse = await axios.get(`https://user-app.com/api/users/${userId}`);
-    // if (!userResponse.data.success) {
-    //   return apiResponseErr(
-    //     null,
-    //     false,
-    //     statusCode.notFound,
-    //     "User not found",
-    //     res
-    //   );
-    // }
+    console.log("userId", userId)
+    console.log("lotteryId", lotteryId)
 
-
-    // Check if the lottery exists
     const lottery = await Lottery.findOne({
       where: { lotteryId },
     });
@@ -192,26 +180,11 @@ export const purchaseLotteryTicket = async (req, res) => {
       );
     }
 
-    // Check if the ticket has already been purchased
-    const existingPurchase = await LotteryPurchase.findOne({
-      where: { lotteryId, ticketNumber: lottery.ticketNumber },
-    });
-
-    if (existingPurchase) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.conflict,
-        "This ticket has already been purchased",
-        res
-      );
-    }
-
-    // Create the lottery purchase
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
       ticketNumber: lottery.ticketNumber,
+      purchaseAmount : lottery.sem * lottery.price
     });
 
     return apiResponseSuccess(

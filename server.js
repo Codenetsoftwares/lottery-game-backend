@@ -7,6 +7,7 @@ import { adminRoutes } from "./routes/adminRoute.js";
 import { lotteryRoutes } from "./routes/lotteryRoute.js";
 import { resultRoutes } from "./routes/resultRoute.js";
 import { ticketRoutes } from "./routes/ticketRoute.js";
+import { externalApiRoute } from "./routes/externalApiRoute.js";
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ adminRoutes(app);
 lotteryRoutes(app);
 resultRoutes(app);
 ticketRoutes(app);
+externalApiRoute(app)
 
 sequelize
   .sync({ alter: true })

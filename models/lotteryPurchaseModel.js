@@ -28,6 +28,10 @@ const LotteryPurchase = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    purchaseAmount: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
     purchaseDate: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
