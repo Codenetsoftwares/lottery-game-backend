@@ -3,12 +3,7 @@ import Lottery from "../models/lotteryModel.js";
 import Ticket from "../models/ticketModel.js";
 import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utills/response.js";
 import { statusCode } from "../utills/statusCodes.js";
-// import LotteryPurchase from "../models/lotteryPurchaseModel.js";
-import Admin from "../models/adminModel.js";
-import axios from "axios";
 import LotteryPurchase from "../models/lotteryPurchaseModel.js";
-
-//import axios from "axios";
 
 // Create Lottery API
 export const createLottery = async (req, res) => {
@@ -25,11 +20,11 @@ export const createLottery = async (req, res) => {
       order: [['createdAt', 'DESC']],
     });
     if (!ticket) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
         false,
-        statusCode.notFound,
-        "Ticket not found",
+        statusCode.success,
+        "Ticket not available",
         res
       );
     }
@@ -68,26 +63,22 @@ export const createLottery = async (req, res) => {
 //get all lottery Api
 export const getAllLotteries = async (req, res) => {
   try {
-    const { sem, page = 1, pageSize = 10 } = req.query; // Destructure sem, page, and pageSize from query parameters
+    const { sem, page = 1, pageSize = 10 } = req.query; 
 
     const whereConditions = {};
 
-    // Add conditions to the where object based on the provided query parameters
     if (sem) {
-      whereConditions.sem = sem; // Filter by sem if provided
+      whereConditions.sem = sem; 
     }
 
-    // Calculate offset for pagination
     const offset = (page - 1) * pageSize;
 
-    // Retrieve lotteries with pagination
     const lotteries = await Lottery.findAndCountAll({
-      where: whereConditions, // Use the where object in the query
-      limit: parseInt(pageSize), // Limit the number of records returned
-      offset: parseInt(offset), // Offset for pagination
+      where: whereConditions, 
+      limit: parseInt(pageSize), 
+      offset: parseInt(offset), 
     });
 
-    // Prepare pagination details
     const pagination = {
       page: parseInt(page),
       limit: parseInt(pageSize),
@@ -95,9 +86,8 @@ export const getAllLotteries = async (req, res) => {
       totalItems: lotteries.count,
     };
 
-    // Use the custom pagination response format
     return apiResponsePagination(
-      lotteries.rows, // Paginated lotteries
+      lotteries.rows, 
       true,
       statusCode.success,
       "Lotteries retrieved successfully",
@@ -121,12 +111,9 @@ export const getAllLotteries = async (req, res) => {
 export const getLotteryById = async (req, res) => {
   try {
     const { lotteryId } = req.params;
-    console.log("lotteryId", lotteryId)
-    // Find lottery by lotteryId (UUID)
     const lottery = await Lottery.findOne({
-      where: { lotteryId }, // Assuming 'lotteryId' is the column name
+      where: { lotteryId }, 
     });
-    console.log("object", lottery)
     if (!lottery) {
       return apiResponseErr(
         null,
@@ -137,9 +124,7 @@ export const getLotteryById = async (req, res) => {
       );
     }
 
-    // Calculate lottery amount (sem * price)
-    const lotteryAmount = lottery.price * lottery.sem; // Assuming 'price' and 'sem' are columns in the Lottery model
-    console.log("lotteryAmount", lotteryAmount)
+    const lotteryAmount = lottery.price * lottery.sem; 
 
 
     return apiResponseSuccess(
@@ -164,8 +149,6 @@ export const getLotteryById = async (req, res) => {
 export const createPurchase = async (req, res) => {
   try {
     const { userId, lotteryId } = req.body;
-    console.log("userId", userId)
-    console.log("lotteryId", lotteryId)
 
     const lottery = await Lottery.findOne({
       where: { lotteryId },
@@ -192,6 +175,72 @@ export const createPurchase = async (req, res) => {
       true,
       statusCode.create,
       "Lottery ticket purchased successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
+export const getUserPurchases = async (req, res) => {
+  try {
+    const userId = req.params.userId;  
+    const purchases = await LotteryPurchase.findAll({
+      where: { userId },
+    });
+
+    if (!purchases || purchases.length === 0) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.notFound,
+        "No purchases found",
+        res
+      );
+    }
+    return apiResponseSuccess(
+      purchases,
+      true,
+      statusCode.success,
+      "Lottery ticket purchase retractive successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+export const getAllPurchaseLotteries = async (req, res) => {
+  try {  
+    const purchases = await LotteryPurchase.findAll({});
+
+    if (!purchases || purchases.length === 0) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.notFound,
+        "No purchases found",
+        res
+      );
+    }
+    return apiResponseSuccess(
+      purchases,
+      true,
+      statusCode.success,
+      "Purchase lottery retractive successfully",
       res
     );
   } catch (error) {

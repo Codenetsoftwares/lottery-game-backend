@@ -14,7 +14,7 @@ const LotteryPurchase = sequelize.define(
     },
     userId: {
       type: DataTypes.UUID,
-      allowNull: false, // Assuming users are identified by UUID
+      allowNull: false, 
     },
     lotteryId: {
       type: DataTypes.UUID,

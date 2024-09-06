@@ -5,10 +5,8 @@ import { statusCode } from "../utills/statusCodes.js";
 
 export const createTicket = async (req, res) => {
   try {
-    // Generate a random ticket number
     const ticketNumber = generateTicketNumber();
 
-    // Create and save the ticket in the database
     const ticket = await Ticket.create({
       ticketNumber,
     });
