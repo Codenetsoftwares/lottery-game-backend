@@ -150,12 +150,9 @@ export const createPurchase = async (req, res) => {
   try {
     const { userId, lotteryId } = req.body;
 
-    // Find the lottery by its ID
     const lottery = await Lottery.findOne({
       where: { lotteryId },
     });
-
-    // Check if the lottery exists
     if (!lottery) {
       return apiResponseErr(
         null,
@@ -166,39 +163,18 @@ export const createPurchase = async (req, res) => {
       );
     }
 
-    // Check if the lottery has already been purchased
-    const existingPurchase = await LotteryPurchase.findOne({
-      where: { lotteryId },
-    });
-
-    if (existingPurchase) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.conflict,
-        "This lottery ticket has already been purchased",
-        res
-      );
-    }
-
-    // Create a new purchase record
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
       ticketNumber: lottery.ticketNumber,
-      purchaseAmount: lottery.sem * lottery.price,
-    });
-
-    // Destroy (delete) the lottery after the purchase is successful
-    await Lottery.destroy({
-      where: { lotteryId },
+      purchaseAmount : lottery.sem * lottery.price
     });
 
     return apiResponseSuccess(
       purchase,
       true,
-      statusCode.created,
-      "Lottery ticket purchased successfully and lottery removed",
+      statusCode.create,
+      "Lottery ticket purchased successfully",
       res
     );
   } catch (error) {
@@ -211,7 +187,6 @@ export const createPurchase = async (req, res) => {
     );
   }
 };
-
 
 
 export const getUserPurchases = async (req, res) => {

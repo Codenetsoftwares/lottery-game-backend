@@ -4,10 +4,6 @@ import { authorize } from "../middlewares/auth.js";
 
 
 export const ticketRoutes = (app) => {
-  app.post(
-    "/api/ticket-create",
-    authorize([string.Admin]),
-    createTicket
-  );
+  app.post("/api/ticket-create",authorize([string.Admin]),createTicket);
 
 };

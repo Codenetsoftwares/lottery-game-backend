@@ -6,4 +6,5 @@ export const statusCode = {
   internalServerError: 500,
   inActive: 403,
   unauthorize: 401,
+  conflict:409
 };

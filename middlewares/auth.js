@@ -36,7 +36,7 @@ export const authorize = (roles) => {
       try {
         user = jwt.verify(tokenParts[1], process.env.JWT_SECRET_KEY);
       } catch (error) {
-        return apiResponseErr(null, false, statusCode.unauthorize, 'Token verification failed', res);
+        return apiResponseErr(null, false, statusCode.unauthorize, 'Unauthorize', res);
       }
 
       if (!user) {
