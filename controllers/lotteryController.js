@@ -63,20 +63,20 @@ export const createLottery = async (req, res) => {
 //get all lottery Api
 export const getAllLotteries = async (req, res) => {
   try {
-    const { sem, page = 1, pageSize = 10 } = req.query; 
+    const { sem, page = 1, pageSize = 10 } = req.query;
 
-    const whereConditions = {};
+    const whereConditions = { isPurchased: false };
 
     if (sem) {
-      whereConditions.sem = sem; 
+      whereConditions.sem = sem;
     }
 
     const offset = (page - 1) * pageSize;
 
     const lotteries = await Lottery.findAndCountAll({
-      where: whereConditions, 
-      limit: parseInt(pageSize), 
-      offset: parseInt(offset), 
+      where: whereConditions,
+      limit: parseInt(pageSize),
+      offset: parseInt(offset),
     });
 
     const pagination = {
@@ -87,7 +87,7 @@ export const getAllLotteries = async (req, res) => {
     };
 
     return apiResponsePagination(
-      lotteries.rows, 
+      lotteries.rows,
       true,
       statusCode.success,
       "Lotteries retrieved successfully",
@@ -112,7 +112,7 @@ export const getLotteryById = async (req, res) => {
   try {
     const { lotteryId } = req.params;
     const lottery = await Lottery.findOne({
-      where: { lotteryId }, 
+      where: { lotteryId },
     });
     if (!lottery) {
       return apiResponseErr(
@@ -124,7 +124,7 @@ export const getLotteryById = async (req, res) => {
       );
     }
 
-    const lotteryAmount = lottery.price * lottery.sem; 
+    const lotteryAmount = lottery.price * lottery.sem;
 
 
     return apiResponseSuccess(
@@ -167,8 +167,10 @@ export const createPurchase = async (req, res) => {
       userId,
       lotteryId,
       ticketNumber: lottery.ticketNumber,
-      purchaseAmount : lottery.sem * lottery.price
+      purchaseAmount: lottery.sem * lottery.price
     });
+
+     await lottery.update({ isPurchased: true })
 
     return apiResponseSuccess(
       purchase,
@@ -191,7 +193,7 @@ export const createPurchase = async (req, res) => {
 
 export const getUserPurchases = async (req, res) => {
   try {
-    const userId = req.params.userId;  
+    const userId = req.params.userId;
     const purchases = await LotteryPurchase.findAll({
       where: { userId },
     });
@@ -225,13 +227,13 @@ export const getUserPurchases = async (req, res) => {
 
 export const getAllPurchaseLotteries = async (req, res) => {
   try {
-    const { page = 1, limit = 10,  } = req.query;
+    const { page = 1, limit = 10, } = req.query;
     let whereCondition = {};
     const offset = (page - 1) * limit;
     const { rows: purchases, count } = await LotteryPurchase.findAndCountAll({
       where: whereCondition,
       offset,
-      limit: parseInt(limit), 
+      limit: parseInt(limit),
     });
 
     if (!purchases || purchases.length === 0) {
@@ -246,8 +248,8 @@ export const getAllPurchaseLotteries = async (req, res) => {
 
     const pagination = {
       page: parseInt(page),
-      limit: parseInt(limit), 
-      totalPages: Math.ceil(count / limit), 
+      limit: parseInt(limit),
+      totalPages: Math.ceil(count / limit),
       totalItems: count,
     };
 
