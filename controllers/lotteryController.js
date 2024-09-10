@@ -150,9 +150,12 @@ export const createPurchase = async (req, res) => {
   try {
     const { userId, lotteryId } = req.body;
 
+    // Find the lottery by its ID
     const lottery = await Lottery.findOne({
       where: { lotteryId },
     });
+
+    // Check if the lottery exists
     if (!lottery) {
       return apiResponseErr(
         null,
@@ -163,18 +166,39 @@ export const createPurchase = async (req, res) => {
       );
     }
 
+    // Check if the lottery has already been purchased
+    const existingPurchase = await LotteryPurchase.findOne({
+      where: { lotteryId },
+    });
+
+    if (existingPurchase) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.conflict,
+        "This lottery ticket has already been purchased",
+        res
+      );
+    }
+
+    // Create a new purchase record
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
       ticketNumber: lottery.ticketNumber,
-      purchaseAmount : lottery.sem * lottery.price
+      purchaseAmount: lottery.sem * lottery.price,
+    });
+
+    // Destroy (delete) the lottery after the purchase is successful
+    await Lottery.destroy({
+      where: { lotteryId },
     });
 
     return apiResponseSuccess(
       purchase,
       true,
-      statusCode.create,
-      "Lottery ticket purchased successfully",
+      statusCode.created,
+      "Lottery ticket purchased successfully and lottery removed",
       res
     );
   } catch (error) {
@@ -187,6 +211,7 @@ export const createPurchase = async (req, res) => {
     );
   }
 };
+
 
 
 export const getUserPurchases = async (req, res) => {
@@ -224,8 +249,15 @@ export const getUserPurchases = async (req, res) => {
 };
 
 export const getAllPurchaseLotteries = async (req, res) => {
-  try {  
-    const purchases = await LotteryPurchase.findAll({});
+  try {
+    const { page = 1, limit = 10,  } = req.query;
+    let whereCondition = {};
+    const offset = (page - 1) * limit;
+    const { rows: purchases, count } = await LotteryPurchase.findAndCountAll({
+      where: whereCondition,
+      offset,
+      limit: parseInt(limit), 
+    });
 
     if (!purchases || purchases.length === 0) {
       return apiResponseErr(
@@ -236,11 +268,20 @@ export const getAllPurchaseLotteries = async (req, res) => {
         res
       );
     }
-    return apiResponseSuccess(
+
+    const pagination = {
+      page: parseInt(page),
+      limit: parseInt(limit), 
+      totalPages: Math.ceil(count / limit), 
+      totalItems: count,
+    };
+
+    return apiResponsePagination(
       purchases,
       true,
       statusCode.success,
-      "Purchase lottery retractive successfully",
+      "Purchase lotteries retrieved successfully",
+      pagination,
       res
     );
   } catch (error) {
@@ -253,5 +294,7 @@ export const getAllPurchaseLotteries = async (req, res) => {
     );
   }
 };
+
+
 
 

@@ -28,6 +28,7 @@ import { statusCode } from "../utills/statusCodes.js";
           };
           return apiResponsePagination(
             lotteries.rows, 
+            true,
             statusCode.success,
             "Lotteries retrieved successfully",
             pagination,
@@ -37,7 +38,7 @@ import { statusCode } from "../utills/statusCodes.js";
           return apiResponseErr(
             null,
             false,
-            error.responseCode ?? statusCode.internalServerError,
+          statusCode.internalServerError,
             error.message,
             res
           );
