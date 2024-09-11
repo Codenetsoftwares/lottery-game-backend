@@ -244,9 +244,9 @@ export const createPurchase = async (req, res) => {
 export const getUserPurchases = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
-    const offset = (page - 1) * limit; // Calculate offset for pagination
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 10; 
+    const offset = (page - 1) * limit; 
 
     const { rows: purchases, count: totalItems } = await LotteryPurchase.findAndCountAll({
       where: { userId },
