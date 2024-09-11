@@ -148,7 +148,7 @@ export const getLotteryById = async (req, res) => {
 
 export const createPurchase = async (req, res) => {
   try {
-    const { userId, lotteryId } = req.body;
+    const { userId, lotteryId ,userName} = req.body;
 
     const lottery = await Lottery.findOne({
       where: { lotteryId },
@@ -163,11 +163,25 @@ export const createPurchase = async (req, res) => {
       );
     }
 
+    if(lottery.isPurchased === true)
+    {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Lottery not available",
+        res
+      );
+    }
+
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
+      userName,
       ticketNumber: lottery.ticketNumber,
-      purchaseAmount: lottery.sem * lottery.price
+      purchaseAmount: lottery.sem * lottery.price,
+      sem:lottery.sem,
+      name:lottery.name
     });
 
      await lottery.update({ isPurchased: true })
