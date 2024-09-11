@@ -244,8 +244,14 @@ export const createPurchase = async (req, res) => {
 export const getUserPurchases = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const purchases = await LotteryPurchase.findAll({
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+    const offset = (page - 1) * limit; // Calculate offset for pagination
+
+    const { rows: purchases, count: totalItems } = await LotteryPurchase.findAndCountAll({
       where: { userId },
+      limit,
+      offset,
     });
 
     if (!purchases || purchases.length === 0) {
@@ -257,12 +263,21 @@ export const getUserPurchases = async (req, res) => {
         res
       );
     }
-    return apiResponseSuccess(
+
+    const totalPages = Math.ceil(totalItems / limit);
+    return apiResponsePagination(
       purchases,
       true,
       statusCode.success,
-      "Lottery ticket purchase retractive successfully",
-      res
+      "Lottery ticket purchase retrieved successfully",
+      {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+      },
+      res,
+     
     );
   } catch (error) {
     return apiResponseErr(
@@ -274,6 +289,7 @@ export const getUserPurchases = async (req, res) => {
     );
   }
 };
+
 
 export const getAllPurchaseLotteries = async (req, res) => {
   try {
