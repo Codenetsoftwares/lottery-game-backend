@@ -105,6 +105,42 @@ export const getAllLotteries = async (req, res) => {
   }
 };
 
+// delete All Lotteries
+export const deleteAllLotteries = async (req, res) => {
+  try {
+    // Delete all lottery entries, this will cascade delete if foreign key constraint is set to CASCADE
+    const deletedCount = await Lottery.destroy({ where: {} });
+
+    if (deletedCount === 0) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.notFound,
+        "No lotteries found to delete",
+        res
+      );
+    }
+
+    return apiResponseSuccess(
+      null,
+      true,
+      statusCode.success,
+      "All lotteries deleted successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
+
 
 
 // Get a specific lottery by ID
@@ -213,10 +249,10 @@ export const getUserPurchases = async (req, res) => {
     });
 
     if (!purchases || purchases.length === 0) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
         false,
-        statusCode.notFound,
+        statusCode.success,
         "No purchases found",
         res
       );
@@ -287,5 +323,35 @@ export const getAllPurchaseLotteries = async (req, res) => {
 };
 
 
+export const deleteAllLotteryPurchases = async (req, res) => {
+  try {
+    const deletedCount = await LotteryPurchase.destroy({ where: {} });
+
+    if (deletedCount === 0) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+      "No lottery purchases found to delete",
+        res
+      );
+    }
+    return apiResponseSuccess(
+      null,
+      true,
+      statusCode.success,
+      "All lottery purchases deleted successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
 
 
