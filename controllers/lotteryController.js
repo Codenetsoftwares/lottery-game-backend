@@ -139,10 +139,6 @@ export const deleteAllLotteries = async (req, res) => {
   }
 };
 
-
-
-
-
 // Get a specific lottery by ID
 export const getLotteryById = async (req, res) => {
   try {
