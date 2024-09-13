@@ -8,6 +8,7 @@ import { lotteryRoutes } from "./routes/lotteryRoute.js";
 import { resultRoutes } from "./routes/resultRoute.js";
 import { ticketRoutes } from "./routes/ticketRoute.js";
 import { externalApiRoute } from "./routes/externalApiRoute.js";
+import { checkAndManageIndexes } from "./helpers/indexManager.js";
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,10 @@ lotteryRoutes(app);
 resultRoutes(app);
 ticketRoutes(app);
 externalApiRoute(app)
+
+
+checkAndManageIndexes('lotteries');
+checkAndManageIndexes('tickets');
 
 sequelize
   .sync({ alter: true })
