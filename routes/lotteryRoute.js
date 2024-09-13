@@ -22,17 +22,11 @@ export const lotteryRoutes = (app) => {
 
   app.delete("/api/deleteAll-lotteries", authorize([string.Admin]), deleteAllLotteries);
 
-  app.get("/api/getParticularLotteries/:lotteryId",
-     validateGetLotteryById, customErrorHandler ,
-    authenticateUser,
-    getLotteryById); //fetch from colorgame
+  app.get("/api/getParticularLotteries/:lotteryId",validateGetLotteryById, customErrorHandler ,authenticateUser,getLotteryById); //fetch  colorgame
 
-  app.post("/api/create-purchase-lottery",
-    validatePurchaseLotteryTicket, customErrorHandler,
-    authenticateUser,
-    createPurchase) //fetch from colorgame
+  app.post("/api/create-purchase-lottery",validatePurchaseLotteryTicket, customErrorHandler,authenticateUser,createPurchase) //fetch colorgame
 
-  app.get('/api/user-purchases/:userId', authenticateUser, getUserPurchases); //fetch from colorgame not use in lottery admin
+  app.get('/api/user-purchases/:userId', authenticateUser, getUserPurchases); //fetch colorgame not use in lottery admin
 
   app.get('/api/allPurchase-Lotteries', authorize([string.Admin]), getAllPurchaseLotteries);
 
