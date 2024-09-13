@@ -32,20 +32,6 @@ export const validateCreateLottery = [
     .withMessage("Price must be a positive integer if provided"),
 ];
 
-export const validateGetAllLotteries = [
-  query("sem")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("SEM must be a positive integer"),
-  query("page")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("Page must be a positive integer"),
-  query("pageSize")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("Page size must be a positive integer"),
-];
 
 
 export const validateGetLotteryById = [
@@ -62,4 +48,10 @@ export const validatePurchaseLotteryTicket = [
   body("lotteryId")
     .isUUID()
     .withMessage("Invalid Lottery ID. Must be a valid UUID."),
+];
+
+export const validateGetUserPurchases = [
+  param('userId')
+    .isUUID()
+    .withMessage('Invalid user ID format. It must be a valid UUID.'),
 ];

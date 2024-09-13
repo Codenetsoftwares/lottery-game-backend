@@ -1,6 +1,6 @@
 import { getAllExternalLotteries } from "../controllers/externalApiController.js";
-import { authenticateUser } from "../middlewares/colorgameAuth.js";
+import customErrorHandler from "../utills/customErrorHandler.js";
 
 export const externalApiRoute = (app) => {
-    app.get("/api/get-external-lotteries",  getAllExternalLotteries);
+    app.get("/api/get-external-lotteries",customErrorHandler,  getAllExternalLotteries);
 }   
