@@ -8,6 +8,7 @@ import {
 } from "../utills/response.js";
 import { statusCode } from "../utills/statusCodes.js";
 import LotteryPurchase from "../models/lotteryPurchaseModel.js";
+import { Op } from "sequelize";
 
 // Create Lottery API
 export const createLottery = async (req, res) => {
@@ -208,10 +209,6 @@ export const createPurchase = async (req, res) => {
       );
     }
 
-    // Define drawTime based on the lottery's date or a custom logic
-    const drawTime = lottery.date; // You can adjust this logic if needed
-
-    // Create a new lottery purchase
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
@@ -220,13 +217,11 @@ export const createPurchase = async (req, res) => {
       purchaseAmount: lottery.sem * lottery.price,
       sem: lottery.sem,
       name: lottery.name,
-      drawTime, // Set the drawTime when creating the purchase
+      drawTime: lottery.date,
     });
 
-    // Update the lottery to mark it as purchased
     await lottery.update({ isPurchased: true });
 
-    // Return success response
     return apiResponseSuccess(
       purchase,
       true,
@@ -235,7 +230,6 @@ export const createPurchase = async (req, res) => {
       res
     );
   } catch (error) {
-    // Return error response in case of any issues
     return apiResponseErr(
       null,
       false,
@@ -294,11 +288,27 @@ export const getUserPurchases = async (req, res) => {
     );
   }
 };
-
 export const getAllPurchaseLotteries = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, purchaseDate, sem, drawTime } = req.query;
     let whereCondition = {};
+
+    if (purchaseDate) {
+      whereCondition.purchaseDate = {
+        [Op.eq]: new Date(purchaseDate),
+      };
+    }
+
+    if (sem) {
+      whereCondition.sem = sem;
+    }
+
+    if (drawTime) {
+      whereCondition.drawTime = {
+        [Op.eq]: drawTime,
+      };
+    }
+
     const offset = (page - 1) * limit;
     const { rows: purchases, count } = await LotteryPurchase.findAndCountAll({
       where: whereCondition,
