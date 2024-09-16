@@ -1,23 +1,21 @@
 import moment from "moment";
 import Lottery from "../models/lotteryModel.js";
 import Ticket from "../models/ticketModel.js";
-import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utills/response.js";
+import {
+  apiResponseErr,
+  apiResponsePagination,
+  apiResponseSuccess,
+} from "../utills/response.js";
 import { statusCode } from "../utills/statusCodes.js";
 import LotteryPurchase from "../models/lotteryPurchaseModel.js";
 
 // Create Lottery API
 export const createLottery = async (req, res) => {
   try {
-    const {
-      name,
-      date,
-      firstPrize,
-      sem,
-      price
-    } = req.body;
+    const { name, date, firstPrize, sem, price } = req.body;
 
     const ticket = await Ticket.findOne({
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
     });
     if (!ticket) {
       return apiResponseSuccess(
@@ -35,11 +33,11 @@ export const createLottery = async (req, res) => {
       firstPrize,
       ticketNumber: ticket.ticketNumber,
       sem,
-      price
-    })
+      price,
+    });
 
     await ticket.destroy({
-      ticketNumber: lottery.ticketNumber
+      ticketNumber: lottery.ticketNumber,
     });
 
     return apiResponseSuccess(
@@ -105,29 +103,32 @@ export const getAllLotteries = async (req, res) => {
   }
 };
 
-// delete All Lotteries
-export const deleteAllLotteries = async (req, res) => {
+// Controller function to delete all non-purchased lotteries
+export const deleteNonPurchasedLotteries = async (req, res) => {
   try {
-    // Delete all lottery entries, this will cascade delete if foreign key constraint is set to CASCADE
-    const deletedCount = await Lottery.destroy({ where: {} });
+    const result = await Lottery.destroy({
+      where: {
+        isPurchased: false,
+      },
+    });
 
-    if (deletedCount === 0) {
-      return apiResponseErr(
+    if (result > 0) {
+      return apiResponseSuccess(
+        result,
+        true,
+        statusCode.success,
+        `${result} non-purchased lotteries deleted successfully.`,
+        res
+      );
+    } else {
+      return apiResponseSuccess(
         null,
         false,
-        statusCode.notFound,
-        "No lotteries found to delete",
+        statusCode.badRequest,
+        "No non-purchased lotteries found.",
         res
       );
     }
-
-    return apiResponseSuccess(
-      null,
-      true,
-      statusCode.success,
-      "All lotteries deleted successfully",
-      res
-    );
   } catch (error) {
     return apiResponseErr(
       null,
@@ -158,7 +159,6 @@ export const getLotteryById = async (req, res) => {
 
     const lotteryAmount = lottery.price * lottery.sem;
 
-
     return apiResponseSuccess(
       lotteryAmount,
       true,
@@ -177,14 +177,16 @@ export const getLotteryById = async (req, res) => {
   }
 };
 
-
 export const createPurchase = async (req, res) => {
   try {
-    const { userId, lotteryId ,userName} = req.body;
+    const { userId, lotteryId, userName } = req.body;
 
+    // Find the lottery by its ID
     const lottery = await Lottery.findOne({
       where: { lotteryId },
     });
+
+    // If lottery is not found, return error
     if (!lottery) {
       return apiResponseErr(
         null,
@@ -195,8 +197,8 @@ export const createPurchase = async (req, res) => {
       );
     }
 
-    if(lottery.isPurchased === true)
-    {
+    // If the lottery is already purchased, return error
+    if (lottery.isPurchased === true) {
       return apiResponseErr(
         null,
         false,
@@ -206,18 +208,25 @@ export const createPurchase = async (req, res) => {
       );
     }
 
+    // Define drawTime based on the lottery's date or a custom logic
+    const drawTime = lottery.date; // You can adjust this logic if needed
+
+    // Create a new lottery purchase
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
       userName,
       ticketNumber: lottery.ticketNumber,
       purchaseAmount: lottery.sem * lottery.price,
-      sem:lottery.sem,
-      name:lottery.name
+      sem: lottery.sem,
+      name: lottery.name,
+      drawTime, // Set the drawTime when creating the purchase
     });
 
-     await lottery.update({ isPurchased: true })
+    // Update the lottery to mark it as purchased
+    await lottery.update({ isPurchased: true });
 
+    // Return success response
     return apiResponseSuccess(
       purchase,
       true,
@@ -226,6 +235,7 @@ export const createPurchase = async (req, res) => {
       res
     );
   } catch (error) {
+    // Return error response in case of any issues
     return apiResponseErr(
       null,
       false,
@@ -236,19 +246,19 @@ export const createPurchase = async (req, res) => {
   }
 };
 
-
 export const getUserPurchases = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 10; 
-    const offset = (page - 1) * limit; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-    const { rows: purchases, count: totalItems } = await LotteryPurchase.findAndCountAll({
-      where: { userId },
-      limit,
-      offset,
-    });
+    const { rows: purchases, count: totalItems } =
+      await LotteryPurchase.findAndCountAll({
+        where: { userId },
+        limit,
+        offset,
+      });
 
     if (!purchases || purchases.length === 0) {
       return apiResponseSuccess(
@@ -272,8 +282,7 @@ export const getUserPurchases = async (req, res) => {
         totalItems,
         totalPages,
       },
-      res,
-     
+      res
     );
   } catch (error) {
     return apiResponseErr(
@@ -286,10 +295,9 @@ export const getUserPurchases = async (req, res) => {
   }
 };
 
-
 export const getAllPurchaseLotteries = async (req, res) => {
   try {
-    const { page = 1, limit = 10, } = req.query;
+    const { page = 1, limit = 10 } = req.query;
     let whereCondition = {};
     const offset = (page - 1) * limit;
     const { rows: purchases, count } = await LotteryPurchase.findAndCountAll({
@@ -333,37 +341,3 @@ export const getAllPurchaseLotteries = async (req, res) => {
     );
   }
 };
-
-
-export const deleteAllLotteryPurchases = async (req, res) => {
-  try {
-    const deletedCount = await LotteryPurchase.destroy({ where: {} });
-
-    if (deletedCount === 0) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-      "No lottery purchases found to delete",
-        res
-      );
-    }
-    return apiResponseSuccess(
-      null,
-      true,
-      statusCode.success,
-      "All lottery purchases deleted successfully",
-      res
-    );
-  } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
-  }
-};
-
-

@@ -14,11 +14,11 @@ const LotteryPurchase = sequelize.define(
     },
     userId: {
       type: DataTypes.UUID,
-      allowNull: false, 
+      allowNull: false,
     },
-    userName:{
-      type:DataTypes.STRING,
-      allowNull:true
+    userName: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     lotteryId: {
       type: DataTypes.UUID,
@@ -47,6 +47,10 @@ const LotteryPurchase = sequelize.define(
     },
     sem: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    drawTime: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
   },
