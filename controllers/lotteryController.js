@@ -73,10 +73,21 @@ export const getAllLotteries = async (req, res) => {
     const offset = (page - 1) * pageSize;
 
     const lotteries = await Lottery.findAndCountAll({
+      order: [["createdAt", "DESC"]],
       where: whereConditions,
       limit: parseInt(pageSize),
       offset: parseInt(offset),
     });
+
+    if (lotteries.count === 0) {
+      return apiResponseSuccess(
+        null,
+        false,
+        statusCode.success,
+        "No lotteries found",
+        res
+      );
+    }
 
     const pagination = {
       page: parseInt(page),
@@ -221,9 +232,12 @@ export const createPurchase = async (req, res) => {
     });
 
     await lottery.update({ isPurchased: true });
+    const purchases = await LotteryPurchase.findAll({
+      order: [["createdAt", "DESC"]], 
+    });
 
     return apiResponseSuccess(
-      purchase,
+      purchases,
       true,
       statusCode.create,
       "Lottery ticket purchased successfully",
@@ -249,6 +263,7 @@ export const getUserPurchases = async (req, res) => {
 
     const { rows: purchases, count: totalItems } =
       await LotteryPurchase.findAndCountAll({
+        order: [["createdAt", "DESC"]],
         where: { userId },
         limit,
         offset,
@@ -311,6 +326,7 @@ export const getAllPurchaseLotteries = async (req, res) => {
 
     const offset = (page - 1) * limit;
     const { rows: purchases, count } = await LotteryPurchase.findAndCountAll({
+      order: [["createdAt", "DESC"]],
       where: whereCondition,
       offset,
       limit: parseInt(limit),

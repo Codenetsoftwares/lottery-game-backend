@@ -15,6 +15,7 @@ export const getAllExternalLotteries = async (req, res) => {
     const offset = (page - 1) * pageSize;
 
     const lotteries = await Lottery.findAndCountAll({
+      order: [["createdAt", "DESC"]],
       where: whereConditions,
       limit: parseInt(pageSize),
       offset: parseInt(offset),
