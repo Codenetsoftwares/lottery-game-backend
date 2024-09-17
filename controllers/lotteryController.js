@@ -82,7 +82,7 @@ export const getAllLotteries = async (req, res) => {
     if (lotteries.count === 0) {
       return apiResponseSuccess(
         null,
-        false,
+        true,
         statusCode.success,
         "No lotteries found",
         res
