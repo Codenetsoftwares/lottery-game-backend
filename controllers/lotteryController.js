@@ -15,31 +15,40 @@ export const createLottery = async (req, res) => {
   try {
     const { name, date, firstPrize, sem, price } = req.body;
 
-    const ticket = await Ticket.findOne({
-      order: [["createdAt", "DESC"]],
-    });
-    if (!ticket) {
-      return apiResponseSuccess(
+    if (!name || !date || !firstPrize || !sem || !price) {
+      return apiResponseErr(
         null,
         false,
-        statusCode.success,
-        "Ticket not available",
+        statusCode.badRequest,
+        'All fields are required',
+        res
+      );
+    }
+    const ticket = await Ticket.findOne({
+      where: { sem }, 
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (!ticket) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.notFound,
+        "No available tickets with the specified sem",
         res
       );
     }
 
     const lottery = await Lottery.create({
       name,
-      date: moment(date).utc().format(),
+      date: moment(date).utc().format(), 
       firstPrize,
-      ticketNumber: ticket.ticketNumber,
+      ticketNumber: ticket.ticketNumber, 
       sem,
       price,
     });
 
-    await ticket.destroy({
-      ticketNumber: lottery.ticketNumber,
-    });
+    await ticket.destroy();
 
     return apiResponseSuccess(
       lottery,

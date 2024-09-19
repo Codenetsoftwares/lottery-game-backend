@@ -11,10 +11,14 @@ const Ticket = sequelize.define(
       primaryKey: true, 
     },
     ticketNumber: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull:false,
       unique: true,
     },
+    sem: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    }
 
   },
   {
