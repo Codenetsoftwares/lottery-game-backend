@@ -6,9 +6,10 @@ import sequelize from "./config/db.js";
 import { adminRoutes } from "./routes/adminRoute.js";
 import { lotteryRoutes } from "./routes/lotteryRoute.js";
 import { resultRoutes } from "./routes/resultRoute.js";
-import { ticketRoutes } from "./routes/ticketRoute.js";
+//import { ticketRoutes } from "./routes/ticketRoute.js";
 import { externalApiRoute } from "./routes/externalApiRoute.js";
 import { checkAndManageIndexes } from "./helpers/indexManager.js";
+import { ticketRoutes } from "./routes/ticketRoute.js";
 
 dotenv.config();
 const app = express();

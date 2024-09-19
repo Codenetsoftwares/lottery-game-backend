@@ -272,7 +272,7 @@ export const getUserPurchases = async (req, res) => {
     if (!purchases || purchases.length === 0) {
       return apiResponseSuccess(
         null,
-        false,
+        true,
         statusCode.success,
         "No purchases found",
         res
@@ -333,10 +333,10 @@ export const getAllPurchaseLotteries = async (req, res) => {
     });
 
     if (!purchases || purchases.length === 0) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
-        false,
-        statusCode.notFound,
+        true,
+        statusCode.success,
         "No purchases found",
         res
       );
@@ -367,3 +367,7 @@ export const getAllPurchaseLotteries = async (req, res) => {
     );
   }
 };
+
+
+
+
