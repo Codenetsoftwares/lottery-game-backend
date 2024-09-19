@@ -29,9 +29,8 @@ const Lottery = sequelize.define(
       allowNull: false,
     },
     ticketNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.JSON,
       allowNull: false,
-      unique: true,
     },
     price: {
       type: DataTypes.INTEGER,
@@ -44,6 +43,7 @@ const Lottery = sequelize.define(
   },
   {
     tableName: "lotteries",
+    indexes: [], 
   }
 );
 
