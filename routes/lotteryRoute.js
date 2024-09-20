@@ -7,7 +7,6 @@ import {
   getAllPurchaseLotteries,
   getLotteryById,
   getUserPurchases,
-  // purchaseLotteryTicket
 } from "../controllers/lotteryController.js";
 import { authorize } from "../middlewares/auth.js";
 import { authenticateUser } from "../middlewares/colorgameAuth.js";

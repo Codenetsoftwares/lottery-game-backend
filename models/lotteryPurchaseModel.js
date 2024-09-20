@@ -29,7 +29,7 @@ const LotteryPurchase = sequelize.define(
       },
     },
     ticketNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.JSON,
       allowNull: false,
     },
     purchaseAmount: {
