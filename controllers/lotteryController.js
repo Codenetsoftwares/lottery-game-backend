@@ -10,7 +10,6 @@ import { statusCode } from "../utills/statusCodes.js";
 import LotteryPurchase from "../models/lotteryPurchaseModel.js";
 import { Op } from "sequelize";
 
-// Create Lottery API
 export const createLottery = async (req, res) => {
   try {
     const { name, date, firstPrize, sem, price } = req.body;
@@ -68,7 +67,6 @@ export const createLottery = async (req, res) => {
   }
 };
 
-//get all lottery Api
 export const getAllLotteries = async (req, res) => {
   try {
     const { sem, page = 1, pageSize = 10 } = req.query;
@@ -124,7 +122,6 @@ export const getAllLotteries = async (req, res) => {
   }
 };
 
-// Controller function to delete all non-purchased lotteries
 export const deleteNonPurchasedLotteries = async (req, res) => {
   try {
     const result = await Lottery.destroy({
@@ -161,7 +158,6 @@ export const deleteNonPurchasedLotteries = async (req, res) => {
   }
 };
 
-// Get a specific lottery by ID
 export const getLotteryById = async (req, res) => {
   try {
     const { lotteryId } = req.params;
@@ -169,10 +165,10 @@ export const getLotteryById = async (req, res) => {
       where: { lotteryId },
     });
     if (!lottery) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
-        false,
-        statusCode.notFound,
+        true,
+        statusCode.success,
         "Lottery not found",
         res
       );
@@ -202,28 +198,25 @@ export const createPurchase = async (req, res) => {
   try {
     const { userId, lotteryId, userName } = req.body;
 
-    // Find the lottery by its ID
     const lottery = await Lottery.findOne({
       where: { lotteryId },
     });
 
-    // If lottery is not found, return error
     if (!lottery) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
-        false,
-        statusCode.notFound,
+        true,
+        statusCode.success,
         "Lottery not found",
         res
       );
     }
 
-    // If the lottery is already purchased, return error
     if (lottery.isPurchased === true) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
         false,
-        statusCode.badRequest,
+        statusCode.success,
         "Lottery not available",
         res
       );
