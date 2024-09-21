@@ -19,20 +19,20 @@ export const createLottery = async (req, res) => {
         null,
         false,
         statusCode.badRequest,
-        'All fields are required',
+        "All fields are required",
         res
       );
     }
     const ticket = await Ticket.findOne({
-      where: { sem }, 
-      order: [['createdAt', 'DESC']],
+      where: { sem },
+      order: [["createdAt", "DESC"]],
     });
 
     if (!ticket) {
       return apiResponseErr(
         null,
         false,
-        statusCode.notFound,
+        statusCode.badRequest,
         "No available tickets with the specified sem",
         res
       );
@@ -40,9 +40,9 @@ export const createLottery = async (req, res) => {
 
     const lottery = await Lottery.create({
       name,
-      date: moment(date).utc().format(), 
+      date: moment(date).utc().format(),
       firstPrize,
-      ticketNumber: ticket.ticketNumber, 
+      ticketNumber: ticket.ticketNumber,
       sem,
       price,
     });
@@ -203,10 +203,10 @@ export const createPurchase = async (req, res) => {
     });
 
     if (!lottery) {
-      return apiResponseSuccess(
+      return apiResponseErr(
         null,
         true,
-        statusCode.success,
+        statusCode.badRequest,
         "Lottery not found",
         res
       );
@@ -233,13 +233,16 @@ export const createPurchase = async (req, res) => {
       drawTime: lottery.date,
     });
 
-    await lottery.update({ isPurchased: true });
-    const purchases = await LotteryPurchase.findAll({
-      order: [["createdAt", "DESC"]], 
+    const result = await lottery.update({
+      where: { isPurchased: true },
     });
 
+    // const purchases = await LotteryPurchase.findAll({
+    //   order: [["createdAt", "DESC"]],
+    // });
+
     return apiResponseSuccess(
-      purchases,
+      result,
       true,
       statusCode.create,
       "Lottery ticket purchased successfully",
@@ -369,7 +372,3 @@ export const getAllPurchaseLotteries = async (req, res) => {
     );
   }
 };
-
-
-
-

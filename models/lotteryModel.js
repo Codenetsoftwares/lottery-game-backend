@@ -43,7 +43,7 @@ const Lottery = sequelize.define(
   },
   {
     tableName: "lotteries",
-    indexes: [], 
+    indexes: [],
   }
 );
 
