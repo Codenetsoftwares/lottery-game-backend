@@ -233,9 +233,8 @@ export const createPurchase = async (req, res) => {
       drawTime: lottery.date,
     });
 
-    const result = await lottery.update({
-      where: { isPurchased: true },
-    });
+    lottery.isPurchased = true;
+    const result = await lottery.save();
 
     // const purchases = await LotteryPurchase.findAll({
     //   order: [["createdAt", "DESC"]],
