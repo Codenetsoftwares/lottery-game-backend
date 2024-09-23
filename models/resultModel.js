@@ -1,38 +1,49 @@
-
 import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import Lottery from "./lotteryModel.js"; 
-
+import sequelize from "../config/db.js"; 
 const Result = sequelize.define(
   "Result",
   {
-    id: {
-      type: DataTypes.INTEGER,
+    resultId: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
       primaryKey: true,
-      autoIncrement: true,
     },
     lotteryId: {
-      type: DataTypes.UUID,
+      type: DataTypes.UUID, // Assuming lotteryId is a UUID
+      allowNull: false,
       references: {
-        model: Lottery, 
-        key: "lotteryId",
+        model: 'lotteries', // Reference the Lottery model
+        key: 'lotteryId',   // The key in the Lottery model
       },
+    },
+    winningTicket: {
+      type: DataTypes.JSON,
       allowNull: false,
     },
-    firstPrizeTicket: {
-      type: DataTypes.STRING,
+    firstPrizeWinners: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
-    secondPrizeTicket: {
-      type: DataTypes.STRING,
+    secondPrizeWinners: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
-    thirdPrizeTicket: {
-      type: DataTypes.STRING,
+    thirdPrizeWinners: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
-    fourthPrizeTicket: {
-      type: DataTypes.STRING,
+    fourthPrizeWinners: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
-    fifthPrizeTicket: {
-      type: DataTypes.STRING,
+    fifthPrizeWinners: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    drawDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
   },
   {
