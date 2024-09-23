@@ -53,7 +53,7 @@ export const createLottery = async (req, res) => {
       lottery,
       true,
       statusCode.create,
-      "Lottery created successfully",
+      `${sem} sem lottery created successfully`,
       res
     );
   } catch (error) {
@@ -96,6 +96,12 @@ export const getAllLotteries = async (req, res) => {
       );
     }
 
+    // Since ticketNumber is stored as a JSON array, no need to parse
+    const parsedLotteries = lotteries.rows.map((lottery) => ({
+      ...lottery.dataValues,
+      ticketNumber: lottery.ticketNumber, // This will be an array if stored correctly
+    }));
+
     const pagination = {
       page: parseInt(page),
       limit: parseInt(pageSize),
@@ -104,7 +110,7 @@ export const getAllLotteries = async (req, res) => {
     };
 
     return apiResponsePagination(
-      lotteries.rows,
+      parsedLotteries,
       true,
       statusCode.success,
       "Lotteries retrieved successfully",
@@ -121,6 +127,7 @@ export const getAllLotteries = async (req, res) => {
     );
   }
 };
+
 
 export const deleteNonPurchasedLotteries = async (req, res) => {
   try {
@@ -141,8 +148,8 @@ export const deleteNonPurchasedLotteries = async (req, res) => {
     } else {
       return apiResponseSuccess(
         null,
-        false,
-        statusCode.badRequest,
+        true,
+        statusCode.success,
         "No non-purchased lotteries found.",
         res
       );
@@ -165,10 +172,10 @@ export const getLotteryById = async (req, res) => {
       where: { lotteryId },
     });
     if (!lottery) {
-      return apiResponseSuccess(
+      return apiResponseErr(
         null,
-        true,
-        statusCode.success,
+        false,
+        statusCode.badRequest,
         "Lottery not found",
         res
       );
@@ -215,18 +222,22 @@ export const createPurchase = async (req, res) => {
     if (lottery.isPurchased === true) {
       return apiResponseSuccess(
         null,
-        false,
+        true,
         statusCode.success,
         "Lottery not available",
         res
       );
     }
 
+    const ticketNumberArray = Array.isArray(lottery.ticketNumber)
+      ? lottery.ticketNumber 
+      : lottery.ticketNumber.split(','); 
+
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
       userName,
-      ticketNumber: lottery.ticketNumber,
+      ticketNumber: ticketNumberArray, 
       purchaseAmount: lottery.sem * lottery.price,
       sem: lottery.sem,
       name: lottery.name,
@@ -235,10 +246,6 @@ export const createPurchase = async (req, res) => {
 
     lottery.isPurchased = true;
     const result = await lottery.save();
-
-    // const purchases = await LotteryPurchase.findAll({
-    //   order: [["createdAt", "DESC"]],
-    // });
 
     return apiResponseSuccess(
       result,
@@ -257,6 +264,7 @@ export const createPurchase = async (req, res) => {
     );
   }
 };
+
 
 export const getUserPurchases = async (req, res) => {
   try {

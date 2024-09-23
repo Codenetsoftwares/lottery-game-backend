@@ -31,7 +31,7 @@ export const generateTicket = async (req, res) => {
       { tickets },
       true,
       statusCode.create,
-      `${sem} Sem lottery tickets created successfully`,
+      `${sem} Sem ticketNumber generate successfully`,
       res
     );
   } catch (error) {
