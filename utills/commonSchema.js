@@ -33,6 +33,22 @@ export const validateCreateLottery = [
 ];
 
 
+export const validateEditLottery=[
+  param("lotteryId").isUUID().withMessage("Invalid lotteryId. It must be a valid UUID"),
+  
+  body("name").optional().isString().withMessage("Lottery name must be a string"),
+  
+  body("date").optional().isISO8601().withMessage("Invalid date format"),
+  
+  body("firstPrize")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("First prize must be an integer greater than 0"),
+  
+    body("price").optional().isInt({ min: 0 }).withMessage("Price must be an integer"),
+];
+
+
 
 export const validateGetLotteryById = [
   param("lotteryId")

@@ -2,7 +2,9 @@ import { string } from "../constructor/string.js";
 import {
   createLottery,
   createPurchase,
+  deleteLottery,
   deleteNonPurchasedLotteries,
+  editLottery,
   getAllLotteries,
   getAllPurchaseLotteries,
   getLotteryById,
@@ -12,6 +14,7 @@ import { authorize } from "../middlewares/auth.js";
 import { authenticateUser } from "../middlewares/colorgameAuth.js";
 import {
   validateCreateLottery,
+  validateEditLottery,
   validateGetLotteryById,
   validateGetUserPurchases,
   validatePurchaseLotteryTicket,
@@ -42,6 +45,12 @@ export const lotteryRoutes = (app) => {
     authenticateUser,
     getLotteryById
   ); //fetch  colorgame
+
+app.put("/api/edit-particularLottery/:lotteryId",validateEditLottery,customErrorHandler,authorize([string.Admin]),editLottery)
+
+
+app.delete("/api/delete-particularLottery/:lotteryId",validateGetLotteryById,customErrorHandler, authorize([string.Admin]),deleteLottery);
+
 
   app.post(
     "/api/create-purchase-lottery",
