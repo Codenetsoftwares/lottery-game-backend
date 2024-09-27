@@ -6,10 +6,12 @@ import sequelize from "./config/db.js";
 import { adminRoutes } from "./routes/adminRoute.js";
 import { lotteryRoutes } from "./routes/lotteryRoute.js";
 import { resultRoutes } from "./routes/resultRoute.js";
-//import { ticketRoutes } from "./routes/ticketRoute.js";
 import { externalApiRoute } from "./routes/externalApiRoute.js";
 import { checkAndManageIndexes } from "./helpers/indexManager.js";
 import { ticketRoutes } from "./routes/ticketRoute.js";
+import Lottery from "./models/lotteryModel.js";
+import LotteryPurchase from "./models/lotteryPurchaseModel.js";
+import Result from "./models/resultModel.js";
 
 dotenv.config();
 const app = express();
@@ -29,7 +31,14 @@ adminRoutes(app);
 lotteryRoutes(app);
 resultRoutes(app);
 ticketRoutes(app);
-externalApiRoute(app)
+externalApiRoute(app);
+
+
+
+Lottery.hasMany(LotteryPurchase, { foreignKey: "lotteryId" });
+LotteryPurchase.belongsTo(Lottery, { foreignKey: "lotteryId" });
+Lottery.hasMany(Result, { foreignKey: "lotteryId", sourceKey: "lotteryId" });
+Result.belongsTo(Lottery, { foreignKey: "lotteryId", targetKey: "lotteryId" });
 
 
 checkAndManageIndexes('lotteries');
