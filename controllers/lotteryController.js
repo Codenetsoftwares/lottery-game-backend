@@ -88,7 +88,7 @@ export const getAllLotteries = async (req, res) => {
 
     if (lotteries.count === 0) {
       return apiResponseSuccess(
-        null,
+        [],
         true,
         statusCode.success,
         "No lotteries found",
@@ -147,7 +147,7 @@ export const deleteNonPurchasedLotteries = async (req, res) => {
       );
     } else {
       return apiResponseSuccess(
-        null,
+        [],
         true,
         statusCode.success,
         "No non-purchased lotteries found.",
@@ -301,7 +301,7 @@ export const createPurchase = async (req, res) => {
 
     if (lottery.isPurchased === true) {
       return apiResponseSuccess(
-        null,
+        [],
         true,
         statusCode.success,
         "Lottery not available",
@@ -363,7 +363,7 @@ export const getUserPurchases = async (req, res) => {
 
     if (!purchases || purchases.length === 0) {
       return apiResponseSuccess(
-        null,
+        [],
         true,
         statusCode.success,
         "No purchases found",
@@ -426,7 +426,7 @@ export const getAllPurchaseLotteries = async (req, res) => {
 
     if (!purchases || purchases.length === 0) {
       return apiResponseSuccess(
-        null,
+        [],
         true,
         statusCode.success,
         "No purchases found",
