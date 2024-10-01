@@ -221,6 +221,87 @@ export const getLotteryById = async (req, res) => {
   }
 };
 
+export const editLottery = async (req, res) => {
+  const { lotteryId } = req.params;
+  const { name, date, firstPrize, price } = req.body;
+
+  try {
+    const lottery = await Lottery.findOne({ where: { lotteryId } });
+
+    if (!lottery) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Lottery not found",
+        res
+      );
+    }
+
+    await lottery.update({
+      name,
+      date,
+      firstPrize,
+      price,
+    });
+
+    return apiResponseSuccess(
+      lottery,
+      true,
+      statusCode.success,
+      "Lottery updated successfully",
+      res
+    );
+
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
+export const deleteLottery = async (req, res) => {
+  const { lotteryId } = req.params;
+
+  try {
+    const lottery = await Lottery.findOne({ where: { lotteryId } });
+
+    if (!lottery) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Lottery not found",
+        res
+      );
+    }
+
+    await lottery.destroy();
+    return apiResponseSuccess(
+      null,
+      true,
+      statusCode.success,
+      "Lottery deleted successfully",
+      res
+    );
+
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
 export const createPurchase = async (req, res) => {
   try {
     const { userId, lotteryId, userName } = req.body;
