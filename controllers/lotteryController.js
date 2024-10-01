@@ -9,11 +9,11 @@ import {
 import { statusCode } from "../utills/statusCodes.js";
 import LotteryPurchase from "../models/lotteryPurchaseModel.js";
 import { Op } from "sequelize";
-
 export const createLottery = async (req, res) => {
   try {
     const { name, date, firstPrize, sem, price } = req.body;
 
+    // Validate required fields
     if (!name || !date || !firstPrize || !sem || !price) {
       return apiResponseErr(
         null,
@@ -23,6 +23,22 @@ export const createLottery = async (req, res) => {
         res
       );
     }
+
+    // Validate date: Check if the date is in the past
+    const currentDate = moment().utc().startOf('day'); // Get current date in UTC
+    const selectedDate = moment(date).utc().startOf('day'); // Normalize the provided date
+
+    if (selectedDate.isBefore(currentDate)) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "The date must be today or a future date",
+        res
+      );
+    }
+
+    // Check for available tickets
     const ticket = await Ticket.findOne({
       where: { sem },
       order: [["createdAt", "DESC"]],
@@ -38,17 +54,20 @@ export const createLottery = async (req, res) => {
       );
     }
 
+    // Create the lottery
     const lottery = await Lottery.create({
       name,
-      date: moment(date).utc().format(),
+      date: selectedDate.format(), // Store in UTC format
       firstPrize,
       ticketNumber: ticket.ticketNumber,
       sem,
       price,
     });
 
+    // Destroy the ticket
     await ticket.destroy();
 
+    // Respond with success
     return apiResponseSuccess(
       lottery,
       true,
@@ -66,6 +85,7 @@ export const createLottery = async (req, res) => {
     );
   }
 };
+
 
 export const getAllLotteries = async (req, res) => {
   try {

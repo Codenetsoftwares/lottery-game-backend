@@ -2,6 +2,7 @@ import Lottery from "../models/lotteryModel.js";
 import Result from "../models/resultModel.js";
 import { apiResponseErr, apiResponseSuccess } from "../utills/response.js";
 import { statusCode } from "../utills/statusCodes.js";
+import { Op } from "sequelize";
 
 
 export const drawLottery = async (req, res) => {
@@ -268,6 +269,71 @@ export const getResults = async (req, res) => {
   }
 };
 
+
+export const getLotteriesByDrawTime = async (req, res) => {
+    const { date } = req.query; // Get the date from the query parameters
+  
+    // Validate if date is provided
+    if (!date) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Date is required",
+        res
+      );
+    }
+  
+    try {
+      // Fetch lotteries that match the provided date
+      const lotteries = await Lottery.findAll({
+        where: {
+          date: {
+            [Op.gte]: new Date(date), // Start of the day
+            [Op.lt]: new Date(new Date(date).setDate(new Date(date).getDate() + 1)) // End of the day
+          }
+        }
+      });
+  
+      // If no lotteries are found for the given date, return an error response
+      if (lotteries.length === 0) {
+        return apiResponseErr(
+          null,
+          false,
+          statusCode.notFound,
+          "No lotteries found for the given date",
+          res
+        );
+      }
+  
+      // Prepare the response with the found lotteries
+      const response = {
+        lotteries: lotteries.map(lottery => ({
+          lotteryId: lottery.lotteryId,
+          name: lottery.name,
+          date: lottery.date.toISOString(), // Convert to ISO string for consistency
+          drawTime: lottery.date.toLocaleTimeString(), // Extracting time from the date
+          firstPrize: lottery.firstPrize,
+          sem: lottery.sem,
+          ticketNumber: lottery.ticketNumber,
+          price: lottery.price,
+          isPurchased: Boolean(lottery.isPurchased),
+        })),
+      };
+  
+      return apiResponseSuccess(response, true, statusCode.success, "Lotteries fetched successfully", res);
+    } catch (error) {
+      return apiResponseErr(
+        null,
+        false,
+        error.responseCode ?? statusCode.internalServerError,
+        error.message,
+        res
+      );
+    }
+  };
+  
+  
 
 
 
