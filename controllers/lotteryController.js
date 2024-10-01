@@ -12,10 +12,9 @@ import { Op } from "sequelize";
 
 export const createLottery = async (req, res) => {
   try {
-    const { name, date, firstPrize, sem, price } = req.body;
+    const { name, date, drawTime, firstPrize, sem, price } = req.body;
 
-    // Validate required fields
-    if (!name || !date || !firstPrize || !sem || !price) {
+    if (!name || !date || !drawTime || !firstPrize || !sem || !price) {
       return apiResponseErr(
         null,
         false,
@@ -25,9 +24,19 @@ export const createLottery = async (req, res) => {
       );
     }
 
-    // Validate date and time: Check if the date is in the past
-    const currentDateTime = moment().utc(); // Get current date and time in UTC
-    const selectedDateTime = moment(date).utc(); // Parse and normalize the provided date
+    const allowedDrawTimes = ["10:00 A.M.", "1:00 P.M.", "6:00 P.M.", "8:00 P.M."];
+    if (!allowedDrawTimes.includes(drawTime)) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Draw time must be one of: 10:00 A.M., 1:00 P.M., 6:00 P.M., 8:00 P.M.",
+        res
+      );
+    }
+
+    const currentDateTime = moment().utc(); 
+    const selectedDateTime = moment(date).utc(); 
 
     if (selectedDateTime.isBefore(currentDateTime)) {
       return apiResponseErr(
@@ -39,7 +48,6 @@ export const createLottery = async (req, res) => {
       );
     }
 
-    // Check for available tickets
     const ticket = await Ticket.findOne({
       where: { sem },
       order: [["createdAt", "DESC"]],
@@ -55,20 +63,18 @@ export const createLottery = async (req, res) => {
       );
     }
 
-    // Create the lottery
     const lottery = await Lottery.create({
       name,
-      date: selectedDateTime.format(), // Store in UTC format
+      date: selectedDateTime.format(), 
+      drawTime, 
       firstPrize,
       ticketNumber: ticket.ticketNumber,
       sem,
       price,
     });
 
-    // Destroy the ticket
     await ticket.destroy();
 
-    // Respond with success
     return apiResponseSuccess(
       lottery,
       true,
