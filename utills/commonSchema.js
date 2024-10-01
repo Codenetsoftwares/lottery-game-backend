@@ -55,3 +55,13 @@ export const validateGetUserPurchases = [
     .isUUID()
     .withMessage('Invalid user ID format. It must be a valid UUID.'),
 ];
+
+export const validateDrawLottery = [
+  body("date").isISO8601().withMessage("Valid date is required")
+];
+
+export const validateGetResults = [
+  param('resultId')
+    .isUUID() 
+    .withMessage('Invalid result ID format'),
+];

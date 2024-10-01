@@ -40,10 +40,6 @@ const Lottery = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    nonPurchased: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
   },
   {
     tableName: "lotteries",
