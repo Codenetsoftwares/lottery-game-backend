@@ -1,8 +1,8 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
 const Ticket = sequelize.define(
-  "Ticket",
+  'Ticket',
   {
     id: {
       type: DataTypes.UUID,
@@ -19,9 +19,9 @@ const Ticket = sequelize.define(
     },
   },
   {
-    tableName: "tickets",
+    tableName: 'tickets',
     indexes: [], // Ensure no indexes are created for the JSON column
-  }
+  },
 );
 
 export default Ticket;

@@ -1,9 +1,9 @@
-import Admin from "../models/adminModel.js";
-import { apiResponseErr, apiResponseSuccess } from "../utills/response.js";
-import { v4 as uuidv4 } from "uuid";
-import { statusCode } from "../utills/statusCodes.js";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import Admin from '../models/adminModel.js';
+import { apiResponseErr, apiResponseSuccess } from '../utills/response.js';
+import { v4 as uuidv4 } from 'uuid';
+import { statusCode } from '../utills/statusCodes.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -16,13 +16,7 @@ export const createAdmin = async (req, res) => {
     });
 
     if (existingAdmin) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Admin already exist",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Admin already exist', res);
     }
 
     const newAdmin = await Admin.create({
@@ -32,21 +26,9 @@ export const createAdmin = async (req, res) => {
       role,
     });
 
-    return apiResponseSuccess(
-      newAdmin,
-      true,
-      statusCode.create,
-      "created successfully",
-      res
-    );
+    return apiResponseSuccess(newAdmin, true, statusCode.create, 'created successfully', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
 
@@ -56,25 +38,13 @@ export const login = async (req, res) => {
     const existingUser = await Admin.findOne({ where: { userName } });
 
     if (!existingUser) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "User does not exist",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'User does not exist', res);
     }
 
     const isPasswordValid = await existingUser.validPassword(password);
 
     if (!isPasswordValid) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Invalid username or password",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Invalid username or password', res);
     }
 
     const userResponse = {
@@ -83,7 +53,7 @@ export const login = async (req, res) => {
       role: existingUser.role,
     };
     const accessToken = jwt.sign(userResponse, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1d",
+      expiresIn: '1d',
     });
 
     return apiResponseSuccess(
@@ -93,16 +63,10 @@ export const login = async (req, res) => {
       },
       true,
       statusCode.success,
-      "login successfully",
-      res
+      'login successfully',
+      res,
     );
   } catch (error) {
-    apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.errMessage ?? error.message,
-      res
-    );
+    apiResponseErr(null, false, statusCode.internalServerError, error.errMessage ?? error.message, res);
   }
 };

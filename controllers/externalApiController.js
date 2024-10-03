@@ -1,6 +1,6 @@
-import Lottery from "../models/lotteryModel.js";
-import { apiResponseErr, apiResponsePagination } from "../utills/response.js";
-import { statusCode } from "../utills/statusCodes.js";
+import Lottery from '../models/lotteryModel.js';
+import { apiResponseErr, apiResponsePagination } from '../utills/response.js';
+import { statusCode } from '../utills/statusCodes.js';
 
 export const getAllExternalLotteries = async (req, res) => {
   try {
@@ -15,7 +15,7 @@ export const getAllExternalLotteries = async (req, res) => {
     const offset = (page - 1) * pageSize;
 
     const lotteries = await Lottery.findAndCountAll({
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
       where: whereConditions,
       limit: parseInt(pageSize),
       offset: parseInt(offset),
@@ -31,17 +31,11 @@ export const getAllExternalLotteries = async (req, res) => {
       lotteries.rows,
       true,
       statusCode.success,
-      "Lotteries retrieved successfully",
+      'Lotteries retrieved successfully',
       pagination,
-      res
+      res,
     );
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };

@@ -4,7 +4,6 @@ import { statusCode } from '../utills/statusCodes.js';
 import { apiResponseErr } from '../utills/response.js';
 import Admin from '../models/adminModel.js';
 
-
 // const tokenBlacklist = new Set();
 
 export const authorize = (roles) => {

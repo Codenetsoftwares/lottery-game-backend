@@ -1,72 +1,50 @@
-import moment from "moment";
-import Lottery from "../models/lotteryModel.js";
-import Ticket from "../models/ticketModel.js";
-import {
-  apiResponseErr,
-  apiResponsePagination,
-  apiResponseSuccess,
-} from "../utills/response.js";
-import { statusCode } from "../utills/statusCodes.js";
-import LotteryPurchase from "../models/lotteryPurchaseModel.js";
-import { Op } from "sequelize";
+import moment from 'moment';
+import Lottery from '../models/lotteryModel.js';
+import Ticket from '../models/ticketModel.js';
+import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from '../utills/response.js';
+import { statusCode } from '../utills/statusCodes.js';
+import LotteryPurchase from '../models/lotteryPurchaseModel.js';
+import { Op } from 'sequelize';
 
 export const createLottery = async (req, res) => {
   try {
     const { name, date, drawTime, firstPrize, sem, price } = req.body;
 
     if (!name || !date || !drawTime || !firstPrize || !sem || !price) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "All fields are required",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'All fields are required', res);
     }
 
-    const allowedDrawTimes = ["10:00 A.M.", "1:00 P.M.", "6:00 P.M.", "8:00 P.M."];
+    const allowedDrawTimes = ['10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.'];
     if (!allowedDrawTimes.includes(drawTime)) {
       return apiResponseErr(
         null,
         false,
         statusCode.badRequest,
-        "Draw time must be one of: 10:00 A.M., 1:00 P.M., 6:00 P.M., 8:00 P.M.",
-        res
+        'Draw time must be one of: 10:00 A.M., 1:00 P.M., 6:00 P.M., 8:00 P.M.',
+        res,
       );
     }
 
-    const currentDateTime = moment().utc(); 
-    const selectedDateTime = moment(date).utc(); 
+    const currentDateTime = moment().utc();
+    const selectedDateTime = moment(date).utc();
 
     if (selectedDateTime.isBefore(currentDateTime)) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "The date and time must be now or in the future",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'The date and time must be now or in the future', res);
     }
 
     const ticket = await Ticket.findOne({
       where: { sem },
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
     });
 
     if (!ticket) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "No available tickets with the specified sem",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'No available tickets with the specified sem', res);
     }
 
     const lottery = await Lottery.create({
       name,
-      date: selectedDateTime.format(), 
-      drawTime, 
+      date: selectedDateTime.format(),
+      drawTime,
       firstPrize,
       ticketNumber: ticket.ticketNumber,
       sem,
@@ -75,25 +53,11 @@ export const createLottery = async (req, res) => {
 
     await ticket.destroy();
 
-    return apiResponseSuccess(
-      lottery,
-      true,
-      statusCode.create,
-      `${sem} sem lottery created successfully`,
-      res
-    );
+    return apiResponseSuccess(lottery, true, statusCode.create, `${sem} sem lottery created successfully`, res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
-
 
 export const getAllLotteries = async (req, res) => {
   try {
@@ -108,20 +72,14 @@ export const getAllLotteries = async (req, res) => {
     const offset = (page - 1) * pageSize;
 
     const lotteries = await Lottery.findAndCountAll({
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
       where: whereConditions,
       limit: parseInt(pageSize),
       offset: parseInt(offset),
     });
 
     if (lotteries.count === 0) {
-      return apiResponseSuccess(
-        null,
-        true,
-        statusCode.success,
-        "No lotteries found",
-        res
-      );
+      return apiResponseSuccess(null, true, statusCode.success, 'No lotteries found', res);
     }
 
     // Since ticketNumber is stored as a JSON array, no need to parse
@@ -141,21 +99,14 @@ export const getAllLotteries = async (req, res) => {
       parsedLotteries,
       true,
       statusCode.success,
-      "Lotteries retrieved successfully",
+      'Lotteries retrieved successfully',
       pagination,
-      res
+      res,
     );
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
 
 export const deleteNonPurchasedLotteries = async (req, res) => {
   try {
@@ -171,25 +122,13 @@ export const deleteNonPurchasedLotteries = async (req, res) => {
         true,
         statusCode.success,
         `${result} non-purchased lotteries deleted successfully.`,
-        res
+        res,
       );
     } else {
-      return apiResponseSuccess(
-        null,
-        true,
-        statusCode.success,
-        "No non-purchased lotteries found.",
-        res
-      );
+      return apiResponseSuccess(null, true, statusCode.success, 'No non-purchased lotteries found.', res);
     }
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
 
@@ -200,32 +139,14 @@ export const getLotteryById = async (req, res) => {
       where: { lotteryId },
     });
     if (!lottery) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Lottery not found",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Lottery not found', res);
     }
 
     const lotteryAmount = lottery.price * lottery.sem;
 
-    return apiResponseSuccess(
-      lotteryAmount,
-      true,
-      statusCode.success,
-      "Lottery retrieved successfully",
-      res
-    );
+    return apiResponseSuccess(lotteryAmount, true, statusCode.success, 'Lottery retrieved successfully', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
 
@@ -237,13 +158,7 @@ export const editLottery = async (req, res) => {
     const lottery = await Lottery.findOne({ where: { lotteryId } });
 
     if (!lottery) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Lottery not found",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Lottery not found', res);
     }
 
     await lottery.update({
@@ -253,25 +168,11 @@ export const editLottery = async (req, res) => {
       price,
     });
 
-    return apiResponseSuccess(
-      lottery,
-      true,
-      statusCode.success,
-      "Lottery updated successfully",
-      res
-    );
-
+    return apiResponseSuccess(lottery, true, statusCode.success, 'Lottery updated successfully', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
 
 export const deleteLottery = async (req, res) => {
   const { lotteryId } = req.params;
@@ -280,35 +181,15 @@ export const deleteLottery = async (req, res) => {
     const lottery = await Lottery.findOne({ where: { lotteryId } });
 
     if (!lottery) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Lottery not found",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Lottery not found', res);
     }
 
     await lottery.destroy();
-    return apiResponseSuccess(
-      null,
-      true,
-      statusCode.success,
-      "Lottery deleted successfully",
-      res
-    );
-
+    return apiResponseSuccess(null, true, statusCode.success, 'Lottery deleted successfully', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
 
 export const createPurchase = async (req, res) => {
   try {
@@ -319,34 +200,22 @@ export const createPurchase = async (req, res) => {
     });
 
     if (!lottery) {
-      return apiResponseErr(
-        null,
-        true,
-        statusCode.badRequest,
-        "Lottery not found",
-        res
-      );
+      return apiResponseErr(null, true, statusCode.badRequest, 'Lottery not found', res);
     }
 
     if (lottery.isPurchased === true) {
-      return apiResponseSuccess(
-        null,
-        true,
-        statusCode.success,
-        "Lottery not available",
-        res
-      );
+      return apiResponseSuccess(null, true, statusCode.success, 'Lottery not available', res);
     }
 
     const ticketNumberArray = Array.isArray(lottery.ticketNumber)
-      ? lottery.ticketNumber 
-      : lottery.ticketNumber.split(','); 
+      ? lottery.ticketNumber
+      : lottery.ticketNumber.split(',');
 
     const purchase = await LotteryPurchase.create({
       userId,
       lotteryId,
       userName,
-      ticketNumber: ticketNumberArray, 
+      ticketNumber: ticketNumberArray,
       purchaseAmount: lottery.sem * lottery.price,
       sem: lottery.sem,
       name: lottery.name,
@@ -356,24 +225,11 @@ export const createPurchase = async (req, res) => {
     lottery.isPurchased = true;
     const result = await lottery.save();
 
-    return apiResponseSuccess(
-      result,
-      true,
-      statusCode.create,
-      "Lottery ticket purchased successfully",
-      res
-    );
+    return apiResponseSuccess(result, true, statusCode.create, 'Lottery ticket purchased successfully', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
 
 export const getUserPurchases = async (req, res) => {
   try {
@@ -382,22 +238,15 @@ export const getUserPurchases = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const { rows: purchases, count: totalItems } =
-      await LotteryPurchase.findAndCountAll({
-        order: [["createdAt", "DESC"]],
-        where: { userId },
-        limit,
-        offset,
-      });
+    const { rows: purchases, count: totalItems } = await LotteryPurchase.findAndCountAll({
+      order: [['createdAt', 'DESC']],
+      where: { userId },
+      limit,
+      offset,
+    });
 
     if (!purchases || purchases.length === 0) {
-      return apiResponseSuccess(
-        null,
-        true,
-        statusCode.success,
-        "No purchases found",
-        res
-      );
+      return apiResponseSuccess(null, true, statusCode.success, 'No purchases found', res);
     }
 
     const totalPages = Math.ceil(totalItems / limit);
@@ -405,23 +254,17 @@ export const getUserPurchases = async (req, res) => {
       purchases,
       true,
       statusCode.success,
-      "Lottery ticket purchase retrieved successfully",
+      'Lottery ticket purchase retrieved successfully',
       {
         page,
         limit,
         totalItems,
         totalPages,
       },
-      res
+      res,
     );
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
 export const getAllPurchaseLotteries = async (req, res) => {
@@ -447,20 +290,14 @@ export const getAllPurchaseLotteries = async (req, res) => {
 
     const offset = (page - 1) * limit;
     const { rows: purchases, count } = await LotteryPurchase.findAndCountAll({
-      order: [["createdAt", "DESC"]],
+      order: [['createdAt', 'DESC']],
       where: whereCondition,
       offset,
       limit: parseInt(limit),
     });
 
     if (!purchases || purchases.length === 0) {
-      return apiResponseSuccess(
-        null,
-        true,
-        statusCode.success,
-        "No purchases found",
-        res
-      );
+      return apiResponseSuccess(null, true, statusCode.success, 'No purchases found', res);
     }
 
     const pagination = {
@@ -474,17 +311,11 @@ export const getAllPurchaseLotteries = async (req, res) => {
       purchases,
       true,
       statusCode.success,
-      "Purchase lotteries retrieved successfully",
+      'Purchase lotteries retrieved successfully',
       pagination,
-      res
+      res,
     );
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };

@@ -1,9 +1,9 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import bcrypt from "bcrypt";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
+import bcrypt from 'bcrypt';
 
 const Admin = sequelize.define(
-  "Admin",
+  'Admin',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -13,7 +13,6 @@ const Admin = sequelize.define(
     adminId: {
       type: DataTypes.UUID,
       allowNull: false,
-      
     },
     userName: {
       type: DataTypes.STRING,
@@ -25,13 +24,13 @@ const Admin = sequelize.define(
       allowNull: false,
     },
     role: {
-      type: DataTypes.ENUM("admin", "subAdmin", "user"),
+      type: DataTypes.ENUM('admin', 'subAdmin', 'user'),
       allowNull: false,
     },
   },
   {
     indexes: [], // Minimize indexes if possible
-  }
+  },
 );
 
 // Hash password before saving
@@ -41,7 +40,7 @@ Admin.beforeCreate(async (admin) => {
 
 // Hash password before updating if it has changed
 Admin.beforeUpdate(async (admin) => {
-  if (admin.changed("password")) {
+  if (admin.changed('password')) {
     admin.password = await bcrypt.hash(admin.password, 10);
   }
 });

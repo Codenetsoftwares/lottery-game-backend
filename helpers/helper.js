@@ -19,15 +19,15 @@ export const generateTickets = (sem) => {
     let seriesIndex;
 
     if (sem === 5) {
-      seriesIndex = (i % 5);
+      seriesIndex = i % 5;
     } else if (sem === 10) {
-      seriesIndex = (i % 10);
+      seriesIndex = i % 10;
       if (i > 0 && i % 10 === 0) groupIndex++;
     } else if (sem === 25) {
-      seriesIndex = (i % 5);
+      seriesIndex = i % 5;
       if (i > 0 && i % 5 === 0) groupIndex++;
     } else if (sem === 50 || sem === 100 || sem === 200) {
-      seriesIndex = (i % 10);
+      seriesIndex = i % 10;
       if (i > 0 && i % 10 === 0) groupIndex++;
     }
 

@@ -1,8 +1,8 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js"; 
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
 const Result = sequelize.define(
-  "Result",
+  'Result',
   {
     resultId: {
       type: DataTypes.UUID,
@@ -15,7 +15,7 @@ const Result = sequelize.define(
       allowNull: false,
       references: {
         model: 'lotteries', // Reference the Lottery model
-        key: 'lotteryId',   // The key in the Lottery model
+        key: 'lotteryId', // The key in the Lottery model
       },
     },
     winningTicket: {
@@ -29,7 +29,7 @@ const Result = sequelize.define(
     firstPrizeAmount: {
       type: DataTypes.DECIMAL(15, 2), // To store 1 crore (10 million) with precision for money
       allowNull: false,
-      defaultValue: 10000000.00, // 1 crore = 10,000,000
+      defaultValue: 10000000.0, // 1 crore = 10,000,000
     },
     secondPrizeWinners: {
       type: DataTypes.JSON,
@@ -38,7 +38,7 @@ const Result = sequelize.define(
     secondPrizeAmountPerSem: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 9000.00, // 9000 rs per sem
+      defaultValue: 9000.0, // 9000 rs per sem
     },
     thirdPrizeWinners: {
       type: DataTypes.JSON,
@@ -47,7 +47,7 @@ const Result = sequelize.define(
     thirdPrizeAmountPerSem: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 450.00, // 450 rs per sem
+      defaultValue: 450.0, // 450 rs per sem
     },
     fourthPrizeWinners: {
       type: DataTypes.JSON,
@@ -56,7 +56,7 @@ const Result = sequelize.define(
     fourthPrizeAmountPerSem: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 250.00, // 250 rs per sem
+      defaultValue: 250.0, // 250 rs per sem
     },
     fifthPrizeWinners: {
       type: DataTypes.JSON,
@@ -65,7 +65,7 @@ const Result = sequelize.define(
     fifthPrizeAmountPerSem: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      defaultValue: 120.00, // 120 rs per sem
+      defaultValue: 120.0, // 120 rs per sem
     },
     drawDate: {
       type: DataTypes.DATE,
@@ -73,8 +73,8 @@ const Result = sequelize.define(
     },
   },
   {
-    tableName: "results",
-  }
+    tableName: 'results',
+  },
 );
 
 export default Result;

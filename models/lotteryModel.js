@@ -1,9 +1,9 @@
 // models/Lottery.js
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
 const Lottery = sequelize.define(
-  "Lottery",
+  'Lottery',
   {
     lotteryId: {
       type: DataTypes.UUID,
@@ -20,7 +20,7 @@ const Lottery = sequelize.define(
       allowNull: false,
     },
     drawTime: {
-      type: DataTypes.ENUM("10:00 A.M.", "1:00 P.M.", "6:00 P.M.", "8:00 P.M."),
+      type: DataTypes.ENUM('10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.'),
       allowNull: false,
     },
     firstPrize: {
@@ -45,9 +45,9 @@ const Lottery = sequelize.define(
     },
   },
   {
-    tableName: "lotteries",
+    tableName: 'lotteries',
     indexes: [],
-  }
+  },
 );
 
 export default Lottery;

@@ -1,10 +1,10 @@
 // models/LotteryPurchase.js
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import Lottery from "../models/lotteryModel.js";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
+import Lottery from '../models/lotteryModel.js';
 
 const LotteryPurchase = sequelize.define(
-  "LotteryPurchase",
+  'LotteryPurchase',
   {
     purchaseId: {
       type: DataTypes.UUID,
@@ -25,7 +25,7 @@ const LotteryPurchase = sequelize.define(
       allowNull: false,
       references: {
         model: Lottery,
-        key: "lotteryId",
+        key: 'lotteryId',
       },
     },
     ticketNumber: {
@@ -55,8 +55,8 @@ const LotteryPurchase = sequelize.define(
     },
   },
   {
-    tableName: "lottery_purchases",
-  }
+    tableName: 'lottery_purchases',
+  },
 );
 
 export default LotteryPurchase;
