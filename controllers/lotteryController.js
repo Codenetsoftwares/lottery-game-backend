@@ -25,11 +25,11 @@ export const createLottery = async (req, res) => {
       );
     }
 
-    const currentDateTime = moment().utc();
-    const selectedDateTime = moment(drawDate).utc();
+    const currentDate = moment().utc().startOf('day'); 
+    const selectedDate = moment(drawDate).utc().startOf('day'); 
 
-    if (selectedDateTime.isBefore(currentDateTime)) {
-      return apiResponseErr(null, false, statusCode.badRequest, 'The date and time must be now or in the future', res);
+    if (selectedDate.isBefore(currentDate)) {
+      return apiResponseErr(null, false, statusCode.badRequest, 'The draw date must be today or in the future', res);
     }
 
     const ticket = await Ticket.findOne({
@@ -43,7 +43,7 @@ export const createLottery = async (req, res) => {
 
     const lottery = await Lottery.create({
       name,
-      drawDate: selectedDateTime.format(),
+      drawDate: selectedDate.format('YYYY-MM-DD'), 
       drawTime,
       firstPrize,
       ticketNumber: ticket.ticketNumber,
@@ -58,6 +58,7 @@ export const createLottery = async (req, res) => {
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
+
 
 export const getAllLotteries = async (req, res) => {
   try {
