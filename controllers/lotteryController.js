@@ -8,9 +8,9 @@ import { Op } from 'sequelize';
 
 export const createLottery = async (req, res) => {
   try {
-    const { name, date, drawTime, firstPrize, sem, price } = req.body;
+    const { name, drawDate, drawTime, firstPrize, sem, price } = req.body;
 
-    if (!name || !date || !drawTime || !firstPrize || !sem || !price) {
+    if (!name || !drawDate || !drawTime || !firstPrize || !sem || !price) {
       return apiResponseErr(null, false, statusCode.badRequest, 'All fields are required', res);
     }
 
@@ -26,7 +26,7 @@ export const createLottery = async (req, res) => {
     }
 
     const currentDateTime = moment().utc();
-    const selectedDateTime = moment(date).utc();
+    const selectedDateTime = moment(drawDate).utc();
 
     if (selectedDateTime.isBefore(currentDateTime)) {
       return apiResponseErr(null, false, statusCode.badRequest, 'The date and time must be now or in the future', res);
@@ -43,7 +43,7 @@ export const createLottery = async (req, res) => {
 
     const lottery = await Lottery.create({
       name,
-      date: selectedDateTime.format(),
+      drawDate: selectedDateTime.format(),
       drawTime,
       firstPrize,
       ticketNumber: ticket.ticketNumber,
@@ -152,7 +152,7 @@ export const getLotteryById = async (req, res) => {
 
 export const editLottery = async (req, res) => {
   const { lotteryId } = req.params;
-  const { name, date, firstPrize, price } = req.body;
+  const { name, drawDate, firstPrize, price } = req.body;
 
   try {
     const lottery = await Lottery.findOne({ where: { lotteryId } });
@@ -163,7 +163,7 @@ export const editLottery = async (req, res) => {
 
     await lottery.update({
       name,
-      date,
+      drawDate,
       firstPrize,
       price,
     });
@@ -219,7 +219,8 @@ export const createPurchase = async (req, res) => {
       purchaseAmount: lottery.sem * lottery.price,
       sem: lottery.sem,
       name: lottery.name,
-      drawTime: lottery.date,
+      drawDate:lottery.drawDate,
+      drawTime: lottery.drawTime,
     });
 
     lottery.isPurchased = true;
@@ -227,6 +228,7 @@ export const createPurchase = async (req, res) => {
 
     return apiResponseSuccess(result, true, statusCode.create, 'Lottery ticket purchased successfully', res);
   } catch (error) {
+    console.error(error);
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };

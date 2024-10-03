@@ -20,7 +20,7 @@ const Ticket = sequelize.define(
   },
   {
     tableName: 'tickets',
-    indexes: [], // Ensure no indexes are created for the JSON column
+    indexes: [], 
   },
 );
 

@@ -49,8 +49,12 @@ const LotteryPurchase = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    drawTime: {
+    drawDate: {
       type: DataTypes.DATE,
+      allowNull: false,
+    },
+    drawTime: {
+      type: DataTypes.ENUM('10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.'),
       allowNull: false,
     },
   },

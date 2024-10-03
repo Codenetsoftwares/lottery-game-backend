@@ -15,7 +15,7 @@ const Lottery = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    date: {
+    drawDate: {
       type: DataTypes.DATE,
       allowNull: false,
     },

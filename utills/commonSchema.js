@@ -21,7 +21,7 @@ export const validateAdminLogin = [
 
 export const validateCreateLottery = [
   body('name').notEmpty().withMessage('Name is required'),
-  body('date').isISO8601().withMessage('Valid date is required'),
+  body('drawDate').isISO8601().withMessage('Valid drawDate is required'),
   body('firstPrize').isInt({ min: 1 }).withMessage('First prize must be a positive integer'),
   body('sem').isInt({ min: 1 }).withMessage('Sem must be a positive integer'),
   body('price').optional().isInt({ min: 1 }).withMessage('Price must be a positive integer if provided'),
@@ -36,7 +36,7 @@ export const validateEditLottery = [
 
   body('name').optional().isString().withMessage('Lottery name must be a string'),
 
-  body('date').optional().isISO8601().withMessage('Invalid date format'),
+  body('drawDate').optional().isISO8601().withMessage('Invalid drawDate format'),
 
   body('firstPrize').optional().isInt({ min: 1 }).withMessage('First prize must be an integer greater than 0'),
 
@@ -52,6 +52,9 @@ export const validateGetUserPurchases = [
   param('userId').isUUID().withMessage('Invalid user ID format. It must be a valid UUID.'),
 ];
 
-export const validateDrawLottery = [body('date').isISO8601().withMessage('Valid date is required')];
+export const validateDrawLottery = [
+  body('drawDate').notEmpty().withMessage( 'Draw date is required').isISO8601('Invalid date format'),
+  body('drawTime').notEmpty().withMessage( 'Draw time is required').isIn(['10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.']).withMessage('Invalid draw time'),
+];
 
 export const validateGetResults = [param('resultId').isUUID().withMessage('Invalid result ID format')];

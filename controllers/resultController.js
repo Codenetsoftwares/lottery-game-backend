@@ -6,20 +6,20 @@ import { Op } from 'sequelize';
 
 export const drawLottery = async (req, res) => {
   try {
-    const { date } = req.body;
+    const { drawDate, drawTime } = req.body;
 
-    // Validate if date is provided
-    if (!date) {
-      return apiResponseErr(null, false, statusCode.badRequest, 'Date is required', res);
+    // Validate if drawDate and drawTime are provided
+    if (!drawDate || !drawTime) {
+      return apiResponseErr(null, false, statusCode.badRequest, 'Draw date and draw time are required', res);
     }
 
-    // Fetch lotteries based on date
+    // Fetch lotteries based on drawDate and drawTime
     const lotteries = await Lottery.findAll({
-      where: { date: date },
+      where: { drawDate: drawDate, drawTime: drawTime }, // Adjust the query to include both drawDate and drawTime
     });
 
     if (lotteries.length === 0) {
-      return apiResponseSuccess(null, false, statusCode.notFound, 'No lotteries found for the given date', res);
+      return apiResponseSuccess(null, false, statusCode.notFound, 'No lotteries found for the given date and time', res);
     }
 
     // Initialize prize variables
@@ -143,7 +143,7 @@ export const drawLottery = async (req, res) => {
       }
     }
 
-    // Save result
+    // Save result with drawTime
     const result = await Result.create({
       lotteryId: lotteries[0].lotteryId,
       winningTicket: firstPrize,
@@ -153,7 +153,8 @@ export const drawLottery = async (req, res) => {
       thirdPrizeWinners: [...thirdPrize],
       fourthPrizeWinners: [...fourthPrize],
       fifthPrizeWinners: [...fifthPrize],
-      drawDate: date,
+      drawDate: drawDate,
+      drawTime: drawTime, // Include drawTime when saving the result
     });
 
     // Prepare the response
@@ -190,6 +191,7 @@ export const drawLottery = async (req, res) => {
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
+
 
 export const getResults = async (req, res) => {
   const { resultId } = req.params;
@@ -236,47 +238,40 @@ export const getResults = async (req, res) => {
   }
 };
 
-export const getLotteriesByDrawTime = async (req, res) => {
-  const { date } = req.query; // Get the date from the query parameters
-
-  // Validate if date is provided
-  if (!date) {
-    return apiResponseErr(null, false, statusCode.badRequest, 'Date is required', res);
-  }
-
+export const getDrawTimes = (req, res) => {
   try {
-    // Fetch lotteries that match the provided date
-    const lotteries = await Lottery.findAll({
-      where: {
-        date: {
-          [Op.gte]: new Date(date), // Start of the day
-          [Op.lt]: new Date(new Date(date).setDate(new Date(date).getDate() + 1)), // End of the day
-        },
-      },
-    });
-
-    // If no lotteries are found for the given date, return an error response
-    if (lotteries.length === 0) {
-      return apiResponseErr(null, false, statusCode.notFound, 'No lotteries found for the given date', res);
-    }
-
-    // Prepare the response with the found lotteries
-    const response = {
-      lotteries: lotteries.map((lottery) => ({
-        lotteryId: lottery.lotteryId,
-        name: lottery.name,
-        date: lottery.date.toISOString(), // Convert to ISO string for consistency
-        drawTime: lottery.date.toLocaleTimeString(), // Extracting time from the date
-        firstPrize: lottery.firstPrize,
-        sem: lottery.sem,
-        ticketNumber: lottery.ticketNumber,
-        price: lottery.price,
-        isPurchased: Boolean(lottery.isPurchased),
-      })),
-    };
-
-    return apiResponseSuccess(response, true, statusCode.success, 'Lotteries fetched successfully', res);
+    const drawTimes = ['10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.'];
+    return apiResponseSuccess(drawTimes, true, statusCode.success, 'drawTimes fetched successfully', res);
   } catch (error) {
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
+
+
+export const getOldResults = async (req, res) => {
+  const { drawDate, drawTime } = req.query;
+
+  if (!drawDate || !drawTime) {
+    return apiResponseErr(null, false, statusCode.badRequest, 'drawDate and drawTime are required.', res);
+  }
+
+  try {
+    const results = await Result.findAll({
+      where: {
+        drawDate: drawDate,
+        drawTime: drawTime,
+      },
+    });
+
+    if (results.length === 0) {
+    return apiResponseErr(null, false, statusCode.badRequest, 'No results found for the given drawDate and drawTime.', res);
+    }
+
+    return apiResponseSuccess(results, true, statusCode.success, 'Old result fetched successfully', res);
+
+  } catch (error) {
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
+  }
+};
+
+
