@@ -79,7 +79,7 @@ export const getAllLotteries = async (req, res) => {
     });
 
     if (lotteries.count === 0) {
-      return apiResponseSuccess(null, true, statusCode.success, 'No lotteries found', res);
+      return apiResponseSuccess([], true, statusCode.success, 'No lotteries found', res);
     }
 
     // Since ticketNumber is stored as a JSON array, no need to parse
