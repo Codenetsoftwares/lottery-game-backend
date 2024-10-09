@@ -5,6 +5,7 @@ import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from '../ut
 import { statusCode } from '../utills/statusCodes.js';
 import LotteryPurchase from '../models/lotteryPurchaseModel.js';
 import { Op } from 'sequelize';
+import sequelize from '../config/db.js';
 
 export const createLottery = async (req, res) => {
   try {
@@ -58,6 +59,66 @@ export const createLottery = async (req, res) => {
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
+
+// Function to search for ticket number
+export const searchTicketNumber = async (req, res) => {
+  const { ticketNumber } = req.params;
+
+
+  try {
+    // Step 1: Input Validation
+    if (!ticketNumber) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        'Ticket number is required',
+        res,
+      );
+    }
+
+    // Step 2: Search for Exact Match
+    let lottery = await Lottery.findOne({
+      where: sequelize.literal(`JSON_CONTAINS(ticketNumber, '"${ticketNumber}"')`)
+
+    });
+
+    // Step 3: If Exact Match Found, Return the Lottery
+    if (lottery) {
+      return apiResponseSuccess(lottery, true, statusCode.success, 'Exact match found', res);
+      
+    }
+
+    // Step 4: If no exact match, find similar ticket numbers (e.g., by matching part of the ticket number)
+    let similarLotteries = await Lottery.findAll({
+      where: sequelize.literal(`JSON_SEARCH(ticketNumber, 'one', '"%${ticketNumber.slice(0, 3)}%"') IS NOT NULL`)
+    });
+
+    // Step 5: If no similar tickets found, return a message
+    if (similarLotteries.length > 0) {
+      return apiResponseSuccess(
+        similarLotteries,
+        true,
+        statusCode.success,
+        'Exact match not found. Here are similar ticket numbers:',
+        res,
+      );
+    }
+
+    const suggestedLotteries = await Lottery.findAll({
+      limit: 3,
+      order: sequelize.random() // Randomly select 5 lotteries as suggestions
+    });
+
+
+    // Step 6: Return Similar Lotteries
+    return apiResponseSuccess(suggestedLotteries, true, statusCode.success, 'Exact match not found. Here are similar ticket numbers:', res);
+
+  } catch (error) {
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
+  }
+};
+
 
 
 export const getAllLotteries = async (req, res) => {

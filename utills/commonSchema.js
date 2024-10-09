@@ -58,3 +58,6 @@ export const validateDrawLottery = [
 ];
 
 export const validateGetResults = [param('resultId').isUUID().withMessage('Invalid result ID format')];
+
+
+export const validateTicketNumber =[ param('ticketNumber').isString().withMessage('Ticket number must be a string'),]

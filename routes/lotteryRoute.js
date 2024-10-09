@@ -9,6 +9,7 @@ import {
   getAllPurchaseLotteries,
   getLotteryById,
   getUserPurchases,
+  searchTicketNumber,
 } from '../controllers/lotteryController.js';
 import { authorize } from '../middlewares/auth.js';
 import { authenticateUser } from '../middlewares/colorgameAuth.js';
@@ -18,11 +19,14 @@ import {
   validateGetLotteryById,
   validateGetUserPurchases,
   validatePurchaseLotteryTicket,
+  validateTicketNumber,
 } from '../utills/commonSchema.js';
 import customErrorHandler from '../utills/customErrorHandler.js';
 
 export const lotteryRoutes = (app) => {
   app.post('/api/create-lottery', validateCreateLottery, customErrorHandler, authorize([string.Admin]), createLottery);
+
+  app.get("/api/search-lottery/:ticketNumber",validateTicketNumber,customErrorHandler, authenticateUser, searchTicketNumber); //fetch colorgame
 
   app.get('/api/getAllLotteries', authorize([string.Admin]), getAllLotteries);
 
