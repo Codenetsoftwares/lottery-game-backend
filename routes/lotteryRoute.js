@@ -26,7 +26,13 @@ import customErrorHandler from '../utills/customErrorHandler.js';
 export const lotteryRoutes = (app) => {
   app.post('/api/create-lottery', validateCreateLottery, customErrorHandler, authorize([string.Admin]), createLottery);
 
-  app.get("/api/search-lottery/:ticketNumber",validateTicketNumber,customErrorHandler, authenticateUser, searchTicketNumber); //fetch colorgame
+  app.get(
+    '/api/search-lottery/:ticketNumber',
+    validateTicketNumber,
+    customErrorHandler,
+    authenticateUser,
+    searchTicketNumber,
+  ); //fetch colorgame
 
   app.get('/api/getAllLotteries', authorize([string.Admin]), getAllLotteries);
 

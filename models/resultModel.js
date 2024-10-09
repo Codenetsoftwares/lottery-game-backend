@@ -74,7 +74,7 @@ const Result = sequelize.define(
     drawTime: {
       type: DataTypes.ENUM('10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.'),
       allowNull: false,
-      unique:true
+      unique: true,
     },
   },
   {

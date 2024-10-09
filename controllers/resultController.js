@@ -19,7 +19,13 @@ export const drawLottery = async (req, res) => {
     });
 
     if (lotteries.length === 0) {
-      return apiResponseSuccess(null, false, statusCode.notFound, 'No lotteries found for the given date and time', res);
+      return apiResponseSuccess(
+        null,
+        false,
+        statusCode.notFound,
+        'No lotteries found for the given date and time',
+        res,
+      );
     }
 
     // Initialize prize variables
@@ -192,7 +198,6 @@ export const drawLottery = async (req, res) => {
   }
 };
 
-
 export const getResults = async (req, res) => {
   const { resultId } = req.params;
 
@@ -247,7 +252,6 @@ export const getDrawTimes = (req, res) => {
   }
 };
 
-
 export const getOldResults = async (req, res) => {
   const { drawDate, drawTime } = req.query;
 
@@ -264,14 +268,17 @@ export const getOldResults = async (req, res) => {
     });
 
     if (results.length === 0) {
-    return apiResponseErr(null, false, statusCode.badRequest, 'No results found for the given drawDate and drawTime.', res);
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        'No results found for the given drawDate and drawTime.',
+        res,
+      );
     }
 
     return apiResponseSuccess(results, true, statusCode.success, 'Old result fetched successfully', res);
-
   } catch (error) {
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
-

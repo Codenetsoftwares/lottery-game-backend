@@ -16,7 +16,7 @@ export const resultRoutes = (app) => {
 
   app.get('/api/lotteries/get-result/:resultId', validateGetResults, customErrorHandler, authenticateUser, getResults);
 
-  app.get('/api/lotteries/draw-time',authorize([string.Admin]), getDrawTimes);
-  
+  app.get('/api/lotteries/draw-time', authorize([string.Admin]), getDrawTimes);
+
   app.get('/api/old-results', getOldResults);
 };

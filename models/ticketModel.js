@@ -20,7 +20,7 @@ const Ticket = sequelize.define(
   },
   {
     tableName: 'tickets',
-    indexes: [], 
+    indexes: [],
   },
 );
 

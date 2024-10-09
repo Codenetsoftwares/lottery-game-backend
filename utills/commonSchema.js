@@ -53,11 +53,14 @@ export const validateGetUserPurchases = [
 ];
 
 export const validateDrawLottery = [
-  body('drawDate').notEmpty().withMessage( 'Draw date is required').isISO8601('Invalid date format'),
-  body('drawTime').notEmpty().withMessage( 'Draw time is required').isIn(['10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.']).withMessage('Invalid draw time'),
+  body('drawDate').notEmpty().withMessage('Draw date is required').isISO8601('Invalid date format'),
+  body('drawTime')
+    .notEmpty()
+    .withMessage('Draw time is required')
+    .isIn(['10:00 A.M.', '1:00 P.M.', '6:00 P.M.', '8:00 P.M.'])
+    .withMessage('Invalid draw time'),
 ];
 
 export const validateGetResults = [param('resultId').isUUID().withMessage('Invalid result ID format')];
 
-
-export const validateTicketNumber =[ param('ticketNumber').isString().withMessage('Ticket number must be a string'),]
+export const validateTicketNumber = [param('ticketNumber').isString().withMessage('Ticket number must be a string')];

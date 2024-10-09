@@ -26,8 +26,8 @@ export const createLottery = async (req, res) => {
       );
     }
 
-    const currentDate = moment().utc().startOf('day'); 
-    const selectedDate = moment(drawDate).utc().startOf('day'); 
+    const currentDate = moment().utc().startOf('day');
+    const selectedDate = moment(drawDate).utc().startOf('day');
 
     if (selectedDate.isBefore(currentDate)) {
       return apiResponseErr(null, false, statusCode.badRequest, 'The draw date must be today or in the future', res);
@@ -44,7 +44,7 @@ export const createLottery = async (req, res) => {
 
     const lottery = await Lottery.create({
       name,
-      drawDate: selectedDate.format('YYYY-MM-DD'), 
+      drawDate: selectedDate.format('YYYY-MM-DD'),
       drawTime,
       firstPrize,
       ticketNumber: ticket.ticketNumber,
@@ -64,34 +64,25 @@ export const createLottery = async (req, res) => {
 export const searchTicketNumber = async (req, res) => {
   const { ticketNumber } = req.params;
 
-
   try {
     // Step 1: Input Validation
     if (!ticketNumber) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        'Ticket number is required',
-        res,
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Ticket number is required', res);
     }
 
     // Step 2: Search for Exact Match
     let lottery = await Lottery.findOne({
-      where: sequelize.literal(`JSON_CONTAINS(ticketNumber, '"${ticketNumber}"')`)
-
+      where: sequelize.literal(`JSON_CONTAINS(ticketNumber, '"${ticketNumber}"')`),
     });
 
     // Step 3: If Exact Match Found, Return the Lottery
     if (lottery) {
       return apiResponseSuccess(lottery, true, statusCode.success, 'Exact match found', res);
-      
     }
 
     // Step 4: If no exact match, find similar ticket numbers (e.g., by matching part of the ticket number)
     let similarLotteries = await Lottery.findAll({
-      where: sequelize.literal(`JSON_SEARCH(ticketNumber, 'one', '"%${ticketNumber.slice(0, 3)}%"') IS NOT NULL`)
+      where: sequelize.literal(`JSON_SEARCH(ticketNumber, 'one', '"%${ticketNumber.slice(0, 3)}%"') IS NOT NULL`),
     });
 
     // Step 5: If no similar tickets found, return a message
@@ -107,19 +98,21 @@ export const searchTicketNumber = async (req, res) => {
 
     const suggestedLotteries = await Lottery.findAll({
       limit: 3,
-      order: sequelize.random() // Randomly select 5 lotteries as suggestions
+      order: sequelize.random(), // Randomly select 5 lotteries as suggestions
     });
 
-
     // Step 6: Return Similar Lotteries
-    return apiResponseSuccess(suggestedLotteries, true, statusCode.success, 'Exact match not found. Here are similar ticket numbers:', res);
-
+    return apiResponseSuccess(
+      suggestedLotteries,
+      true,
+      statusCode.success,
+      'Exact match not found. Here are similar ticket numbers:',
+      res,
+    );
   } catch (error) {
     return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
-
-
 
 export const getAllLotteries = async (req, res) => {
   try {
@@ -281,7 +274,7 @@ export const createPurchase = async (req, res) => {
       purchaseAmount: lottery.sem * lottery.price,
       sem: lottery.sem,
       name: lottery.name,
-      drawDate:lottery.drawDate,
+      drawDate: lottery.drawDate,
       drawTime: lottery.drawTime,
     });
 
