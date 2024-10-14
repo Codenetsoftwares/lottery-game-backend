@@ -1,7 +1,6 @@
-import { string } from '../constructor/string.js';
 import { generateTicket } from '../controllers/ticketController.js';
-import { authorize } from '../middlewares/auth.js';
+import { authenticateUser } from '../middlewares/colorgameAuth.js';
 
 export const ticketRoutes = (app) => {
-  app.get('/api/generate-tickets/:sem', authorize([string.Admin]), generateTicket);
+  app.post('/api/generate-tickets/:sem',authenticateUser, generateTicket);
 };

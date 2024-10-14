@@ -24,7 +24,7 @@ import {
 import customErrorHandler from '../utills/customErrorHandler.js';
 
 export const lotteryRoutes = (app) => {
-  app.post('/api/create-lottery', validateCreateLottery, customErrorHandler, authorize([string.Admin]), createLottery);
+  app.post('/api/create-lottery', validateCreateLottery, customErrorHandler, createLottery);
 
   app.get(
     '/api/search-lottery/:ticketNumber',

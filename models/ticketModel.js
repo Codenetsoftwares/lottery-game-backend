@@ -10,7 +10,7 @@ const Ticket = sequelize.define(
       primaryKey: true,
     },
     ticketNumber: {
-      type: DataTypes.JSON,
+      type: DataTypes.JSON,  // Storing the ticketNumber in JSON format
       allowNull: false,
     },
     sem: {
