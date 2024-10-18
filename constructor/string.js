@@ -1,6 +1,5 @@
 class stringConst {
   Admin = "admin";
-  SubAdmin = "subAdmin";
   User = "user";
 }
 

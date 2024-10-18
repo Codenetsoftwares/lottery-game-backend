@@ -1,7 +1,7 @@
 import Admin from "../models/adminModel.js";
-import { apiResponseErr, apiResponseSuccess } from "../utills/response.js";
+import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
 import { v4 as uuidv4 } from "uuid";
-import { statusCode } from "../utills/statusCodes.js";
+import { statusCode } from "../utils/statusCodes.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
