@@ -57,7 +57,7 @@ export const PurchaseTickets = async (req, res) => {
                 generateId: generateId
             },
         });
-        await PurchaseLottery.create({ generateId, drawDate ,userId})
+        await PurchaseLottery.create({ generateId, drawDate, userId })
         return apiResponseSuccess(null, true, statusCode.create, 'Lottery purchase successfully', res);
 
     } catch (error) {
@@ -65,4 +65,55 @@ export const PurchaseTickets = async (req, res) => {
 
         return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
     }
-};  
+};
+
+
+export const purchaseHistory = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        const purchaseRecords = await PurchaseLottery.findAll({
+            where: {
+                userId: userId
+            }
+        });
+
+        if (!purchaseRecords || purchaseRecords.length === 0) {
+            return apiResponseSuccess(null, true, statusCode.success, 'No purchase history found', res);
+        }
+
+        const historyWithTickets = await Promise.all(
+            purchaseRecords.map(async (purchase) => {
+                const userRange = await UserRange.findOne({
+                    where: {
+                        generateId: purchase.generateId
+                    }
+                });
+
+                if (userRange) {
+                    const { group, series, number, sem } = userRange;
+
+                    const ticketService = new TicketService(group, series, number, sem);
+                    const tickets = ticketService.list();
+
+                    return {
+                        drawDate: purchase.drawDate,
+                        tickets: tickets,
+                        price: ticketService.calculatePrice()
+                    }
+
+
+                } else {
+                    return apiResponseSuccess([], true, statusCode.success, 'No purchase history found', res);
+                }
+            })
+        );
+
+        return apiResponseSuccess(historyWithTickets, true, statusCode.success, 'Success', res);
+
+    } catch (error) {
+        console.error('Error saving ticket range:', error);
+
+        return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
+    }
+};
