@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
 import { statusCode } from "../utils/statusCodes.js";
 import TicketRange from "../models/ticketRange.model.js";
+import { v4 as uuidv4 } from "uuid";
 
 export const saveTicketRange = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ export const saveTicketRange = async (req, res) => {
         }
 
         const ticket = await TicketRange.create({
+            ticketId: uuidv4(),
             group_start: group.min,
             group_end: group.max,
             series_start: series.start,

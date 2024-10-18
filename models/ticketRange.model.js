@@ -2,6 +2,10 @@ import { DataTypes, Sequelize } from 'sequelize';
 import sequelize from '../config/db.js';
 
 const TicketRange = sequelize.define('TicketRange', {
+  ticketId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
   group_start: {
     type: DataTypes.INTEGER,
     allowNull: false,

@@ -1,4 +1,4 @@
-import { searchTickets } from "../controllers/user.controller.js";
+import { PurchaseTickets, searchTickets } from "../controllers/user.controller.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
 import { statusCode } from "../utils/statusCodes.js";
 
@@ -7,10 +7,10 @@ export const userRoute = (app) => {
         try {
             const tickets = await searchTickets(req.body);
 
-            return apiResponseSuccess(tickets, false, statusCode.success, "Success.", res);
+            return apiResponseSuccess(tickets, true, statusCode.success, "Success.", res);
 
         } catch (error) {
-            
+
             console.error('Error saving ticket range:', error);
             return apiResponseErr(
                 null,
@@ -21,4 +21,6 @@ export const userRoute = (app) => {
             )
         }
     });
+
+    app.post('/api/purchase-lottery', PurchaseTickets);
 }
