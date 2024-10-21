@@ -1,5 +1,5 @@
 import { string } from "../constructor/string.js";
-import { adminSearchTickets, createAdmin, login } from "../controllers/admin.controller.js";
+import { adminPurchaseHistory, adminSearchTickets, createAdmin, login } from "../controllers/admin.controller.js";
 import { validateAdminCreate, validateAdminLogin } from "../utils/commonSchema.js";
 import customErrorHandler from "../utils/customErrorHandler.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
@@ -27,6 +27,9 @@ export const adminRoutes = (app) => {
             )
         }
     });
+
+    app.get('/api/admin/purchase-history', adminPurchaseHistory);
+
 
 
 }

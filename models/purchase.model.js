@@ -16,6 +16,10 @@ const PurchaseLottery = sequelize.define('PurchaseLottery', {
         type: DataTypes.UUID,
         allowNull: false,
     },
+    userName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     drawDate: {
         type: DataTypes.STRING,
         allowNull: false,

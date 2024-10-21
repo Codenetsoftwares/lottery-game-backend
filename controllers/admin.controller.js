@@ -8,6 +8,8 @@ import { TicketService } from "../constructor/ticketService.js";
 import CustomError from "../utils/extendError.js";
 import TicketRange from "../models/ticketRange.model.js";
 import { Op } from "sequelize";
+import UserRange from "../models/user.model.js";
+import PurchaseLottery from "../models/purchase.model.js";
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -147,5 +149,51 @@ export const adminSearchTickets = async ({ group, series, number, sem }) => {
   } catch (error) {
       console.error('Error saving ticket range:', error);
       return new CustomError(error.message, null, statusCode.internalServerError);
+  }
+};
+
+
+export const adminPurchaseHistory = async (req, res) => {
+  try {
+      const purchaseRecords = await PurchaseLottery.findAll();
+
+      if (!purchaseRecords || purchaseRecords.length === 0) {
+          return apiResponseSuccess(null, true, statusCode.success, 'No purchase history found', res);
+      }
+
+      const historyWithTickets = await Promise.all(
+          purchaseRecords.map(async (purchase) => {
+              const userRange = await UserRange.findOne({
+                  where: {
+                      generateId: purchase.generateId
+                  }
+              });
+
+              if (userRange) {
+                  const { group, series, number, sem } = userRange;
+
+                  const ticketService = new TicketService(group, series, number, sem);
+                  const tickets = ticketService.list();
+
+                  return {
+                      drawDate: purchase.drawDate,
+                      tickets: tickets,
+                      price: ticketService.calculatePrice(),
+                      userName : purchase.userName
+                  }
+
+
+              } else {
+                  return apiResponseSuccess([], true, statusCode.success, 'No purchase history found', res);
+              }
+          })
+      );
+
+      return apiResponseSuccess(historyWithTickets, true, statusCode.success, 'Success', res);
+
+  } catch (error) {
+      console.error('Error saving ticket range:', error);
+
+      return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
   }
 };

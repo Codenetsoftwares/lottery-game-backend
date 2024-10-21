@@ -51,13 +51,13 @@ export const searchTickets = async ({ group, series, number, sem }) => {
 
 export const PurchaseTickets = async (req, res) => {
     try {
-        const { generateId, drawDate, userId } = req.body
+        const { generateId, drawDate, userId, userName } = req.body
         await UserRange.findOne({
             where: {
                 generateId: generateId
             },
         });
-        await PurchaseLottery.create({ generateId, drawDate, userId })
+        await PurchaseLottery.create({ generateId, drawDate, userId, userName })
         return apiResponseSuccess(null, true, statusCode.create, 'Lottery purchase successfully', res);
 
     } catch (error) {
