@@ -4,6 +4,10 @@ import { v4 as uuidv4 } from "uuid";
 import { statusCode } from "../utils/statusCodes.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { TicketService } from "../constructor/ticketService.js";
+import CustomError from "../utils/extendError.js";
+import TicketRange from "../models/ticketRange.model.js";
+import { Op } from "sequelize";
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -104,5 +108,44 @@ export const login = async (req, res) => {
       error.errMessage ?? error.message,
       res
     );
+  }
+};
+
+export const adminSearchTickets = async ({ group, series, number, sem }) => {
+  try {
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const result = await TicketRange.findOne({
+          where: {
+              group_start: { [Op.lte]: group },
+              group_end: { [Op.gte]: group },
+              series_start: { [Op.lte]: series }, 
+              series_end: { [Op.gte]: series }, 
+              number_start: { [Op.lte]: number }, 
+              number_end: { [Op.gte]: number }, 
+              createdAt: { [Op.gte]: today }
+          },
+      });
+
+      if (result) {
+          const ticketService = new TicketService(
+              group,
+              series,
+              number,
+              sem
+          );
+
+          const tickets = ticketService.list();
+          const price = ticketService.calculatePrice();
+          return { tickets, price, sem }
+      }
+      else {
+          return { data: [], success: true, successCode: 200, message: "No tickets available in the given range." };
+      }
+  } catch (error) {
+      console.error('Error saving ticket range:', error);
+      return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
