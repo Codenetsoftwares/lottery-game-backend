@@ -1,5 +1,6 @@
 import { string } from "../constructor/string.js";
 import { adminPurchaseHistory, adminSearchTickets, createAdmin, login } from "../controllers/admin.controller.js";
+import { authorize } from "../middlewares/auth.js";
 import { validateAdminCreate, validateAdminLogin } from "../utils/commonSchema.js";
 import customErrorHandler from "../utils/customErrorHandler.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
@@ -9,7 +10,7 @@ export const adminRoutes = (app) => {
 
     app.post('/api/create-admin', validateAdminCreate, customErrorHandler, createAdmin);
     app.post('/api/login', validateAdminLogin, customErrorHandler, login);
-    app.post('/api/admin/search-ticket', async (req, res) => {
+    app.post('/api/admin/search-ticket', authorize([string.Admin]), async (req, res) => {
         try {
             const tickets = await adminSearchTickets(req.body);
 

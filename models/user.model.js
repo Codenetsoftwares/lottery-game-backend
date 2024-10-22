@@ -17,7 +17,7 @@ const UserRange = sequelize.define('UserRange', {
         allowNull: false,
     },
     number: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     sem: {

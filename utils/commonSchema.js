@@ -1,4 +1,4 @@
-import { body, param, query, checkSchema } from "express-validator";
+import { body} from "express-validator";
 import { string } from "../constructor/string.js";
 export const validateAdminCreate = [
   body("userName").notEmpty().withMessage("Username is required"),
@@ -19,55 +19,42 @@ export const validateAdminLogin = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
-export const validateCreateLottery = [
-  body("name").notEmpty().withMessage("Name is required"),
-  body("date").isISO8601().withMessage("Valid date is required"),
-  body("firstPrize")
-    .isInt({ min: 1 })
-    .withMessage("First prize must be a positive integer"),
-  body("sem").isInt({ min: 1 }).withMessage("Sem must be a positive integer"),
-  body("price")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("Price must be a positive integer if provided"),
+export const purchaseTicketValidation = [
+  body('generateId')
+    .notEmpty().withMessage('Generate ID is required'),
+  body('drawDate')
+    .notEmpty().withMessage('Draw date is required'),
+  body('userId')
+    .notEmpty().withMessage('User  ID is required'),
+  body('userName')
+    .notEmpty().withMessage('User name is required')
+    .isString().withMessage('User name must be a string'),
 ];
 
 
-export const validateEditLottery=[
-  param("lotteryId").isUUID().withMessage("Invalid lotteryId. It must be a valid UUID"),
-  
-  body("name").optional().isString().withMessage("Lottery name must be a string"),
-  
-  body("date").optional().isISO8601().withMessage("Invalid date format"),
-  
-  body("firstPrize")
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage("First prize must be an integer greater than 0"),
-  
-    body("price").optional().isInt({ min: 0 }).withMessage("Price must be an integer"),
-];
-
-
-
-export const validateGetLotteryById = [
-  param("lotteryId")
-    .isUUID()
-    .withMessage("Invalid Lottery ID. Must be a valid UUID."),
-];
-
-
-export const validatePurchaseLotteryTicket = [
-  body("userId")
-    .isUUID()
-    .withMessage("Invalid User ID. Must be a valid UUID."),
-  body("lotteryId")
-    .isUUID()
-    .withMessage("Invalid Lottery ID. Must be a valid UUID."),
-];
-
-export const validateGetUserPurchases = [
-  param('userId')
-    .isUUID()
-    .withMessage('Invalid user ID format. It must be a valid UUID.'),
+export const createTicketValidation = [
+  body('group')
+      .notEmpty().withMessage('Group is required')
+      .isInt({ min: 38, max: 99 }).withMessage('Group must be an integer between 38 and 99'),
+  body('series')
+      .notEmpty().withMessage('Series is required')
+      .custom((value) => {
+          const allowedSeries = ['A', 'B', 'C', 'D', 'E', 'G', 'H', 'J', 'K', 'L'];
+          if (!allowedSeries.includes(value.toUpperCase())) {
+              throw new Error('Series must be one of the following: A, B, C, D, E, G, H, J, K, L');
+          }
+          return true;
+      }),
+  body('number')
+      .notEmpty().withMessage('Number is required')
+      .isString().withMessage('Number must be a string'),
+  body('sem')
+      .notEmpty().withMessage('Sem is required')
+      .custom((value) => {
+          const allowedSem = [5, 10, 25, 50, 100, 200];
+          if (!allowedSem.includes(parseInt(value))) {
+              throw new Error('Sem must be one of the following: 5, 10, 25, 50, 100, 200');
+          }
+          return true;
+      }),
 ];
