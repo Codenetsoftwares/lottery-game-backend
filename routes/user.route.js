@@ -1,7 +1,6 @@
 import { string } from "../constructor/string.js";
 import { purchaseHistory, PurchaseTickets, searchTickets } from "../controllers/user.controller.js";
-import { authorize } from "../middlewares/auth.js";
-import { createTicketValidation, purchaseTicketValidation } from "../utils/commonSchema.js";
+import { purchaseTicketValidation } from "../utils/commonSchema.js";
 import customErrorHandler from "../utils/customErrorHandler.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
 import { statusCode } from "../utils/statusCodes.js";
