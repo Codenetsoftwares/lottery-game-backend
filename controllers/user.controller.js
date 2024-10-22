@@ -71,14 +71,10 @@ export const PurchaseTickets = async (req, res) => {
 export const purchaseHistory = async (req, res) => {
     try {
         const { userId } = req.body;
-        const { page = 1, limit = 10 } = req.query;
+        const { sem, page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
-        const totalItems = await PurchaseLottery.count({
-            where: {
-                userId: userId
-            }
-        });
-        const purchaseRecords = await PurchaseLottery.findAll({
+      
+        const purchaseRecords = await PurchaseLottery.findAndCountAll({
             where: {
                 userId: userId
             },
@@ -86,48 +82,78 @@ export const purchaseHistory = async (req, res) => {
             offset: parseInt(offset)
         });
 
-        if (!purchaseRecords || purchaseRecords.length === 0) {
-            return apiResponsePagination(null, true, statusCode.success, 'No purchase history found', {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                totalPages: Math.ceil(totalItems / limit),
-                totalItems: totalItems
-            }, res);
-        }
+        if (!purchaseRecords.rows || purchaseRecords.rows.length === 0) {
+            return apiResponseSuccess(
+              [],
+              true,
+              statusCode.success,
+              "No purchase history found",
+              res
+            );
+          }
 
-        const historyWithTickets = await Promise.all(
-            purchaseRecords.map(async (purchase) => {
-                const userRange = await UserRange.findOne({
-                    where: {
-                        generateId: purchase.generateId
-                    }
-                });
-
-                if (userRange) {
-                    const { group, series, number, sem } = userRange;
-
-                    const ticketService = new TicketService(group, series, number.toString(), sem);
-                    const tickets = ticketService.list();
-
-                    return {
-                        drawDate: purchase.drawDate,
-                        tickets: tickets,
-                        price: ticketService.calculatePrice()
-                    }
-
-
-                } else {
-                    return apiResponseSuccess([], true, statusCode.success, 'No purchase history found', res);
-                }
+          const historyWithTickets = await Promise.all(
+            purchaseRecords.rows.map(async (purchase) => {
+              const userRangeQuery = {
+                where: {
+                  generateId: purchase.generateId,
+                },
+              };
+              if (sem) {
+                userRangeQuery.where.sem = sem;
+              }
+      
+              const userRange = await UserRange.findOne(userRangeQuery);
+      
+              if (userRange) {
+                const { group, series, number, sem: userSem } = userRange;
+      
+                const ticketService = new TicketService(
+                  group,
+                  series,
+                  number,
+                  userSem
+                );
+                const tickets = ticketService.list();
+      
+                return {
+                  drawDate: purchase.drawDate,
+                  tickets: tickets,
+                  price: ticketService.calculatePrice(),
+                  userName: purchase.userName,
+                };
+              } else {
+                return null;
+              }
             })
-        );
-        const totalPages = Math.ceil(totalItems / limit);
+          )
+          const filteredHistoryWithTickets = historyWithTickets.filter(
+            (record) => record !== null
+          );
+          if (filteredHistoryWithTickets.length === 0) {
+            return apiResponseSuccess(
+              [],
+              true,
+              statusCode.success,
+              "No purchase history found for the given sem",
+              res
+            );
+          }
+           // Apply pagination to the filteredHistoryWithTickets
+    const paginatedHistoryWithTickets = filteredHistoryWithTickets.slice(
+        offset,
+        offset + parseInt(limit)
+      );
+  
+      const totalItems = filteredHistoryWithTickets.length;
+      const totalPages = Math.ceil(totalItems / limit);
+       
 
-        return apiResponsePagination(historyWithTickets, true, statusCode.success, 'Success', {
+        return apiResponsePagination(paginatedHistoryWithTickets, true, statusCode.success, 'Success', {
             page: parseInt(page),
             limit: parseInt(limit),
-            totalPages: totalPages,
-            totalItems: totalItems
+            totalPages,
+            totalItems
         }, res);
 
     } catch (error) {
