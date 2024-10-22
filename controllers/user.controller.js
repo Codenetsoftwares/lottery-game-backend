@@ -71,15 +71,28 @@ export const PurchaseTickets = async (req, res) => {
 export const purchaseHistory = async (req, res) => {
     try {
         const { userId } = req.body;
-
-        const purchaseRecords = await PurchaseLottery.findAll({
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+        const totalItems = await PurchaseLottery.count({
             where: {
                 userId: userId
             }
         });
+        const purchaseRecords = await PurchaseLottery.findAll({
+            where: {
+                userId: userId
+            },
+            limit: parseInt(limit),
+            offset: parseInt(offset)
+        });
 
         if (!purchaseRecords || purchaseRecords.length === 0) {
-            return apiResponseSuccess(null, true, statusCode.success, 'No purchase history found', res);
+            return apiResponsePagination(null, true, statusCode.success, 'No purchase history found', {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(totalItems / limit),
+                totalItems: totalItems
+            }, res);
         }
 
         const historyWithTickets = await Promise.all(
@@ -93,7 +106,7 @@ export const purchaseHistory = async (req, res) => {
                 if (userRange) {
                     const { group, series, number, sem } = userRange;
 
-                    const ticketService = new TicketService(group, series, number, sem);
+                    const ticketService = new TicketService(group, series, number.toString(), sem);
                     const tickets = ticketService.list();
 
                     return {
@@ -108,8 +121,14 @@ export const purchaseHistory = async (req, res) => {
                 }
             })
         );
+        const totalPages = Math.ceil(totalItems / limit);
 
-        return apiResponseSuccess(historyWithTickets, true, statusCode.success, 'Success', res);
+        return apiResponsePagination(historyWithTickets, true, statusCode.success, 'Success', {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: totalPages,
+            totalItems: totalItems
+        }, res);
 
     } catch (error) {
         console.error('Error saving ticket range:', error);
@@ -117,3 +136,4 @@ export const purchaseHistory = async (req, res) => {
         return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
     }
 };
+
