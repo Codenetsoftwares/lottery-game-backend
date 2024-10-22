@@ -38,4 +38,27 @@ export const saveTicketRange = async (req, res) => {
 
         return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
     }
-};       
+};
+
+
+export const geTicketRange = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const ticketData = await TicketRange.findOne({
+            where: {
+                createdAt: {
+                    [Op.gte]: today
+                }
+            }
+        });
+
+        return apiResponseSuccess(ticketData, true, statusCode.success, 'Success', res);
+    }
+    catch (error) {
+        console.error('Error saving ticket range:', error);
+
+        return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
+    }
+}
