@@ -121,6 +121,7 @@ export const purchaseHistory = async (req, res) => {
                   tickets: tickets,
                   price: ticketService.calculatePrice(),
                   userName: purchase.userName,
+                  sem:userRange.sem
                 };
               } else {
                 return null;
