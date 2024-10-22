@@ -1,5 +1,5 @@
 import Admin from "../models/adminModel.js";
-import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
+import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utils/response.js";
 import { v4 as uuidv4 } from "uuid";
 import { statusCode } from "../utils/statusCodes.js";
 import jwt from "jsonwebtoken";
@@ -115,85 +115,142 @@ export const login = async (req, res) => {
 
 export const adminSearchTickets = async ({ group, series, number, sem }) => {
   try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    const result = await TicketRange.findOne({
+      where: {
+        group_start: { [Op.lte]: group },
+        group_end: { [Op.gte]: group },
+        series_start: { [Op.lte]: series },
+        series_end: { [Op.gte]: series },
+        number_start: { [Op.lte]: number },
+        number_end: { [Op.gte]: number },
+        createdAt: { [Op.gte]: today },
+      },
+    });
 
-      const result = await TicketRange.findOne({
-          where: {
-              group_start: { [Op.lte]: group },
-              group_end: { [Op.gte]: group },
-              series_start: { [Op.lte]: series }, 
-              series_end: { [Op.gte]: series }, 
-              number_start: { [Op.lte]: number }, 
-              number_end: { [Op.gte]: number }, 
-              createdAt: { [Op.gte]: today }
-          },
-      });
+    if (result) {
+      const ticketService = new TicketService(group, series, number, sem);
 
-      if (result) {
-          const ticketService = new TicketService(
-              group,
-              series,
-              number,
-              sem
-          );
-
-          const tickets = ticketService.list();
-          const price = ticketService.calculatePrice();
-          return { tickets, price, sem }
-      }
-      else {
-          return { data: [], success: true, successCode: 200, message: "No tickets available in the given range." };
-      }
+      const tickets = ticketService.list();
+      const price = ticketService.calculatePrice();
+      return { tickets, price, sem };
+    } else {
+      return {
+        data: [],
+        success: true,
+        successCode: 200,
+        message: "No tickets available in the given range.",
+      };
+    }
   } catch (error) {
-      console.error('Error saving ticket range:', error);
-      return new CustomError(error.message, null, statusCode.internalServerError);
+    console.error("Error saving ticket range:", error);
+    return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
-
 
 export const adminPurchaseHistory = async (req, res) => {
   try {
-      const purchaseRecords = await PurchaseLottery.findAll();
+    const { sem, page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
 
-      if (!purchaseRecords || purchaseRecords.length === 0) {
-          return apiResponseSuccess(null, true, statusCode.success, 'No purchase history found', res);
-      }
+    const purchaseRecords = await PurchaseLottery.findAndCountAll({
+      offset,
+      limit: parseInt(limit),
+    });
 
-      const historyWithTickets = await Promise.all(
-          purchaseRecords.map(async (purchase) => {
-              const userRange = await UserRange.findOne({
-                  where: {
-                      generateId: purchase.generateId
-                  }
-              });
-
-              if (userRange) {
-                  const { group, series, number, sem } = userRange;
-
-                  const ticketService = new TicketService(group, series, number, sem);
-                  const tickets = ticketService.list();
-
-                  return {
-                      drawDate: purchase.drawDate,
-                      tickets: tickets,
-                      price: ticketService.calculatePrice(),
-                      userName : purchase.userName
-                  }
-
-
-              } else {
-                  return apiResponseSuccess([], true, statusCode.success, 'No purchase history found', res);
-              }
-          })
+    if (!purchaseRecords.rows || purchaseRecords.rows.length === 0) {
+      return apiResponseSuccess(
+        [],
+        true,
+        statusCode.success,
+        "No purchase history found",
+        res
       );
+    }
 
-      return apiResponseSuccess(historyWithTickets, true, statusCode.success, 'Success', res);
+    const historyWithTickets = await Promise.all(
+      purchaseRecords.rows.map(async (purchase) => {
+        const userRangeQuery = {
+          where: {
+            generateId: purchase.generateId,
+          },
+        };
+        if (sem) {
+          userRangeQuery.where.sem = sem;
+        }
 
+        const userRange = await UserRange.findOne(userRangeQuery);
+
+        if (userRange) {
+          const { group, series, number, sem: userSem } = userRange;
+
+          const ticketService = new TicketService(
+            group,
+            series,
+            number,
+            userSem
+          );
+          const tickets = ticketService.list();
+
+          return {
+            drawDate: purchase.drawDate,
+            tickets: tickets,
+            price: ticketService.calculatePrice(),
+            userName: purchase.userName,
+          };
+        } else {
+          return null;
+        }
+      })
+    );
+
+    const filteredHistoryWithTickets = historyWithTickets.filter(
+      (record) => record !== null
+    );
+
+    if (filteredHistoryWithTickets.length === 0) {
+      return apiResponseSuccess(
+        [],
+        true,
+        statusCode.success,
+        "No purchase history found for the given sem",
+        res
+      );
+    }
+
+    // Apply pagination to the filteredHistoryWithTickets
+    const paginatedHistoryWithTickets = filteredHistoryWithTickets.slice(
+      offset,
+      offset + parseInt(limit)
+    );
+
+    const totalItems = filteredHistoryWithTickets.length;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return apiResponsePagination(
+      paginatedHistoryWithTickets,
+      true,
+      statusCode.success,
+      "Success",
+      {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages,
+        totalItems,
+      },
+      res
+    );
   } catch (error) {
-      console.error('Error saving ticket range:', error);
-
-      return apiResponseErr(null, false, statusCode.internalServerError, error.message, res)
+    console.error("Error fetching purchase history:", error);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
   }
 };
+
