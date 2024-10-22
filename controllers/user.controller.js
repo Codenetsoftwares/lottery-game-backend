@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
 import { statusCode } from "../utils/statusCodes.js";
-import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
+import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utils/response.js";
 import { TicketService } from "../constructor/ticketService.js";
 import TicketRange from "../models/ticketRange.model.js";
 import CustomError from "../utils/extendError.js";

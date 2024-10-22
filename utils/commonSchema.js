@@ -74,3 +74,7 @@ export const searchTicketValidation = [
     .notEmpty().withMessage('Sem is required')
 
 ];
+
+export const validatePurchaseHistory = [
+  body('userId').isUUID().withMessage('User ID must be a valid UUID.'),
+];
