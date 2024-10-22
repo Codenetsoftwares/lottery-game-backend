@@ -199,7 +199,7 @@ export const adminPurchaseHistory = async (req, res) => {
             tickets: tickets,
             price: ticketService.calculatePrice(),
             userName: purchase.userName,
-            sem
+            sem : userRange.sem
           };
         } else {
           return null;
