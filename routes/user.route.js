@@ -27,6 +27,6 @@ export const userRoute = (app) => {
 
     app.post('/api/purchase-lottery', purchaseTicketValidation, customErrorHandler, PurchaseTickets);
 
-    app.post('/api/purchase-history',validatePurchaseHistory,customErrorHandler, purchaseHistory);
+    app.post('/api/purchase-history', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
 }
