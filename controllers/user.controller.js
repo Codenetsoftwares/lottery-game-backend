@@ -32,7 +32,7 @@ export const searchTickets = async ({ group, series, number, sem }) => {
             const ticketService = new TicketService(
                 group,
                 series,
-                number,
+                number.toString(),
                 sem
             );
 

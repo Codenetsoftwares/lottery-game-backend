@@ -23,11 +23,11 @@ const TicketRange = sequelize.define('TicketRange', {
     allowNull: false,
   },
   number_start: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   number_end: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
 }, {
