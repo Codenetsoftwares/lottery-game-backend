@@ -6,7 +6,8 @@ const UserRange = sequelize.define('UserRange', {
     generateId :{
         type: DataTypes.UUID,
         allowNull: false,
-        defaultValue : uuidv4()
+        defaultValue : uuidv4(),
+        primaryKey: true,
     },
     group: {
         type: DataTypes.INTEGER,
@@ -28,6 +29,11 @@ const UserRange = sequelize.define('UserRange', {
 }, {
     tableName: 'UserRange',
     timestamps: true,
+    indexes: [
+        {
+            fields: ['generateId'],
+        },
+    ],     
 });
 
 export default UserRange;
