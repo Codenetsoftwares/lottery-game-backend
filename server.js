@@ -3,13 +3,9 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
 import sequelize from "./config/db.js";
-import { adminRoutes } from "./routes/adminRoute.js";
-import { lotteryRoutes } from "./routes/lotteryRoute.js";
-import { resultRoutes } from "./routes/resultRoute.js";
-//import { ticketRoutes } from "./routes/ticketRoute.js";
-import { externalApiRoute } from "./routes/externalApiRoute.js";
-import { checkAndManageIndexes } from "./helpers/indexManager.js";
-import { ticketRoutes } from "./routes/ticketRoute.js";
+import { ticketRoute } from "./routes/ticket.route.js";
+import { userRoute } from "./routes/user.route.js";
+import { adminRoutes } from "./routes/admin.route.js";
 
 dotenv.config();
 const app = express();
@@ -26,14 +22,9 @@ app.get("/", (req, res) => {
 });
 
 adminRoutes(app);
-lotteryRoutes(app);
-resultRoutes(app);
-ticketRoutes(app);
-externalApiRoute(app)
+ticketRoute(app);
+userRoute(app)
 
-
-checkAndManageIndexes('lotteries');
-checkAndManageIndexes('tickets');
 
 sequelize
   .sync({ alter: true })

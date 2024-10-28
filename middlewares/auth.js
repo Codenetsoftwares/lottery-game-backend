@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { string } from '../constructor/string.js';
-import { statusCode } from '../utills/statusCodes.js';
-import { apiResponseErr } from '../utills/response.js';
+import { statusCode } from '../utils/statusCodes.js';
+import { apiResponseErr } from '../utils/response.js';
 import Admin from '../models/adminModel.js';
 
 
