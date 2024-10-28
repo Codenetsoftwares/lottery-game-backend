@@ -1,5 +1,5 @@
 import { string } from "../constructor/string.js";
-import { adminPurchaseHistory, adminSearchTickets, createAdmin, login } from "../controllers/admin.controller.js";
+import { adminPurchaseHistory, adminSearchTickets, createAdmin, createDrawDate, login } from "../controllers/admin.controller.js";
 import { authorize } from "../middlewares/auth.js";
 import { searchTicketValidation, validateAdminCreate, validateAdminLogin } from "../utils/commonSchema.js";
 import customErrorHandler from "../utils/customErrorHandler.js";
@@ -30,6 +30,8 @@ export const adminRoutes = (app) => {
     });
 
     app.get('/api/admin/purchase-history', adminPurchaseHistory);
+
+    app.post('/api/admin/draw-dates', createDrawDate);
 
 
 

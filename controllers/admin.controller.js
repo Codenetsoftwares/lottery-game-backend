@@ -1,5 +1,9 @@
 import Admin from "../models/adminModel.js";
-import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utils/response.js";
+import {
+  apiResponseErr,
+  apiResponsePagination,
+  apiResponseSuccess,
+} from "../utils/response.js";
 import { v4 as uuidv4 } from "uuid";
 import { statusCode } from "../utils/statusCodes.js";
 import jwt from "jsonwebtoken";
@@ -10,6 +14,7 @@ import TicketRange from "../models/ticketRange.model.js";
 import { Op } from "sequelize";
 import UserRange from "../models/user.model.js";
 import PurchaseLottery from "../models/purchase.model.js";
+import DrawDate from "../models/drawdateModel.js";
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -199,7 +204,7 @@ export const adminPurchaseHistory = async (req, res) => {
             tickets: tickets,
             price: ticketService.calculatePrice(),
             userName: purchase.userName,
-            sem : userRange.sem
+            sem: userRange.sem,
           };
         } else {
           return null;
@@ -255,3 +260,40 @@ export const adminPurchaseHistory = async (req, res) => {
   }
 };
 
+export const createDrawDate = async (req, res) => {
+  try {
+    const { drawDate } = req.body;
+
+    const existingDate = await DrawDate.findOne({
+      where: { drawDate },
+    });
+    if (existingDate) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Draw date already exists.",
+        res
+      );
+    }
+
+    const newDrawDate = await DrawDate.create({ drawId: uuidv4(), drawDate });
+
+    return apiResponseSuccess(
+      newDrawDate,
+      true,
+      statusCode.create,
+      "Draw date created successfully.",
+      res
+    );
+  } catch (error) {
+    console.error("Error creating draw date:", error);
+    apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};

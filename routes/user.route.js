@@ -1,5 +1,5 @@
 import { string } from "../constructor/string.js";
-import { purchaseHistory, PurchaseTickets, searchTickets } from "../controllers/user.controller.js";
+import { getDrawDateByDate, purchaseHistory, PurchaseTickets, searchTickets } from "../controllers/user.controller.js";
 import { purchaseTicketValidation, validatePurchaseHistory } from "../utils/commonSchema.js";
 import customErrorHandler from "../utils/customErrorHandler.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
@@ -28,5 +28,7 @@ export const userRoute = (app) => {
     app.post('/api/purchase-lottery', purchaseTicketValidation, customErrorHandler, PurchaseTickets);
 
     app.post('/api/purchase-history', validatePurchaseHistory, customErrorHandler, purchaseHistory);
+
+    app.get('/api/draw-dates', getDrawDateByDate);
 
 }
