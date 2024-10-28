@@ -38,7 +38,7 @@ export const createTicketValidation = [
   body('group')
     .custom(({ min, max }) => {
       if (min > max) {
-        throw new Error('Group min cannot be greater than Group mum');
+        throw new Error('Group minimum cannot be greater than Group maximum');
       }
       return true;
     }),
