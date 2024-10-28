@@ -158,11 +158,16 @@ export const adminSearchTickets = async ({ group, series, number, sem }) => {
 export const adminPurchaseHistory = async (req, res) => {
   try {
     const { sem, page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * parseInt(limit);
 
     const purchaseRecords = await PurchaseLottery.findAndCountAll({
-      offset,
+      include: [{
+        model: UserRange,
+        as: 'userRange',
+        ...(sem && { where: { sem } })
+      }],
       limit: parseInt(limit),
+      offset,
     });
 
     if (!purchaseRecords.rows || purchaseRecords.rows.length === 0) {
@@ -226,26 +231,19 @@ export const adminPurchaseHistory = async (req, res) => {
       );
     }
 
-    // Apply pagination to the filteredHistoryWithTickets
-    const paginatedHistoryWithTickets = filteredHistoryWithTickets.slice(
-      offset,
-      offset + parseInt(limit)
-    );
-
-    const totalItems = filteredHistoryWithTickets.length;
-    const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(purchaseRecords.count / limit),
+      totalItems: purchaseRecords.count,
+    };
 
     return apiResponsePagination(
-      paginatedHistoryWithTickets,
+      filteredHistoryWithTickets,
       true,
       statusCode.success,
       "Success",
-      {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages,
-        totalItems,
-      },
+      pagination,
       res
     );
   } catch (error) {

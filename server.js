@@ -6,6 +6,8 @@ import sequelize from "./config/db.js";
 import { ticketRoute } from "./routes/ticket.route.js";
 import { userRoute } from "./routes/user.route.js";
 import { adminRoutes } from "./routes/admin.route.js";
+import PurchaseLottery from "./models/purchase.model.js";
+import UserRange from "./models/user.model.js";
 
 dotenv.config();
 const app = express();
@@ -24,6 +26,18 @@ app.get("/", (req, res) => {
 adminRoutes(app);
 ticketRoute(app);
 userRoute(app)
+
+PurchaseLottery.belongsTo(UserRange, {
+  foreignKey: 'generateId',
+  targetKey: 'generateId', // Assuming `generateId` links them
+  as: 'userRange',
+});
+
+UserRange.hasMany(PurchaseLottery, {
+  foreignKey: 'generateId',
+  sourceKey: 'generateId',
+  as: 'purchases',
+});
 
 
 sequelize

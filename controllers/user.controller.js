@@ -96,108 +96,62 @@ export const purchaseHistory = async (req, res) => {
   try {
     const { userId } = req.body;
     const { sem, page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * parseInt(limit);
 
-    const purchaseRecords = await PurchaseLottery.findAndCountAll({
-      where: {
-        userId: userId,
-      },
+    const purchaseFilter = {
+      where: { userId },
+      include: [{
+        model: UserRange,
+        as: 'userRange',
+        ...(sem && { where: { sem } })
+      }],
       limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+      offset,
+    };
 
-    if (!purchaseRecords.rows || purchaseRecords.rows.length === 0) {
-      return apiResponseSuccess(
-        [],
-        true,
-        statusCode.success,
-        "No purchase history found",
-        res
-      );
+    const purchaseRecords = await PurchaseLottery.findAndCountAll(purchaseFilter);
+
+    if (!purchaseRecords.rows.length) {
+      return apiResponseSuccess([], true, statusCode.success, "No purchase history found", res);
     }
 
-    const historyWithTickets = await Promise.all(
+    const historyWithTickets = (await Promise.all(
       purchaseRecords.rows.map(async (purchase) => {
-        const userRangeQuery = {
-          where: {
-            generateId: purchase.generateId,
-          },
-        };
-        if (sem) {
-          userRangeQuery.where.sem = sem;
-        }
-
-        const userRange = await UserRange.findOne(userRangeQuery);
-
+        const userRange = purchase.userRange;
         if (userRange) {
           const { group, series, number, sem: userSem } = userRange;
-
-          const ticketService = new TicketService(
-            group,
-            series,
-            number,
-            userSem
-          );
-          const tickets = ticketService.list();
+          const ticketService = new TicketService(group, series, number, userSem);
 
           return {
             drawDate: purchase.drawDate,
-            tickets: tickets,
+            tickets: ticketService.list(),
             price: ticketService.calculatePrice(),
             userName: purchase.userName,
             sem: userRange.sem,
           };
-        } else {
-          return null;
         }
+        return null;
       })
-    );
-    const filteredHistoryWithTickets = historyWithTickets.filter(
-      (record) => record !== null
-    );
-    if (filteredHistoryWithTickets.length === 0) {
-      return apiResponseSuccess(
-        [],
-        true,
-        statusCode.success,
-        "No purchase history found for the given sem",
-        res
-      );
+    ))
+
+    if (!historyWithTickets.length) {
+      return apiResponseSuccess([], true, statusCode.success, "No purchase history found for the given sem", res);
     }
-    // Apply pagination to the filteredHistoryWithTickets
-    const paginatedHistoryWithTickets = filteredHistoryWithTickets.slice(
-      offset,
-      offset + parseInt(limit)
-    );
 
-    const totalItems = filteredHistoryWithTickets.length;
-    const totalPages = Math.ceil(totalItems / limit);
+    const pagination = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(purchaseRecords.count / limit),
+      totalItems: purchaseRecords.count,
+    };
 
-    return apiResponsePagination(
-      paginatedHistoryWithTickets,
-      true,
-      statusCode.success,
-      "Success",
-      {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages,
-        totalItems,
-      },
-      res
-    );
+    return apiResponsePagination(historyWithTickets, true, statusCode.success, "Success", pagination, res);
   } catch (error) {
-    console.error("Error saving ticket range:", error);
-
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    console.error("Error retrieving purchase history:", error);
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
 
 export const getDrawDateByDate = async (req, res) => {
   try {
