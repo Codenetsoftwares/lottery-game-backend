@@ -12,6 +12,7 @@ import UserRange from "../models/user.model.js";
 import { v4 as uuidv4 } from "uuid";
 import PurchaseLottery from "../models/purchase.model.js";
 import DrawDate from "../models/drawdateModel.js";
+import LotteryResult from "../models/resultModel.js";
 
 export const searchTickets = async ({ group, series, number, sem }) => {
   try {
@@ -178,6 +179,65 @@ export const getDrawDateByDate = async (req, res) => {
       false,
       statusCode.internalServerError,
       error.errMessage ?? error.message,
+      res
+    );
+  }
+};
+
+
+
+export const getResult = async (req, res) => {
+  try {
+    const results = await LotteryResult.findAll({
+      where: {
+        prizeCategory: ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'],
+      },
+      order: [['prizeCategory', 'ASC']], 
+    });
+
+    
+    const groupedResults = results.reduce((acc, result) => {
+      const { prizeCategory, ticketNumber, prizeAmount } = result;
+
+      
+      let formattedTicketNumber = ticketNumber; 
+      if (prizeCategory === 'Second Prize') {
+        
+        formattedTicketNumber = ticketNumber.slice(-5);
+      } else if (prizeCategory === 'Third Prize' || prizeCategory === 'Fourth Prize' || prizeCategory === 'Fifth Prize') {
+        formattedTicketNumber = ticketNumber.slice(-4);
+      }
+
+      if (!acc[prizeCategory]) {
+        acc[prizeCategory] = {
+          prizeAmount: prizeAmount, 
+          ticketNumbers: [formattedTicketNumber], 
+        };
+      } else {
+        acc[prizeCategory].ticketNumbers.push(formattedTicketNumber);
+      }
+      return acc;
+    }, {});
+
+    const formattedResults = Object.entries(groupedResults).map(([prizeCategory, { prizeAmount, ticketNumbers }]) => ({
+      prizeCategory,
+      prizeAmount,
+      ticketNumbers,
+    }));
+
+    return apiResponseSuccess(
+      formattedResults,
+      true,
+      statusCode.success,
+      'Prize results retrieved successfully.',
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
       res
     );
   }

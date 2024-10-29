@@ -15,6 +15,7 @@ import { Op } from "sequelize";
 import UserRange from "../models/user.model.js";
 import PurchaseLottery from "../models/purchase.model.js";
 import DrawDate from "../models/drawdateModel.js";
+import LotteryResult from "../models/resultModel.js"
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -295,3 +296,124 @@ export const createDrawDate = async (req, res) => {
     );
   }
 };
+
+
+export const createResult = async (req, res) => {
+  try {
+
+    const { ticketNumber, prizeCategory, prizeAmount } = req.body;
+
+    const prizeLimits = {
+      'First Prize': 1,
+      'Second Prize': 10,
+      'Third Prize': 10,
+      'Fourth Prize': 10,
+      'Fifth Prize': 50,
+    };
+
+    if (!prizeLimits[prizeCategory]) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        'Invalid prize category.',
+        res
+      );
+    }
+
+    const existingResults = await LotteryResult.findAll({
+      where: { prizeCategory: prizeCategory },
+    });
+
+    if (existingResults.length >= prizeLimits[prizeCategory]) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        `Cannot add more ticket numbers. ${prizeCategory} already has ${prizeLimits[prizeCategory]} tickets.`,
+        res
+      );
+    }
+
+    const savedResult = await LotteryResult.create({
+      ticketNumber,
+      prizeCategory,
+      prizeAmount,
+    });
+
+    return apiResponseSuccess(
+      savedResult,
+      true,
+      statusCode.create,
+      'Result saved successfully.',
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+export const getResult = async (req, res) => {
+  try {
+    const results = await LotteryResult.findAll({
+      where: {
+        prizeCategory: ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'],
+      },
+      order: [['prizeCategory', 'ASC']], 
+    });
+
+    
+    const groupedResults = results.reduce((acc, result) => {
+      const { prizeCategory, ticketNumber, prizeAmount } = result;
+
+      
+      let formattedTicketNumber = ticketNumber; 
+      if (prizeCategory === 'Second Prize') {
+        
+        formattedTicketNumber = ticketNumber.slice(-5);
+      } else if (prizeCategory === 'Third Prize' || prizeCategory === 'Fourth Prize' || prizeCategory === 'Fifth Prize') {
+        formattedTicketNumber = ticketNumber.slice(-4);
+      }
+
+      if (!acc[prizeCategory]) {
+        acc[prizeCategory] = {
+          prizeAmount: prizeAmount, 
+          ticketNumbers: [formattedTicketNumber], 
+        };
+      } else {
+        acc[prizeCategory].ticketNumbers.push(formattedTicketNumber);
+      }
+      return acc;
+    }, {});
+
+    const formattedResults = Object.entries(groupedResults).map(([prizeCategory, { prizeAmount, ticketNumbers }]) => ({
+      prizeCategory,
+      prizeAmount,
+      ticketNumbers,
+    }));
+
+    return apiResponseSuccess(
+      formattedResults,
+      true,
+      statusCode.success,
+      'Prize results retrieved successfully.',
+      res
+    );
+  } catch (error) {
+
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+

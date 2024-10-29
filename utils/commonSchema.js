@@ -78,3 +78,14 @@ export const searchTicketValidation = [
 export const validatePurchaseHistory = [
   body('userId').isUUID().withMessage('User ID must be a valid UUID.'),
 ];
+
+
+export const validateCreateResult = [
+  body('ticketNumber')
+    .exists().withMessage('Ticket number is required.')
+    .isString().withMessage('Ticket number must be a string.'),
+  body('prizeCategory')
+    .exists().withMessage('Prize category is required.'),
+  body('prizeAmount')
+    .exists().withMessage('Prize amount is required.'),
+];
