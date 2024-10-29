@@ -295,3 +295,33 @@ export const createDrawDate = async (req, res) => {
     );
   }
 };
+
+export const getDrawDate = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const drawDates = await DrawDate.findAll({
+      where: {
+        createdAt: { [Op.gte]: today },
+      },
+      attributes: ["drawId", "drawDate"],
+    });
+
+    return apiResponseSuccess(
+      drawDates,
+      true,
+      statusCode.success,
+      "Draw dates retrieved successfully.",
+      res
+    );
+  } catch (error) {
+    apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.errMessage ?? error.message,
+      res
+    );
+  }
+};

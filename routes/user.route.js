@@ -4,6 +4,10 @@ import { purchaseTicketValidation, validatePurchaseHistory } from "../utils/comm
 import customErrorHandler from "../utils/customErrorHandler.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
 import { statusCode } from "../utils/statusCodes.js";
+import {authenticateUser} from "../middlewares/colorgameAuth.js"
+
+
+
 
 export const userRoute = (app) => {
     app.post('/api/search-ticket', async (req, res) => {
@@ -29,6 +33,6 @@ export const userRoute = (app) => {
 
     app.post('/api/purchase-history', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
-    app.get('/api/draw-dates', getDrawDateByDate);
+    app.get('/api/draw-dates',authenticateUser, getDrawDateByDate);
 
 }

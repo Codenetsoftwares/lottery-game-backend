@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { string } from '../constructor/string.js';
-import { statusCode } from '../utills/statusCodes.js';
-import { apiResponseErr } from '../utills/response.js';
+import { statusCode } from '../utils/statusCodes.js';
+import { apiResponseErr } from '../utils/response.js';
 dotenv.config();
 
 export const authenticateUser = (req, res, next) => {
