@@ -15,7 +15,7 @@ import { Op } from "sequelize";
 import UserRange from "../models/user.model.js";
 import PurchaseLottery from "../models/purchase.model.js";
 import DrawDate from "../models/drawdateModel.js";
-import LotteryResult from "../models/resultModel.js"
+import LotteryResult from "../models/resultModel.js";
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -162,11 +162,13 @@ export const adminPurchaseHistory = async (req, res) => {
     const offset = (page - 1) * parseInt(limit);
 
     const purchaseRecords = await PurchaseLottery.findAndCountAll({
-      include: [{
-        model: UserRange,
-        as: 'userRange',
-        ...(sem && { where: { sem } })
-      }],
+      include: [
+        {
+          model: UserRange,
+          as: "userRange",
+          ...(sem && { where: { sem } }),
+        },
+      ],
       limit: parseInt(limit),
       offset,
     });
@@ -297,18 +299,16 @@ export const createDrawDate = async (req, res) => {
   }
 };
 
-
 export const createResult = async (req, res) => {
   try {
-
     const { ticketNumber, prizeCategory, prizeAmount } = req.body;
 
     const prizeLimits = {
-      'First Prize': 1,
-      'Second Prize': 10,
-      'Third Prize': 10,
-      'Fourth Prize': 10,
-      'Fifth Prize': 50,
+      "First Prize": 1,
+      "Second Prize": 10,
+      "Third Prize": 10,
+      "Fourth Prize": 10,
+      "Fifth Prize": 50,
     };
 
     if (!prizeLimits[prizeCategory]) {
@@ -316,7 +316,23 @@ export const createResult = async (req, res) => {
         null,
         false,
         statusCode.badRequest,
-        'Invalid prize category.',
+        "Invalid prize category.",
+        res
+      );
+    }
+
+    const allResults = await LotteryResult.findAll();
+
+    const isDuplicate = allResults.some((result) =>
+      result.ticketNumber.includes(ticketNumber)
+    );
+
+    if (isDuplicate) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "This ticket number has already been assigned a prize in another category.",
         res
       );
     }
@@ -345,7 +361,7 @@ export const createResult = async (req, res) => {
       savedResult,
       true,
       statusCode.create,
-      'Result saved successfully.',
+      "Result saved successfully.",
       res
     );
   } catch (error) {
@@ -363,28 +379,35 @@ export const getResult = async (req, res) => {
   try {
     const results = await LotteryResult.findAll({
       where: {
-        prizeCategory: ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'],
+        prizeCategory: [
+          "First Prize",
+          "Second Prize",
+          "Third Prize",
+          "Fourth Prize",
+          "Fifth Prize",
+        ],
       },
-      order: [['prizeCategory', 'ASC']], 
+      order: [["prizeCategory", "ASC"]],
     });
 
-    
     const groupedResults = results.reduce((acc, result) => {
       const { prizeCategory, ticketNumber, prizeAmount } = result;
 
-      
-      let formattedTicketNumber = ticketNumber; 
-      if (prizeCategory === 'Second Prize') {
-        
+      let formattedTicketNumber = ticketNumber;
+      if (prizeCategory === "Second Prize") {
         formattedTicketNumber = ticketNumber.slice(-5);
-      } else if (prizeCategory === 'Third Prize' || prizeCategory === 'Fourth Prize' || prizeCategory === 'Fifth Prize') {
+      } else if (
+        prizeCategory === "Third Prize" ||
+        prizeCategory === "Fourth Prize" ||
+        prizeCategory === "Fifth Prize"
+      ) {
         formattedTicketNumber = ticketNumber.slice(-4);
       }
 
       if (!acc[prizeCategory]) {
         acc[prizeCategory] = {
-          prizeAmount: prizeAmount, 
-          ticketNumbers: [formattedTicketNumber], 
+          prizeAmount: prizeAmount,
+          ticketNumbers: [formattedTicketNumber],
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(formattedTicketNumber);
@@ -392,21 +415,22 @@ export const getResult = async (req, res) => {
       return acc;
     }, {});
 
-    const formattedResults = Object.entries(groupedResults).map(([prizeCategory, { prizeAmount, ticketNumbers }]) => ({
-      prizeCategory,
-      prizeAmount,
-      ticketNumbers,
-    }));
+    const formattedResults = Object.entries(groupedResults).map(
+      ([prizeCategory, { prizeAmount, ticketNumbers }]) => ({
+        prizeCategory,
+        prizeAmount,
+        ticketNumbers,
+      })
+    );
 
     return apiResponseSuccess(
       formattedResults,
       true,
       statusCode.success,
-      'Prize results retrieved successfully.',
+      "Prize results retrieved successfully.",
       res
     );
   } catch (error) {
-
     return apiResponseErr(
       null,
       false,
@@ -416,4 +440,3 @@ export const getResult = async (req, res) => {
     );
   }
 };
-
