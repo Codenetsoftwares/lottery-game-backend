@@ -29,6 +29,10 @@ const LotteryResult = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    announceTime:{
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     tableName: "LotteryResult",

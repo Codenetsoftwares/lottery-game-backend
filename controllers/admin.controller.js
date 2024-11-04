@@ -301,7 +301,7 @@ export const createDrawDate = async (req, res) => {
 
 export const createResult = async (req, res) => {
   try {
-    const { ticketNumber, prizeCategory, prizeAmount, drawDate } = req.body;
+    const { ticketNumber, prizeCategory, prizeAmount,announceTime } = req.body;
 
     const prizeLimits = {
       "First Prize": 1,
@@ -367,7 +367,7 @@ export const createResult = async (req, res) => {
       ticketNumber: ticketNumbers,
       prizeCategory,
       prizeAmount,
-      drawDate,  // Save drawDate from frontend
+      announceTime
     });
 
     return apiResponseSuccess(
@@ -389,7 +389,6 @@ export const createResult = async (req, res) => {
 };
 
 
-
 export const getResult = async (req, res) => {
   try {
     const results = await LotteryResult.findAll({
@@ -406,12 +405,11 @@ export const getResult = async (req, res) => {
     });
 
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount, drawDate } = result;
+      const { prizeCategory, ticketNumber, prizeAmount,announceTime } = result;
 
-      // Ensure ticketNumber is an array for consistent handling
       let formattedTicketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
 
-      // Format ticket numbers based on the prize category
+   
       if (prizeCategory === "Second Prize") {
         formattedTicketNumbers = formattedTicketNumbers.map(ticket => ticket.slice(-5));
       } else if (
@@ -422,11 +420,9 @@ export const getResult = async (req, res) => {
         formattedTicketNumbers = formattedTicketNumbers.map(ticket => ticket.slice(-4));
       }
 
-      // Group results by prize category
       if (!acc[prizeCategory]) {
         acc[prizeCategory] = {
-          prizeAmount,
-          drawDate,  // Include drawDate here
+          prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
         };
       } else {
@@ -436,21 +432,18 @@ export const getResult = async (req, res) => {
       return acc;
     }, {});
 
-    // Prepare the final result structure ensuring the correct number of ticket numbers
     const formattedResults = Object.entries(groupedResults).map(
-      ([prizeCategory, { prizeAmount, drawDate, ticketNumbers }]) => {
+      ([prizeCategory, { prizeAmount, ticketNumbers }]) => {
         let limitedTicketNumbers;
 
-        // Ensure the correct number of ticket numbers per category
         if (prizeCategory === "First Prize") {
-          limitedTicketNumbers = ticketNumbers.slice(0, 1); // First prize should only have 1 ticket number
+          limitedTicketNumbers = ticketNumbers.slice(0, 1); 
         } else if (["Second Prize", "Third Prize", "Fourth Prize"].includes(prizeCategory)) {
-          limitedTicketNumbers = ticketNumbers.slice(0, 10); // Limit to 10 ticket numbers
+          limitedTicketNumbers = ticketNumbers.slice(0, 10); 
         } else if (prizeCategory === "Fifth Prize") {
-          limitedTicketNumbers = ticketNumbers.slice(0, 50); // Limit to 50 ticket numbers
+          limitedTicketNumbers = ticketNumbers.slice(0, 50);
         }
 
-        // If there are not enough ticket numbers, pad with duplicates (or some placeholder)
         while (limitedTicketNumbers.length < 10 && prizeCategory !== "First Prize") {
           limitedTicketNumbers.push(limitedTicketNumbers[limitedTicketNumbers.length - 1]);
         }
@@ -458,8 +451,8 @@ export const getResult = async (req, res) => {
         return {
           prizeCategory,
           prizeAmount,
-          drawDate,  // Include drawDate in the final result
-          ticketNumbers: [...new Set(limitedTicketNumbers)],  // Ensure unique ticket numbers
+          ticketNumbers: [...new Set(limitedTicketNumbers)],  
+          announceTime
         };
       }
     );
@@ -481,7 +474,6 @@ export const getResult = async (req, res) => {
     );
   }
 };
-
 
 
 
