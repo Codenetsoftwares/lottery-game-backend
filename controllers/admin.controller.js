@@ -301,7 +301,7 @@ export const createDrawDate = async (req, res) => {
 
 export const createResult = async (req, res) => {
   try {
-    const { ticketNumber, prizeCategory, prizeAmount,announceTime } = req.body;
+    const { ticketNumber, prizeCategory, prizeAmount, announceTime } = req.body;
 
     const prizeLimits = {
       "First Prize": 1,
@@ -321,7 +321,9 @@ export const createResult = async (req, res) => {
       );
     }
 
-    const ticketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
+    const ticketNumbers = Array.isArray(ticketNumber)
+      ? ticketNumber
+      : [ticketNumber];
 
     if (ticketNumbers.length !== prizeLimits[prizeCategory]) {
       return apiResponseErr(
@@ -367,7 +369,7 @@ export const createResult = async (req, res) => {
       ticketNumber: ticketNumbers,
       prizeCategory,
       prizeAmount,
-      announceTime
+      announceTime,
     });
 
     return apiResponseSuccess(
@@ -388,7 +390,6 @@ export const createResult = async (req, res) => {
   }
 };
 
-
 export const getResult = async (req, res) => {
   try {
     const results = await LotteryResult.findAll({
@@ -405,25 +406,31 @@ export const getResult = async (req, res) => {
     });
 
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount,announceTime } = result;
+      const { prizeCategory, ticketNumber, prizeAmount, announceTime } = result;
 
-      let formattedTicketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
+      let formattedTicketNumbers = Array.isArray(ticketNumber)
+        ? ticketNumber
+        : [ticketNumber];
 
-   
       if (prizeCategory === "Second Prize") {
-        formattedTicketNumbers = formattedTicketNumbers.map(ticket => ticket.slice(-5));
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
+          ticket.slice(-5)
+        );
       } else if (
         prizeCategory === "Third Prize" ||
         prizeCategory === "Fourth Prize" ||
         prizeCategory === "Fifth Prize"
       ) {
-        formattedTicketNumbers = formattedTicketNumbers.map(ticket => ticket.slice(-4));
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
+          ticket.slice(-4)
+        );
       }
 
       if (!acc[prizeCategory]) {
         acc[prizeCategory] = {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
+          announceTime 
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
@@ -433,26 +440,35 @@ export const getResult = async (req, res) => {
     }, {});
 
     const formattedResults = Object.entries(groupedResults).map(
-      ([prizeCategory, { prizeAmount, ticketNumbers }]) => {
+      ([prizeCategory, { prizeAmount, ticketNumbers ,announceTime  }]) => {
         let limitedTicketNumbers;
 
         if (prizeCategory === "First Prize") {
-          limitedTicketNumbers = ticketNumbers.slice(0, 1); 
-        } else if (["Second Prize", "Third Prize", "Fourth Prize"].includes(prizeCategory)) {
-          limitedTicketNumbers = ticketNumbers.slice(0, 10); 
+          limitedTicketNumbers = ticketNumbers.slice(0, 1);
+        } else if (
+          ["Second Prize", "Third Prize", "Fourth Prize"].includes(
+            prizeCategory
+          )
+        ) {
+          limitedTicketNumbers = ticketNumbers.slice(0, 10);
         } else if (prizeCategory === "Fifth Prize") {
           limitedTicketNumbers = ticketNumbers.slice(0, 50);
         }
 
-        while (limitedTicketNumbers.length < 10 && prizeCategory !== "First Prize") {
-          limitedTicketNumbers.push(limitedTicketNumbers[limitedTicketNumbers.length - 1]);
+        while (
+          limitedTicketNumbers.length < 10 &&
+          prizeCategory !== "First Prize"
+        ) {
+          limitedTicketNumbers.push(
+            limitedTicketNumbers[limitedTicketNumbers.length - 1]
+          );
         }
 
         return {
           prizeCategory,
           prizeAmount,
-          ticketNumbers: [...new Set(limitedTicketNumbers)],  
-          announceTime
+          announceTime,
+          ticketNumbers: [...new Set(limitedTicketNumbers)],
         };
       }
     );
@@ -474,6 +490,3 @@ export const getResult = async (req, res) => {
     );
   }
 };
-
-
-
