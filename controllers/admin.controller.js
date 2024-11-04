@@ -301,7 +301,7 @@ export const createDrawDate = async (req, res) => {
 
 export const createResult = async (req, res) => {
   try {
-    const { ticketNumber, prizeCategory, prizeAmount } = req.body;
+    const { ticketNumber, prizeCategory, prizeAmount ,drawDate} = req.body;
 
     const prizeLimits = {
       "First Prize": 1,
@@ -364,6 +364,7 @@ export const createResult = async (req, res) => {
     }
 
     const savedResult = await LotteryResult.create({
+      drawDate:drawDate,
       ticketNumber: ticketNumbers,
       prizeCategory,
       prizeAmount,
