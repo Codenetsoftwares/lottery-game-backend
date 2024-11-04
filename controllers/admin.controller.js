@@ -301,7 +301,7 @@ export const createDrawDate = async (req, res) => {
 
 export const createResult = async (req, res) => {
   try {
-    const { ticketNumber, prizeCategory, prizeAmount ,drawDate} = req.body;
+    const { ticketNumber, prizeCategory, prizeAmount, drawDate } = req.body;
 
     const prizeLimits = {
       "First Prize": 1,
@@ -364,10 +364,10 @@ export const createResult = async (req, res) => {
     }
 
     const savedResult = await LotteryResult.create({
-      drawDate:drawDate,
       ticketNumber: ticketNumbers,
       prizeCategory,
       prizeAmount,
+      drawDate,  // Save drawDate from frontend
     });
 
     return apiResponseSuccess(
@@ -389,6 +389,7 @@ export const createResult = async (req, res) => {
 };
 
 
+
 export const getResult = async (req, res) => {
   try {
     const results = await LotteryResult.findAll({
@@ -405,7 +406,7 @@ export const getResult = async (req, res) => {
     });
 
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount } = result;
+      const { prizeCategory, ticketNumber, prizeAmount, drawDate } = result;
 
       // Ensure ticketNumber is an array for consistent handling
       let formattedTicketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
@@ -424,7 +425,8 @@ export const getResult = async (req, res) => {
       // Group results by prize category
       if (!acc[prizeCategory]) {
         acc[prizeCategory] = {
-          prizeAmount: prizeAmount,
+          prizeAmount,
+          drawDate,  // Include drawDate here
           ticketNumbers: formattedTicketNumbers,
         };
       } else {
@@ -436,7 +438,7 @@ export const getResult = async (req, res) => {
 
     // Prepare the final result structure ensuring the correct number of ticket numbers
     const formattedResults = Object.entries(groupedResults).map(
-      ([prizeCategory, { prizeAmount, ticketNumbers }]) => {
+      ([prizeCategory, { prizeAmount, drawDate, ticketNumbers }]) => {
         let limitedTicketNumbers;
 
         // Ensure the correct number of ticket numbers per category
@@ -456,6 +458,7 @@ export const getResult = async (req, res) => {
         return {
           prizeCategory,
           prizeAmount,
+          drawDate,  // Include drawDate in the final result
           ticketNumbers: [...new Set(limitedTicketNumbers)],  // Ensure unique ticket numbers
         };
       }
@@ -478,6 +481,7 @@ export const getResult = async (req, res) => {
     );
   }
 };
+
 
 
 
