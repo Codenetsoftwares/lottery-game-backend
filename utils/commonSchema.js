@@ -83,9 +83,17 @@ export const validatePurchaseHistory = [
 export const validateCreateResult = [
   body('ticketNumber')
     .exists().withMessage('Ticket number is required.')
-    .isString().withMessage('Ticket number must be a string.'),
+    .isArray().withMessage('Ticket number must be an array.')
+    .custom((value) => {
+      if (!value.every((item) => typeof item === 'string')) {
+        throw new Error('Each ticket number must be a string.');
+      }
+      return true;
+    }),
   body('prizeCategory')
-    .exists().withMessage('Prize category is required.'),
+    .exists().withMessage('Prize category is required.')
+    .isString().withMessage('Prize category must be a string.'),
   body('prizeAmount')
-    .exists().withMessage('Prize amount is required.'),
+    .exists().withMessage('Prize amount is required.')
+    .isNumeric().withMessage('Prize amount must be a number.'),
 ];

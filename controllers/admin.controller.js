@@ -321,10 +321,22 @@ export const createResult = async (req, res) => {
       );
     }
 
+    const ticketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
+
+    if (ticketNumbers.length !== prizeLimits[prizeCategory]) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        `The ${prizeCategory} requires exactly ${prizeLimits[prizeCategory]} ticket number(s).`,
+        res
+      );
+    }
+
     const allResults = await LotteryResult.findAll();
 
-    const isDuplicate = allResults.some((result) =>
-      result.ticketNumber.includes(ticketNumber)
+    const isDuplicate = ticketNumbers.some((ticket) =>
+      allResults.some((result) => result.ticketNumber.includes(ticket))
     );
 
     if (isDuplicate) {
@@ -332,7 +344,7 @@ export const createResult = async (req, res) => {
         null,
         false,
         statusCode.badRequest,
-        "This ticket number has already been assigned a prize in another category.",
+        "One or more ticket numbers have already been assigned a prize in another category.",
         res
       );
     }
@@ -341,18 +353,18 @@ export const createResult = async (req, res) => {
       where: { prizeCategory: prizeCategory },
     });
 
-    if (existingResults.length >= prizeLimits[prizeCategory]) {
+    if (existingResults.length >= 1) {
       return apiResponseErr(
         null,
         false,
         statusCode.badRequest,
-        `Cannot add more ticket numbers. ${prizeCategory} already has ${prizeLimits[prizeCategory]} tickets.`,
+        `Cannot add more ticket numbers. ${prizeCategory} already has the required tickets.`,
         res
       );
     }
 
     const savedResult = await LotteryResult.create({
-      ticketNumber,
+      ticketNumber: ticketNumbers,
       prizeCategory,
       prizeAmount,
     });
@@ -374,6 +386,7 @@ export const createResult = async (req, res) => {
     );
   }
 };
+
 
 export const getResult = async (req, res) => {
   try {
