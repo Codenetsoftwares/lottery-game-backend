@@ -406,34 +406,58 @@ export const getResult = async (req, res) => {
     const groupedResults = results.reduce((acc, result) => {
       const { prizeCategory, ticketNumber, prizeAmount } = result;
 
-      let formattedTicketNumber = ticketNumber;
+      // Ensure ticketNumber is an array for consistent handling
+      let formattedTicketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
+
+      // Format ticket numbers based on the prize category
       if (prizeCategory === "Second Prize") {
-        formattedTicketNumber = ticketNumber.slice(-5);
+        formattedTicketNumbers = formattedTicketNumbers.map(ticket => ticket.slice(-5));
       } else if (
         prizeCategory === "Third Prize" ||
         prizeCategory === "Fourth Prize" ||
         prizeCategory === "Fifth Prize"
       ) {
-        formattedTicketNumber = ticketNumber.slice(-4);
+        formattedTicketNumbers = formattedTicketNumbers.map(ticket => ticket.slice(-4));
       }
 
+      // Group results by prize category
       if (!acc[prizeCategory]) {
         acc[prizeCategory] = {
           prizeAmount: prizeAmount,
-          ticketNumbers: [formattedTicketNumber],
+          ticketNumbers: formattedTicketNumbers,
         };
       } else {
-        acc[prizeCategory].ticketNumbers.push(formattedTicketNumber);
+        acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
       }
+
       return acc;
     }, {});
 
+    // Prepare the final result structure ensuring the correct number of ticket numbers
     const formattedResults = Object.entries(groupedResults).map(
-      ([prizeCategory, { prizeAmount, ticketNumbers }]) => ({
-        prizeCategory,
-        prizeAmount,
-        ticketNumbers,
-      })
+      ([prizeCategory, { prizeAmount, ticketNumbers }]) => {
+        let limitedTicketNumbers;
+
+        // Ensure the correct number of ticket numbers per category
+        if (prizeCategory === "First Prize") {
+          limitedTicketNumbers = ticketNumbers.slice(0, 1); // First prize should only have 1 ticket number
+        } else if (["Second Prize", "Third Prize", "Fourth Prize"].includes(prizeCategory)) {
+          limitedTicketNumbers = ticketNumbers.slice(0, 10); // Limit to 10 ticket numbers
+        } else if (prizeCategory === "Fifth Prize") {
+          limitedTicketNumbers = ticketNumbers.slice(0, 50); // Limit to 50 ticket numbers
+        }
+
+        // If there are not enough ticket numbers, pad with duplicates (or some placeholder)
+        while (limitedTicketNumbers.length < 10 && prizeCategory !== "First Prize") {
+          limitedTicketNumbers.push(limitedTicketNumbers[limitedTicketNumbers.length - 1]);
+        }
+
+        return {
+          prizeCategory,
+          prizeAmount,
+          ticketNumbers: [...new Set(limitedTicketNumbers)],  // Ensure unique ticket numbers
+        };
+      }
     );
 
     return apiResponseSuccess(
@@ -453,3 +477,6 @@ export const getResult = async (req, res) => {
     );
   }
 };
+
+
+
