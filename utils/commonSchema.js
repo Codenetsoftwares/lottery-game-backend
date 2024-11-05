@@ -81,19 +81,17 @@ export const validatePurchaseHistory = [
 
 
 export const validateCreateResult = [
-  body('ticketNumber')
-    .exists().withMessage('Ticket number is required.')
-    .isArray().withMessage('Ticket number must be an array.')
-    .custom((value) => {
-      if (!value.every((item) => typeof item === 'string')) {
-        throw new Error('Each ticket number must be a string.');
-      }
-      return true;
-    }),
-  body('prizeCategory')
-    .exists().withMessage('Prize category is required.')
-    .isString().withMessage('Prize category must be a string.'),
-  body('prizeAmount')
-    .exists().withMessage('Prize amount is required.')
-    .isNumeric().withMessage('Prize amount must be a number.'),
+    body("ticketNumber")
+    .notEmpty().withMessage("Ticket number is required.")
+    .isArray().withMessage("Ticket number must be an array."),
+    body("prizeCategory")
+    .notEmpty().withMessage("Prize category is required.")
+    .isIn(["First Prize", "Second Prize", "Third Prize", "Fourth Prize", "Fifth Prize"])
+    .withMessage("Invalid prize category."),
+    body("prizeAmount")
+    .notEmpty().withMessage("Prize amount is required.")
+    .isInt({ min: 1 }).withMessage("Prize amount must be a positive integer."),
+    body("announceTime")
+    .notEmpty().withMessage("Announce time is required.")
+    .isString().withMessage("Announce time must be a string."),
 ];

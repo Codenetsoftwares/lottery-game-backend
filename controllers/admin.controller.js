@@ -404,19 +404,28 @@ export const createResult = async (req, res) => {
 
 export const getResult = async (req, res) => {
   try {
+    const announce = req.query.announce
+    
+    const whereConditions = {
+      prizeCategory: [
+        "First Prize",
+        "Second Prize",
+        "Third Prize",
+        "Fourth Prize",
+        "Fifth Prize",
+      ],
+    };
+
+    if (announce) {
+      whereConditions.announceTime = announce; 
+    }
+    
     const results = await LotteryResult.findAll({
-      where: {
-        prizeCategory: [
-          "First Prize",
-          "Second Prize",
-          "Third Prize",
-          "Fourth Prize",
-          "Fifth Prize",
-        ],
-      },
+      where: whereConditions,
       order: [["prizeCategory", "ASC"]],
-      attributes: { include: ['createdAt'] }, 
+      attributes: { include: ["createdAt"] },
     });
+
 
     const groupedResults = results.reduce((acc, result) => {
       const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
@@ -481,6 +490,7 @@ export const getResult = async (req, res) => {
         return {
           prizeCategory,
           prizeAmount,
+          announceTime,
           ticketNumbers: [...new Set(limitedTicketNumbers)],
         };
       }
@@ -492,7 +502,7 @@ export const getResult = async (req, res) => {
       data
     };
 
-    return apiResponseSuccess(response, true, statusCode.success, "Prize results retrieved successfully.", res);
+    return apiResponseSuccess(data, true, statusCode.success, "Prize results retrieved successfully.", res);
 
   } catch (error) {
     return apiResponseErr(
