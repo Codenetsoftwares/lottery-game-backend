@@ -261,19 +261,31 @@ export const adminPurchaseHistory = async (req, res) => {
   }
 };
 
+
 export const createDrawDate = async (req, res) => {
   try {
     const { drawDate } = req.body;
-
-    const existingDate = await DrawDate.findOne({
-      where: { drawDate },
+    await DrawDate.destroy({
+      where: {
+        createdAt: {
+          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1))
+        }
+      }
     });
+    const existingDate = await DrawDate.findOne({
+      where: {
+        drawDate: {
+          [Op.eq]: drawDate, 
+        },
+      },
+    });
+
     if (existingDate) {
       return apiResponseErr(
         null,
         false,
         statusCode.badRequest,
-        "Draw date already exists.",
+        "A draw date already exists.",
         res
       );
     }
@@ -288,8 +300,7 @@ export const createDrawDate = async (req, res) => {
       res
     );
   } catch (error) {
-    console.error("Error creating draw date:", error);
-    apiResponseErr(
+    return apiResponseErr(
       null,
       false,
       statusCode.internalServerError,
@@ -298,6 +309,7 @@ export const createDrawDate = async (req, res) => {
     );
   }
 };
+
 
 export const createResult = async (req, res) => {
   try {
@@ -392,21 +404,31 @@ export const createResult = async (req, res) => {
 
 export const getResult = async (req, res) => {
   try {
+    const announce = req.query.announce
+    
+    const whereConditions = {
+      prizeCategory: [
+        "First Prize",
+        "Second Prize",
+        "Third Prize",
+        "Fourth Prize",
+        "Fifth Prize",
+      ],
+    };
+
+    if (announce) {
+      whereConditions.announceTime = announce; 
+    }
+    
     const results = await LotteryResult.findAll({
-      where: {
-        prizeCategory: [
-          "First Prize",
-          "Second Prize",
-          "Third Prize",
-          "Fourth Prize",
-          "Fifth Prize",
-        ],
-      },
+      where: whereConditions,
       order: [["prizeCategory", "ASC"]],
+      attributes: { include: ["createdAt"] },
     });
 
+
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount, announceTime } = result;
+      const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
 
       let formattedTicketNumbers = Array.isArray(ticketNumber)
         ? ticketNumber
@@ -430,7 +452,8 @@ export const getResult = async (req, res) => {
         acc[prizeCategory] = {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
-          announceTime 
+          announceTime,
+          date: createdAt 
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
@@ -439,8 +462,8 @@ export const getResult = async (req, res) => {
       return acc;
     }, {});
 
-    const formattedResults = Object.entries(groupedResults).map(
-      ([prizeCategory, { prizeAmount, ticketNumbers ,announceTime  }]) => {
+    const data = Object.entries(groupedResults).map(
+      ([prizeCategory, { prizeAmount, ticketNumbers, announceTime, date }]) => {
         let limitedTicketNumbers;
 
         if (prizeCategory === "First Prize") {
@@ -473,13 +496,14 @@ export const getResult = async (req, res) => {
       }
     );
 
-    return apiResponseSuccess(
-      formattedResults,
-      true,
-      statusCode.success,
-      "Prize results retrieved successfully.",
-      res
-    );
+    const response = {
+      date: new Date().toISOString(),
+      announceTime: results.length > 0 ? results[0].announceTime : null, 
+      data
+    };
+
+    return apiResponseSuccess(data, true, statusCode.success, "Prize results retrieved successfully.", res);
+
   } catch (error) {
     return apiResponseErr(
       null,
@@ -490,3 +514,4 @@ export const getResult = async (req, res) => {
     );
   }
 };
+
