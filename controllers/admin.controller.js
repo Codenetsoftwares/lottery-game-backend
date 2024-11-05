@@ -265,6 +265,14 @@ export const createDrawDate = async (req, res) => {
   try {
     const { drawDate } = req.body;
 
+    await DrawDate.destroy({
+      where: {
+        createdAt: {
+          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1)) 
+        }
+      }
+    });
+
     const existingDate = await DrawDate.findOne({
       where: { drawDate },
     });
@@ -288,8 +296,7 @@ export const createDrawDate = async (req, res) => {
       res
     );
   } catch (error) {
-    console.error("Error creating draw date:", error);
-    apiResponseErr(
+    return apiResponseErr(
       null,
       false,
       statusCode.internalServerError,
@@ -403,10 +410,11 @@ export const getResult = async (req, res) => {
         ],
       },
       order: [["prizeCategory", "ASC"]],
+      attributes: { include: ['createdAt'] }, 
     });
 
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount, announceTime } = result;
+      const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
 
       let formattedTicketNumbers = Array.isArray(ticketNumber)
         ? ticketNumber
@@ -430,7 +438,8 @@ export const getResult = async (req, res) => {
         acc[prizeCategory] = {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
-          announceTime 
+          announceTime,
+          date: createdAt 
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
@@ -439,8 +448,8 @@ export const getResult = async (req, res) => {
       return acc;
     }, {});
 
-    const formattedResults = Object.entries(groupedResults).map(
-      ([prizeCategory, { prizeAmount, ticketNumbers ,announceTime  }]) => {
+    const data = Object.entries(groupedResults).map(
+      ([prizeCategory, { prizeAmount, ticketNumbers, announceTime, date }]) => {
         let limitedTicketNumbers;
 
         if (prizeCategory === "First Prize") {
@@ -467,19 +476,19 @@ export const getResult = async (req, res) => {
         return {
           prizeCategory,
           prizeAmount,
-          announceTime,
           ticketNumbers: [...new Set(limitedTicketNumbers)],
         };
       }
     );
 
-    return apiResponseSuccess(
-      formattedResults,
-      true,
-      statusCode.success,
-      "Prize results retrieved successfully.",
-      res
-    );
+    const response = {
+      date: new Date().toISOString(),
+      announceTime: results.length > 0 ? results[0].announceTime : null, 
+      data
+    };
+
+    return apiResponseSuccess(response, true, statusCode.success, "Prize results retrieved successfully.", res);
+
   } catch (error) {
     return apiResponseErr(
       null,
@@ -490,3 +499,4 @@ export const getResult = async (req, res) => {
     );
   }
 };
+

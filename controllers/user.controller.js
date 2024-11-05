@@ -190,48 +190,93 @@ export const getResult = async (req, res) => {
   try {
     const results = await LotteryResult.findAll({
       where: {
-        prizeCategory: ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'],
+        prizeCategory: [
+          "First Prize",
+          "Second Prize",
+          "Third Prize",
+          "Fourth Prize",
+          "Fifth Prize",
+        ],
       },
-      order: [['prizeCategory', 'ASC']], 
+      order: [["prizeCategory", "ASC"]],
+      attributes: { include: ['createdAt'] },
     });
 
-    
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount } = result;
+      const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
 
-      
-      let formattedTicketNumber = ticketNumber; 
-      if (prizeCategory === 'Second Prize') {
-        
-        formattedTicketNumber = ticketNumber.slice(-5);
-      } else if (prizeCategory === 'Third Prize' || prizeCategory === 'Fourth Prize' || prizeCategory === 'Fifth Prize') {
-        formattedTicketNumber = ticketNumber.slice(-4);
+      let formattedTicketNumbers = Array.isArray(ticketNumber)
+        ? ticketNumber
+        : [ticketNumber];
+
+      if (prizeCategory === "Second Prize") {
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
+          ticket.slice(-5)
+        );
+      } else if (
+        prizeCategory === "Third Prize" ||
+        prizeCategory === "Fourth Prize" ||
+        prizeCategory === "Fifth Prize"
+      ) {
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
+          ticket.slice(-4)
+        );
       }
 
       if (!acc[prizeCategory]) {
         acc[prizeCategory] = {
-          prizeAmount: prizeAmount, 
-          ticketNumbers: [formattedTicketNumber], 
+          prizeAmount: prizeAmount,
+          ticketNumbers: formattedTicketNumbers,
+          announceTime,
+          date: createdAt
         };
       } else {
-        acc[prizeCategory].ticketNumbers.push(formattedTicketNumber);
+        acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
       }
+
       return acc;
     }, {});
 
-    const formattedResults = Object.entries(groupedResults).map(([prizeCategory, { prizeAmount, ticketNumbers }]) => ({
-      prizeCategory,
-      prizeAmount,
-      ticketNumbers,
-    }));
+    const formattedResults = Object.entries(groupedResults).map(
+      ([prizeCategory, { prizeAmount, ticketNumbers, announceTime, date }]) => {
+        let limitedTicketNumbers;
 
-    return apiResponseSuccess(
-      formattedResults,
-      true,
-      statusCode.success,
-      'Prize results retrieved successfully.',
-      res
+        if (prizeCategory === "First Prize") {
+          limitedTicketNumbers = ticketNumbers.slice(0, 1);
+        } else if (
+          ["Second Prize", "Third Prize", "Fourth Prize"].includes(
+            prizeCategory
+          )
+        ) {
+          limitedTicketNumbers = ticketNumbers.slice(0, 10);
+        } else if (prizeCategory === "Fifth Prize") {
+          limitedTicketNumbers = ticketNumbers.slice(0, 50);
+        }
+
+        while (
+          limitedTicketNumbers.length < 10 &&
+          prizeCategory !== "First Prize"
+        ) {
+          limitedTicketNumbers.push(
+            limitedTicketNumbers[limitedTicketNumbers.length - 1]
+          );
+        }
+
+        return {
+          prizeCategory,
+          prizeAmount,
+          ticketNumbers: [...new Set(limitedTicketNumbers)],
+        };
+      }
     );
+
+    const response = {
+      date: new Date().toISOString(),  
+      announceTime: results.length ? results[0].announceTime : null,
+      data: formattedResults,
+    };
+
+    return apiResponseSuccess(response, true, statusCode.success, "Prize results retrieved successfully.", res);
   } catch (error) {
     return apiResponseErr(
       null,
@@ -242,3 +287,9 @@ export const getResult = async (req, res) => {
     );
   }
 };
+
+
+
+
+
+
