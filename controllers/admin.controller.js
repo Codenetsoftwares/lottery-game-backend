@@ -261,27 +261,31 @@ export const adminPurchaseHistory = async (req, res) => {
   }
 };
 
+
 export const createDrawDate = async (req, res) => {
   try {
     const { drawDate } = req.body;
-
     await DrawDate.destroy({
       where: {
         createdAt: {
-          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1)) 
+          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1))
         }
       }
     });
-
     const existingDate = await DrawDate.findOne({
-      where: { drawDate },
+      where: {
+        drawDate: {
+          [Op.eq]: drawDate, 
+        },
+      },
     });
+
     if (existingDate) {
       return apiResponseErr(
         null,
         false,
         statusCode.badRequest,
-        "Draw date already exists.",
+        "A draw date already exists.",
         res
       );
     }
@@ -305,6 +309,7 @@ export const createDrawDate = async (req, res) => {
     );
   }
 };
+
 
 export const createResult = async (req, res) => {
   try {
