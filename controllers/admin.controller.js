@@ -491,16 +491,11 @@ export const getResult = async (req, res) => {
           prizeCategory,
           prizeAmount,
           announceTime,
+          date,
           ticketNumbers: [...new Set(limitedTicketNumbers)],
         };
       }
     );
-
-    const response = {
-      date: new Date().toISOString(),
-      announceTime: results.length > 0 ? results[0].announceTime : null, 
-      data
-    };
 
     return apiResponseSuccess(data, true, statusCode.success, "Prize results retrieved successfully.", res);
 
