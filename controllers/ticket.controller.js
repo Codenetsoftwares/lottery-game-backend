@@ -54,6 +54,10 @@ export const geTicketRange = async (req, res) => {
             }
         });
 
+        if (!ticketData || ticketData.length === 0) {
+            return apiResponseSuccess([], true, statusCode.success, 'No data', res);
+        }
+
         return apiResponseSuccess(ticketData, true, statusCode.success, 'Success', res);
     }
     catch (error) {
