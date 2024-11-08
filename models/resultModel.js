@@ -1,8 +1,8 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
 const LotteryResult = sequelize.define(
-  "LotteryResult",
+  'LotteryResult',
   {
     resultId: {
       type: DataTypes.STRING,
@@ -10,17 +10,11 @@ const LotteryResult = sequelize.define(
       allowNull: false,
     },
     ticketNumber: {
-      type: DataTypes.JSON, 
+      type: DataTypes.JSON,
       allowNull: false,
     },
     prizeCategory: {
-      type: DataTypes.ENUM(
-        "First Prize",
-        "Second Prize",
-        "Third Prize",
-        "Fourth Prize",
-        "Fifth Prize"
-      ),
+      type: DataTypes.ENUM('First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'),
       allowNull: false,
     },
     prizeAmount: {
@@ -33,11 +27,10 @@ const LotteryResult = sequelize.define(
     },
   },
   {
-    tableName: "LotteryResult",
+    tableName: 'LotteryResult',
     timestamps: true,
     freezeTableName: true,
-  }
+  },
 );
 
 export default LotteryResult;
-

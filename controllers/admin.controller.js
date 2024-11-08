@@ -1,21 +1,17 @@
-import Admin from "../models/adminModel.js";
-import {
-  apiResponseErr,
-  apiResponsePagination,
-  apiResponseSuccess,
-} from "../utils/response.js";
-import { v4 as uuidv4 } from "uuid";
-import { statusCode } from "../utils/statusCodes.js";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { TicketService } from "../constructor/ticketService.js";
-import CustomError from "../utils/extendError.js";
-import TicketRange from "../models/ticketRange.model.js";
-import { Op } from "sequelize";
-import UserRange from "../models/user.model.js";
-import PurchaseLottery from "../models/purchase.model.js";
-import DrawDate from "../models/drawdateModel.js";
-import LotteryResult from "../models/resultModel.js";
+import Admin from '../models/adminModel.js';
+import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from '../utils/response.js';
+import { v4 as uuidv4 } from 'uuid';
+import { statusCode } from '../utils/statusCodes.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import { TicketService } from '../constructor/ticketService.js';
+import CustomError from '../utils/extendError.js';
+import TicketRange from '../models/ticketRange.model.js';
+import { Op } from 'sequelize';
+import UserRange from '../models/user.model.js';
+import PurchaseLottery from '../models/purchase.model.js';
+import DrawDate from '../models/drawdateModel.js';
+import LotteryResult from '../models/resultModel.js';
 dotenv.config();
 
 export const createAdmin = async (req, res) => {
@@ -28,13 +24,7 @@ export const createAdmin = async (req, res) => {
     });
 
     if (existingAdmin) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Admin already exist",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Admin already exist', res);
     }
 
     const newAdmin = await Admin.create({
@@ -44,21 +34,9 @@ export const createAdmin = async (req, res) => {
       role,
     });
 
-    return apiResponseSuccess(
-      newAdmin,
-      true,
-      statusCode.create,
-      "created successfully",
-      res
-    );
+    return apiResponseSuccess(newAdmin, true, statusCode.create, 'created successfully', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      error.responseCode ?? statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
   }
 };
 
@@ -68,25 +46,13 @@ export const login = async (req, res) => {
     const existingUser = await Admin.findOne({ where: { userName } });
 
     if (!existingUser) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "User does not exist",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'User does not exist', res);
     }
 
     const isPasswordValid = await existingUser.validPassword(password);
 
     if (!isPasswordValid) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Invalid username or password",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'Invalid username or password', res);
     }
 
     const userResponse = {
@@ -95,7 +61,7 @@ export const login = async (req, res) => {
       role: existingUser.role,
     };
     const accessToken = jwt.sign(userResponse, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1d",
+      expiresIn: '1d',
     });
 
     return apiResponseSuccess(
@@ -105,17 +71,11 @@ export const login = async (req, res) => {
       },
       true,
       statusCode.success,
-      "login successfully",
-      res
+      'login successfully',
+      res,
     );
   } catch (error) {
-    apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.errMessage ?? error.message,
-      res
-    );
+    apiResponseErr(null, false, statusCode.internalServerError, error.errMessage ?? error.message, res);
   }
 };
 
@@ -147,11 +107,11 @@ export const adminSearchTickets = async ({ group, series, number, sem }) => {
         data: [],
         success: true,
         successCode: 200,
-        message: "No tickets available in the given range.",
+        message: 'No tickets available in the given range.',
       };
     }
   } catch (error) {
-    console.error("Error saving ticket range:", error);
+    console.error('Error saving ticket range:', error);
     return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
@@ -165,7 +125,7 @@ export const adminPurchaseHistory = async (req, res) => {
       include: [
         {
           model: UserRange,
-          as: "userRange",
+          as: 'userRange',
           ...(sem && { where: { sem } }),
         },
       ],
@@ -174,13 +134,7 @@ export const adminPurchaseHistory = async (req, res) => {
     });
 
     if (!purchaseRecords.rows || purchaseRecords.rows.length === 0) {
-      return apiResponseSuccess(
-        [],
-        true,
-        statusCode.success,
-        "No purchase history found",
-        res
-      );
+      return apiResponseSuccess([], true, statusCode.success, 'No purchase history found', res);
     }
 
     const historyWithTickets = await Promise.all(
@@ -199,12 +153,7 @@ export const adminPurchaseHistory = async (req, res) => {
         if (userRange) {
           const { group, series, number, sem: userSem } = userRange;
 
-          const ticketService = new TicketService(
-            group,
-            series,
-            number,
-            userSem
-          );
+          const ticketService = new TicketService(group, series, number, userSem);
           const tickets = ticketService.list();
 
           return {
@@ -217,21 +166,13 @@ export const adminPurchaseHistory = async (req, res) => {
         } else {
           return null;
         }
-      })
+      }),
     );
 
-    const filteredHistoryWithTickets = historyWithTickets.filter(
-      (record) => record !== null
-    );
+    const filteredHistoryWithTickets = historyWithTickets.filter((record) => record !== null);
 
     if (filteredHistoryWithTickets.length === 0) {
-      return apiResponseSuccess(
-        [],
-        true,
-        statusCode.success,
-        "No purchase history found for the given sem",
-        res
-      );
+      return apiResponseSuccess([], true, statusCode.success, 'No purchase history found for the given sem', res);
     }
 
     const pagination = {
@@ -241,26 +182,12 @@ export const adminPurchaseHistory = async (req, res) => {
       totalItems: purchaseRecords.count,
     };
 
-    return apiResponsePagination(
-      filteredHistoryWithTickets,
-      true,
-      statusCode.success,
-      "Success",
-      pagination,
-      res
-    );
+    return apiResponsePagination(filteredHistoryWithTickets, true, statusCode.success, 'Success', pagination, res);
   } catch (error) {
-    console.error("Error fetching purchase history:", error);
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    console.error('Error fetching purchase history:', error);
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
-
 
 export const createDrawDate = async (req, res) => {
   try {
@@ -268,9 +195,9 @@ export const createDrawDate = async (req, res) => {
     await DrawDate.destroy({
       where: {
         createdAt: {
-          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1))
-        }
-      }
+          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1)),
+        },
+      },
     });
     const existingDate = await DrawDate.findOne({
       where: {
@@ -281,49 +208,23 @@ export const createDrawDate = async (req, res) => {
     });
 
     if (existingDate) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "A draw date already exists.",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, 'A draw date already exists.', res);
     }
 
     const newDrawDate = await DrawDate.create({ drawId: uuidv4(), drawDate });
 
-    return apiResponseSuccess(
-      newDrawDate,
-      true,
-      statusCode.create,
-      "Draw date created successfully.",
-      res
-    );
+    return apiResponseSuccess(newDrawDate, true, statusCode.create, 'Draw date created successfully.', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
 
-
-
 export const getResult = async (req, res) => {
   try {
-    const announce = req.query.announce
+    const announce = req.query.announce;
 
     const whereConditions = {
-      prizeCategory: [
-        "First Prize",
-        "Second Prize",
-        "Third Prize",
-        "Fourth Prize",
-        "Fifth Prize",
-      ],
+      prizeCategory: ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'],
     };
 
     if (announce) {
@@ -332,30 +233,23 @@ export const getResult = async (req, res) => {
 
     const results = await LotteryResult.findAll({
       where: whereConditions,
-      order: [["prizeCategory", "ASC"]],
-      attributes: { include: ["createdAt"] },
+      order: [['prizeCategory', 'ASC']],
+      attributes: { include: ['createdAt'] },
     });
-
 
     const groupedResults = results.reduce((acc, result) => {
       const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
 
-      let formattedTicketNumbers = Array.isArray(ticketNumber)
-        ? ticketNumber
-        : [ticketNumber];
+      let formattedTicketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
 
-      if (prizeCategory === "Second Prize") {
-        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
-          ticket.slice(-5)
-        );
+      if (prizeCategory === 'Second Prize') {
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) => ticket.slice(-5));
       } else if (
-        prizeCategory === "Third Prize" ||
-        prizeCategory === "Fourth Prize" ||
-        prizeCategory === "Fifth Prize"
+        prizeCategory === 'Third Prize' ||
+        prizeCategory === 'Fourth Prize' ||
+        prizeCategory === 'Fifth Prize'
       ) {
-        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
-          ticket.slice(-4)
-        );
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) => ticket.slice(-4));
       }
 
       if (!acc[prizeCategory]) {
@@ -363,7 +257,7 @@ export const getResult = async (req, res) => {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
           announceTime,
-          date: createdAt
+          date: createdAt,
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
@@ -376,25 +270,16 @@ export const getResult = async (req, res) => {
       ([prizeCategory, { prizeAmount, ticketNumbers, announceTime, date }]) => {
         let limitedTicketNumbers;
 
-        if (prizeCategory === "First Prize") {
+        if (prizeCategory === 'First Prize') {
           limitedTicketNumbers = ticketNumbers.slice(0, 1);
-        } else if (
-          ["Second Prize", "Third Prize", "Fourth Prize"].includes(
-            prizeCategory
-          )
-        ) {
+        } else if (['Second Prize', 'Third Prize', 'Fourth Prize'].includes(prizeCategory)) {
           limitedTicketNumbers = ticketNumbers.slice(0, 10);
-        } else if (prizeCategory === "Fifth Prize") {
+        } else if (prizeCategory === 'Fifth Prize') {
           limitedTicketNumbers = ticketNumbers.slice(0, 50);
         }
 
-        while (
-          limitedTicketNumbers.length < 10 &&
-          prizeCategory !== "First Prize"
-        ) {
-          limitedTicketNumbers.push(
-            limitedTicketNumbers[limitedTicketNumbers.length - 1]
-          );
+        while (limitedTicketNumbers.length < 10 && prizeCategory !== 'First Prize') {
+          limitedTicketNumbers.push(limitedTicketNumbers[limitedTicketNumbers.length - 1]);
         }
 
         return {
@@ -404,19 +289,11 @@ export const getResult = async (req, res) => {
           date,
           ticketNumbers: [...new Set(limitedTicketNumbers)],
         };
-      }
+      },
     );
 
-    return apiResponseSuccess(data, true, statusCode.success, "Prize results retrieved successfully.", res);
-
+    return apiResponseSuccess(data, true, statusCode.success, 'Prize results retrieved successfully.', res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
-

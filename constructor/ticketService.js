@@ -1,9 +1,9 @@
 export class TicketService {
   constructor(group, series, number, sem) {
-    this.group = group; 
-    this.series = series; 
-    this.number = number; 
-    this.sem = sem; 
+    this.group = group;
+    this.series = series;
+    this.number = number;
+    this.sem = sem;
   }
 
   list() {
@@ -13,7 +13,7 @@ export class TicketService {
     const tickets = [];
 
     for (let i = 0; i < this.sem; i++) {
-      const seriesArrays = (this.sem === 5 || this.sem === 25) ? ['A', 'B', 'C', 'D', 'E'] : seriesArray;
+      const seriesArrays = this.sem === 5 || this.sem === 25 ? ['A', 'B', 'C', 'D', 'E'] : seriesArray;
 
       tickets.push(`${currentGroup} ${seriesArray[currentSeriesIndex]} ${this.number}`);
 
@@ -21,12 +21,12 @@ export class TicketService {
 
       // If the series reaches past the defined array, reset to 'A' and increment the group
       if (currentSeriesIndex >= seriesArrays.length) {
-        currentSeriesIndex = 0; 
+        currentSeriesIndex = 0;
         currentGroup++;
       }
     }
 
-    return tickets; 
+    return tickets;
   }
 
   calculatePrice() {
