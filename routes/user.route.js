@@ -43,6 +43,7 @@ export const userRoute = (app) => {
     "/api/purchase-lottery",
     purchaseTicketValidation,
     customErrorHandler,
+    authenticateUser,
     PurchaseTickets
   );
 
@@ -55,5 +56,5 @@ export const userRoute = (app) => {
 
   app.get("/api/draw-dates", getDrawDateByDate);
 
-  app.get("/api/prize-results", authenticateUser, getResult); // fetch on the colorgame no work
+  app.get("/api/prize-results", authenticateUser, getResult); 
 };

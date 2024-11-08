@@ -275,7 +275,7 @@ export const createDrawDate = async (req, res) => {
     const existingDate = await DrawDate.findOne({
       where: {
         drawDate: {
-          [Op.eq]: drawDate, 
+          [Op.eq]: drawDate,
         },
       },
     });
@@ -311,101 +311,11 @@ export const createDrawDate = async (req, res) => {
 };
 
 
-export const createResult = async (req, res) => {
-  try {
-    const { ticketNumber, prizeCategory, prizeAmount, announceTime } = req.body;
-
-    const prizeLimits = {
-      "First Prize": 1,
-      "Second Prize": 10,
-      "Third Prize": 10,
-      "Fourth Prize": 10,
-      "Fifth Prize": 50,
-    };
-
-    if (!prizeLimits[prizeCategory]) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Invalid prize category.",
-        res
-      );
-    }
-
-    const ticketNumbers = Array.isArray(ticketNumber)
-      ? ticketNumber
-      : [ticketNumber];
-
-    if (ticketNumbers.length !== prizeLimits[prizeCategory]) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        `The ${prizeCategory} requires exactly ${prizeLimits[prizeCategory]} ticket number(s).`,
-        res
-      );
-    }
-
-    const allResults = await LotteryResult.findAll();
-
-    const isDuplicate = ticketNumbers.some((ticket) =>
-      allResults.some((result) => result.ticketNumber.includes(ticket))
-    );
-
-    if (isDuplicate) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "One or more ticket numbers have already been assigned a prize in another category.",
-        res
-      );
-    }
-
-    const existingResults = await LotteryResult.findAll({
-      where: { prizeCategory: prizeCategory },
-    });
-
-    if (existingResults.length >= 1) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        `Cannot add more ticket numbers. ${prizeCategory} already has the required tickets.`,
-        res
-      );
-    }
-
-    const savedResult = await LotteryResult.create({
-      ticketNumber: ticketNumbers,
-      prizeCategory,
-      prizeAmount,
-      announceTime,
-    });
-
-    return apiResponseSuccess(
-      savedResult,
-      true,
-      statusCode.create,
-      "Result saved successfully.",
-      res
-    );
-  } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
-  }
-};
 
 export const getResult = async (req, res) => {
   try {
     const announce = req.query.announce
-    
+
     const whereConditions = {
       prizeCategory: [
         "First Prize",
@@ -417,9 +327,9 @@ export const getResult = async (req, res) => {
     };
 
     if (announce) {
-      whereConditions.announceTime = announce; 
+      whereConditions.announceTime = announce;
     }
-    
+
     const results = await LotteryResult.findAll({
       where: whereConditions,
       order: [["prizeCategory", "ASC"]],
@@ -453,7 +363,7 @@ export const getResult = async (req, res) => {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
           announceTime,
-          date: createdAt 
+          date: createdAt
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);

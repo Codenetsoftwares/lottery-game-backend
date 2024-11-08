@@ -67,12 +67,30 @@ export const searchTickets = async ({ group, series, number, sem }) => {
 export const PurchaseTickets = async (req, res) => {
   try {
     const { generateId, drawDate, userId, userName } = req.body;
-    await UserRange.findOne({
-      where: {
-        generateId: generateId,
-      },
+    const userRange = await UserRange.findOne({
+      where: { generateId },
     });
-    await PurchaseLottery.create({ generateId, drawDate, userId, userName });
+    if (!userRange) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "No UserRange found with the given generateId",
+        res
+      );
+    }
+    const { group, series, number, sem } = userRange;
+
+    await PurchaseLottery.create({
+      generateId,
+      drawDate,
+      userId,
+      userName,
+      group,
+      series,
+      number,
+      sem,
+    });
     return apiResponseSuccess(
       null,
       true,
@@ -189,7 +207,7 @@ export const getDrawDateByDate = async (req, res) => {
 export const getResult = async (req, res) => {
   try {
     const announce = req.query.announce
-    
+
     const whereConditions = {
       prizeCategory: [
         "First Prize",
@@ -201,9 +219,9 @@ export const getResult = async (req, res) => {
     };
 
     if (announce) {
-      whereConditions.announceTime = announce; 
+      whereConditions.announceTime = announce;
     }
-    
+
     const results = await LotteryResult.findAll({
       where: whereConditions,
       order: [["prizeCategory", "ASC"]],
@@ -237,7 +255,7 @@ export const getResult = async (req, res) => {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
           announceTime,
-          date: createdAt 
+          date: createdAt
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);

@@ -24,6 +24,22 @@ const PurchaseLottery = sequelize.define('PurchaseLottery', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    group: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    series: {
+        type: DataTypes.CHAR(1),
+        allowNull: false,
+    },
+    number: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    sem: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 
 }, {
     tableName: 'PurchaseLottery',

@@ -4,7 +4,6 @@ import {
   adminSearchTickets,
   createAdmin,
   createDrawDate,
-  createResult,
   getResult,
   login,
 } from "../controllers/admin.controller.js";
@@ -13,7 +12,6 @@ import {
   searchTicketValidation,
   validateAdminCreate,
   validateAdminLogin,
-  validateCreateResult,
 } from "../utils/commonSchema.js";
 import customErrorHandler from "../utils/customErrorHandler.js";
 import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
@@ -59,14 +57,6 @@ export const adminRoutes = (app) => {
   app.get("/api/admin/purchase-history", adminPurchaseHistory);
 
   app.post("/api/admin/draw-dates", createDrawDate);
-
-  app.post(
-    "/api/admin/results-declaration",
-    validateCreateResult,
-    customErrorHandler,
-    authorize([string.Admin]),
-    createResult
-  );
 
   app.get("/api/admin/prize-results", authorize([string.Admin]), getResult);
 };

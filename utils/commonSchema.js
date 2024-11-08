@@ -81,17 +81,57 @@ export const validatePurchaseHistory = [
 
 
 export const validateCreateResult = [
-    body("ticketNumber")
+  body("ticketNumber")
     .notEmpty().withMessage("Ticket number is required.")
     .isArray().withMessage("Ticket number must be an array."),
-    body("prizeCategory")
+  body("prizeCategory")
     .notEmpty().withMessage("Prize category is required.")
     .isIn(["First Prize", "Second Prize", "Third Prize", "Fourth Prize", "Fifth Prize"])
     .withMessage("Invalid prize category."),
-    body("prizeAmount")
+  body("prizeAmount")
     .notEmpty().withMessage("Prize amount is required.")
     .isInt({ min: 1 }).withMessage("Prize amount must be a positive integer."),
-    body("announceTime")
+  body("announceTime")
     .notEmpty().withMessage("Announce time is required.")
     .isString().withMessage("Announce time must be a string."),
 ];
+
+
+const checkTicketNumberFormat = (prizeCategory) => {
+  return (value) => {
+    const ticketNumber = value.trim();
+
+    // Validate ticket number based on the prize category
+    if (prizeCategory === 'Second Prize') {
+      // Second prize should contain only the last 5 digits (e.g., 00001)
+      const ticketRegex = /^\d{5}$/;
+      return ticketRegex.test(ticketNumber);
+    } else if (prizeCategory === 'Third Prize' || prizeCategory === 'Fourth Prize' || prizeCategory === 'Fifth Prize') {
+      // Third prize should contain only the last 4 digits (e.g., 0001)
+      const ticketRegex = /^\d{4}$/;
+      return ticketRegex.test(ticketNumber);
+    } else if (prizeCategory === 'First Prize') {
+      // First prize can contain the whole ticket number (e.g., 38 A 00001)
+      const ticketRegex = /^\d{1,2} [A-Z] \d{5}$/;
+      return ticketRegex.test(ticketNumber);
+    }
+    return false;
+  };
+};
+
+export const validationRules = [
+  body('ticketNumber').isArray().withMessage('Ticket numbers must be an array')
+    .custom((value, { req }) => {
+      // Validate each ticket number based on prize category
+      const valid = value.every(ticket => checkTicketNumberFormat(req.body.prizeCategory)(ticket));
+      if (!valid) {
+        throw new Error('Ticket numbers do not match the required format for the selected prize category');
+      }
+      return true;
+    }),
+  body('prizeCategory').isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
+    .withMessage('Invalid prize category'),
+  body('prizeAmount').isNumeric().withMessage('Prize amount must be a number'),
+  body('announceTime').isISO8601().withMessage('Announce time must be a valid ISO 8601 timestamp'),
+];
+

@@ -1,18 +1,16 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
-import { v4 as uuidv4 } from "uuid";
 
 const LotteryResult = sequelize.define(
   "LotteryResult",
   {
     resultId: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.STRING,
       primaryKey: true,
       allowNull: false,
     },
     ticketNumber: {
-      type: DataTypes.JSON,
+      type: DataTypes.JSON, 
       allowNull: false,
     },
     prizeCategory: {
@@ -29,7 +27,7 @@ const LotteryResult = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    announceTime:{
+    marketTime: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -42,3 +40,4 @@ const LotteryResult = sequelize.define(
 );
 
 export default LotteryResult;
+

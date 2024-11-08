@@ -8,6 +8,7 @@ import { userRoute } from "./routes/user.route.js";
 import { adminRoutes } from "./routes/admin.route.js";
 import PurchaseLottery from "./models/purchase.model.js";
 import UserRange from "./models/user.model.js";
+import { ResultDeclarationModule } from "./routes/ResultDeclaration.route.js";
 
 dotenv.config();
 const app = express();
@@ -25,7 +26,8 @@ app.get("/", (req, res) => {
 
 adminRoutes(app);
 ticketRoute(app);
-userRoute(app)
+userRoute(app);
+ResultDeclarationModule(app)
 
 PurchaseLottery.belongsTo(UserRange, {
   foreignKey: 'generateId',
