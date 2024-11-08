@@ -21,6 +21,10 @@ const LotteryResult = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    complementaryPrize : {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     marketTime: {
       type: DataTypes.STRING,
       allowNull: false,
