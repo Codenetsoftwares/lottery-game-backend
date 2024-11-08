@@ -32,32 +32,32 @@ export const purchaseTicketValidation = [
 ];
 
 
-export const createTicketValidation = [
-  body('group.min').isInt({ min: 38 }).withMessage('Group must be a positive integer'),
-  body('group.max').isInt({ max: 99 }).withMessage('Group must be a positive integer'),
-  body('group')
-    .custom(({ min, max }) => {
-      if (min > max) {
-        throw new Error('Group minimum cannot be greater than Group maximum');
-      }
-      return true;
-    }),
+// export const createTicketValidation = [
+//   body('group.min').isInt({ min: 38 }).withMessage('Group must be a positive integer'),
+//   body('group.max').isInt({ max: 99 }).withMessage('Group must be a positive integer'),
+//   body('group')
+//     .custom(({ min, max }) => {
+//       if (min > max) {
+//         throw new Error('Group minimum cannot be greater than Group maximum');
+//       }
+//       return true;
+//     }),
 
-  body('series.start').isIn(['A', 'B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L'])
-    .withMessage('Series must be between A and L'),
-  body('series.end').isIn(['A', 'B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L'])
-    .withMessage('Series must be between A and L'),
+//   body('series.start').isIn(['A', 'B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L'])
+//     .withMessage('Series must be between A and L'),
+//   body('series.end').isIn(['A', 'B', 'C', 'D', 'E', 'G', 'H', 'I', 'J', 'K', 'L'])
+//     .withMessage('Series must be between A and L'),
 
-  body('number.min').isLength({ min: 5, max: 5 }).withMessage('number.min must be exactly 5 digits').isString({ min: '00000' }).withMessage('Number minimum start with 00000'),
-  body('number.max').isLength({ min: 5, max: 5 }).withMessage('number.max must be exactly 5 digits').isString({ max: '99999' }).withMessage('Maximum number 99999'),
-  body('number')
-    .custom(({ min, max }) => {
-      if (min > max) {
-        throw new Error('Number min cannot be greater than Number max');
-      }
-      return true;
-    }),
-];
+//   body('number.min').isLength({ min: 5, max: 5 }).withMessage('number.min must be exactly 5 digits').isString({ min: '00000' }).withMessage('Number minimum start with 00000'),
+//   body('number.max').isLength({ min: 5, max: 5 }).withMessage('number.max must be exactly 5 digits').isString({ max: '99999' }).withMessage('Maximum number 99999'),
+//   body('number')
+//     .custom(({ min, max }) => {
+//       if (min > max) {
+//         throw new Error('Number min cannot be greater than Number max');
+//       }
+//       return true;
+//     }),
+// ];
 
 export const searchTicketValidation = [
   body('group')

@@ -30,10 +30,21 @@ const TicketRange = sequelize.define('TicketRange', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  start_time: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  end_time: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  market_time: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
   tableName: 'TicketRange',
   timestamps: true,
 });
 
 export default TicketRange;
-
