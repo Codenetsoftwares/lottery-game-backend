@@ -1,9 +1,9 @@
 export class TicketService {
   constructor(group, series, number, sem) {
-    this.group = group; 
-    this.series = series; 
-    this.number = number; 
-    this.sem = sem; 
+    this.group = group;
+    this.series = series;
+    this.number = number;
+    this.sem = sem;
   }
 
   list() {
@@ -35,6 +35,7 @@ export class TicketService {
       }
     }
 
+    return tickets;
     return tickets;
   }
 

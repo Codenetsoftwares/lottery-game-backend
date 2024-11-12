@@ -14,6 +14,42 @@ import PurchaseLottery from "../models/purchase.model.js";
 import DrawDate from "../models/drawdateModel.js";
 import LotteryResult from "../models/resultModel.js";
 
+export const getAllMarkets = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
 export const searchTickets = async ({ group, series, number, sem }) => {
   try {
     const today = new Date();
@@ -66,13 +102,52 @@ export const searchTickets = async ({ group, series, number, sem }) => {
 
 export const PurchaseTickets = async (req, res) => {
   try {
-    const { generateId, drawDate, userId, userName } = req.body;
-    await UserRange.findOne({
-      where: {
-        generateId: generateId,
-      },
+    const { generateId, userId, userName} = req.body;
+    const { marketId } = req.params;
+
+    const userRange = await UserRange.findOne({
+      where: { generateId: generateId },
     });
-    await PurchaseLottery.create({ generateId, drawDate, userId, userName });
+
+    if (!userRange) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.notFound,
+        "Generated ID not found in UserRange",
+        res
+      );
+    }
+
+    const ticketRange = await TicketRange.findOne({
+      where: { marketId: marketId },
+      attributes: ["marketId", "marketName"],
+    });
+
+    if (!ticketRange) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.notFound,
+        "Market not found in TicketRange",
+        res
+      );
+    }
+
+    const { marketName } = ticketRange;
+
+    await PurchaseLottery.create({
+      generateId,
+      userId,
+      userName,
+      marketId,
+      marketName,
+      group,
+      series,
+      number,
+      sem,
+    });
+
     return apiResponseSuccess(
       null,
       true,
@@ -81,8 +156,7 @@ export const PurchaseTickets = async (req, res) => {
       res
     );
   } catch (error) {
-    console.error("Error saving ticket range:", error);
-
+    console.log("error", error.message);
     return apiResponseErr(
       null,
       false,
@@ -101,27 +175,42 @@ export const purchaseHistory = async (req, res) => {
 
     const purchaseFilter = {
       where: { userId },
-      include: [{
-        model: UserRange,
-        as: 'userRange',
-        ...(sem && { where: { sem } })
-      }],
+      include: [
+        {
+          model: UserRange,
+          as: "userRange",
+          ...(sem && { where: { sem } }),
+        },
+      ],
       limit: parseInt(limit),
       offset,
     };
 
-    const purchaseRecords = await PurchaseLottery.findAndCountAll(purchaseFilter);
+    const purchaseRecords = await PurchaseLottery.findAndCountAll(
+      purchaseFilter
+    );
 
     if (!purchaseRecords.rows.length) {
-      return apiResponseSuccess([], true, statusCode.success, "No purchase history found", res);
+      return apiResponseSuccess(
+        [],
+        true,
+        statusCode.success,
+        "No purchase history found",
+        res
+      );
     }
 
-    const historyWithTickets = (await Promise.all(
+    const historyWithTickets = await Promise.all(
       purchaseRecords.rows.map(async (purchase) => {
         const userRange = purchase.userRange;
         if (userRange) {
           const { group, series, number, sem: userSem } = userRange;
-          const ticketService = new TicketService(group, series, number, userSem);
+          const ticketService = new TicketService(
+            group,
+            series,
+            number,
+            userSem
+          );
 
           return {
             drawDate: purchase.drawDate,
@@ -133,10 +222,16 @@ export const purchaseHistory = async (req, res) => {
         }
         return null;
       })
-    ))
+    );
 
     if (!historyWithTickets.length) {
-      return apiResponseSuccess([], true, statusCode.success, "No purchase history found for the given sem", res);
+      return apiResponseSuccess(
+        [],
+        true,
+        statusCode.success,
+        "No purchase history found for the given sem",
+        res
+      );
     }
 
     const pagination = {
@@ -146,13 +241,25 @@ export const purchaseHistory = async (req, res) => {
       totalItems: purchaseRecords.count,
     };
 
-    return apiResponsePagination(historyWithTickets, true, statusCode.success, "Success", pagination, res);
+    return apiResponsePagination(
+      historyWithTickets,
+      true,
+      statusCode.success,
+      "Success",
+      pagination,
+      res
+    );
   } catch (error) {
     console.error("Error retrieving purchase history:", error);
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
   }
 };
-
 
 export const getDrawDateByDate = async (req, res) => {
   try {
@@ -184,12 +291,10 @@ export const getDrawDateByDate = async (req, res) => {
   }
 };
 
-
-
 export const getResult = async (req, res) => {
   try {
-    const announce = req.query.announce
-    
+    const announce = req.query.announce;
+
     const whereConditions = {
       prizeCategory: [
         "First Prize",
@@ -201,18 +306,23 @@ export const getResult = async (req, res) => {
     };
 
     if (announce) {
-      whereConditions.announceTime = announce; 
+      whereConditions.announceTime = announce;
     }
-    
+
     const results = await LotteryResult.findAll({
       where: whereConditions,
       order: [["prizeCategory", "ASC"]],
       attributes: { include: ["createdAt"] },
     });
 
-
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
+      const {
+        prizeCategory,
+        ticketNumber,
+        prizeAmount,
+        announceTime,
+        createdAt,
+      } = result;
 
       let formattedTicketNumbers = Array.isArray(ticketNumber)
         ? ticketNumber
@@ -237,7 +347,7 @@ export const getResult = async (req, res) => {
           prizeAmount: prizeAmount,
           ticketNumbers: formattedTicketNumbers,
           announceTime,
-          date: createdAt 
+          date: createdAt,
         };
       } else {
         acc[prizeCategory].ticketNumbers.push(...formattedTicketNumbers);
@@ -281,9 +391,13 @@ export const getResult = async (req, res) => {
       }
     );
 
-
-    return apiResponseSuccess(data, true, statusCode.success, "Prize results retrieved successfully.", res);
-
+    return apiResponseSuccess(
+      data,
+      true,
+      statusCode.success,
+      "Prize results retrieved successfully.",
+      res
+    );
   } catch (error) {
     return apiResponseErr(
       null,
@@ -294,9 +408,3 @@ export const getResult = async (req, res) => {
     );
   }
 };
-
-
-
-
-
-

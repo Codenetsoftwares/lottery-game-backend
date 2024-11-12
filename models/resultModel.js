@@ -1,13 +1,11 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../config/db.js";
-import { v4 as uuidv4 } from "uuid";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
 const LotteryResult = sequelize.define(
-  "LotteryResult",
+  'LotteryResult',
   {
     resultId: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.STRING,
       primaryKey: true,
       allowNull: false,
     },
@@ -16,29 +14,27 @@ const LotteryResult = sequelize.define(
       allowNull: false,
     },
     prizeCategory: {
-      type: DataTypes.ENUM(
-        "First Prize",
-        "Second Prize",
-        "Third Prize",
-        "Fourth Prize",
-        "Fifth Prize"
-      ),
+      type: DataTypes.ENUM('First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'),
       allowNull: false,
     },
     prizeAmount: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    announceTime:{
+    complementaryPrize : {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    marketName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
   },
   {
-    tableName: "LotteryResult",
+    tableName: 'LotteryResult',
     timestamps: true,
     freezeTableName: true,
-  }
+  },
 );
 
 export default LotteryResult;

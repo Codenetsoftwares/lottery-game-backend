@@ -1,24 +1,12 @@
-export const apiResponseErr = (
-  data,
-  success,
-  responseCode,
-  errMessage,
-  res
-) => {
+export const apiResponseErr = (data, success, responseCode, errMessage, res) => {
   return res.status(responseCode).send({
     data: data,
     success: success,
     responseCode: responseCode,
-    errMessage: errMessage ?? "Something went wrong",
+    errMessage: errMessage ?? 'Something went wrong',
   });
 };
-export const apiResponseSuccess = (
-  data,
-  success,
-  successCode,
-  message,
-  res
-) => {
+export const apiResponseSuccess = (data, success, successCode, message, res) => {
   return res.status(successCode).send({
     data: data,
     success: success,
@@ -33,7 +21,7 @@ export const apiResponsePagination = (
   successCode,
   message,
   { page, limit, totalPages, totalItems },
-  res
+  res,
 ) => {
   return res.status(successCode).send({
     data: data,

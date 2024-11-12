@@ -5,7 +5,6 @@ import customErrorHandler from "../utils/customErrorHandler.js"
 
 
 export const ticketRoute = (app) => {
-    app.post('/api/generate-ticket', customErrorHandler, saveTicketRange)
-    app.get('/api/get-range', geTicketRange)
-
-}
+  app.post('/api/generate-ticket',  customErrorHandler, saveTicketRange);
+  app.get('/api/get-range', geTicketRange);
+};

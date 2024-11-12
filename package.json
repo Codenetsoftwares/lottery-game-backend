@@ -6,6 +6,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-validator": "^7.2.0",
+    "format": "^0.2.2",
     "jsonwebtoken": "^9.0.2",
     "lottery-game-backend": "file:",
     "mysql2": "^3.11.3",
@@ -13,7 +14,8 @@
     "sequelize": "^6.37.3"
   },
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "format": "npx prettier --write . --config .prettier"
   },
   "name": "lottery-game-backend",
   "version": "1.0.0",

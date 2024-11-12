@@ -2,7 +2,7 @@ import { DataTypes, Sequelize } from 'sequelize';
 import sequelize from '../config/db.js';
 
 const TicketRange = sequelize.define('TicketRange', {
-  ticketId: {
+  marketId: {
     type: DataTypes.UUID,
     allowNull: false,
   },
@@ -38,7 +38,7 @@ const TicketRange = sequelize.define('TicketRange', {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  market_time: {
+  marketName: {
     type: DataTypes.STRING,
     allowNull: false,
   },
