@@ -135,7 +135,8 @@ export const PurchaseTickets = async (req, res) => {
     }
 
     const { marketName } = ticketRange;
-
+    const { group, series, number, sem } = userRange;
+    
     await PurchaseLottery.create({
       generateId,
       userId,
