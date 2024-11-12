@@ -21,14 +21,18 @@ const LotteryResult = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    complementaryPrize : {
+    complementaryPrize: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    marketTime: {
+    marketName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    marketId : {
+      type: DataTypes.UUID,
+      allowNull: false,
+    }
   },
   {
     tableName: 'LotteryResult',

@@ -297,3 +297,60 @@ export const getResult = async (req, res) => {
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
+export const getTicketNumbersByMarket = async (req, res) => {
+  try {
+    const { marketId } = req.params;
+
+    const purchasedTickets = await PurchaseLottery.findAll({
+      where: { marketId: marketId },
+      attributes: ["generateId", "userId", "userName", "group", "series", "number", "sem", "marketName"],
+    });
+
+    if (purchasedTickets.length === 0) {
+      return apiResponseErr(
+        [],
+        true,
+        statusCode.notFound,
+        "No tickets purchased for this market",
+        res
+      );
+    }
+
+    const ticketsWithFullNumbers = purchasedTickets.map(ticket => {
+      const ticketService = new TicketService(ticket.group, ticket.series, ticket.number, ticket.sem);
+
+      const ticketList = ticketService.list(); 
+
+      const formattedTicketList = ticketList.map(ticketNumber => {
+        const [group, series, number] = ticketNumber.split(' ');
+        return `${group} ${series} ${number}`;
+      });
+
+      return {
+        generateId: ticket.generateId,
+        userId: ticket.userId,
+        userName: ticket.userName,
+        sem: ticket.sem,
+        marketName: ticket.marketName,
+        ticketList: formattedTicketList,  
+      };
+    });
+
+    return apiResponseSuccess(
+      { tickets: ticketsWithFullNumbers },
+      true,
+      statusCode.success,
+      "Ticket details fetched successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};

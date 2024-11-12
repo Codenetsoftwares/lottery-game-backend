@@ -10,6 +10,42 @@ import PurchaseLottery from '../models/purchase.model.js';
 import DrawDate from '../models/drawdateModel.js';
 import LotteryResult from '../models/resultModel.js';
 
+export const getAllMarkets = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
 export const searchTickets = async ({ group, series, number, sem }) => {
   try {
     const today = new Date();
@@ -57,33 +93,71 @@ export const searchTickets = async ({ group, series, number, sem }) => {
 
 export const PurchaseTickets = async (req, res) => {
   try {
-    const { generateId, drawDate, userId, userName } = req.body;
+    const { generateId, userId, userName } = req.body;
+    const { marketId } = req.params;
+
     const userRange = await UserRange.findOne({
-      where: { generateId },
+      where: { generateId: generateId },
     });
+
     if (!userRange) {
-      return apiResponseErr(null, false, statusCode.badRequest, 'No UserRange found with the given generateId', res);
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Generated ID not found in UserRange",
+        res
+      );
     }
+
+    const ticketRange = await TicketRange.findOne({
+      where: { marketId: marketId },
+      attributes: ["marketId", "marketName"],
+    });
+
+    if (!ticketRange) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Market not found in TicketRange",
+        res
+      );
+    }
+
+    const { marketName } = ticketRange;
     const { group, series, number, sem } = userRange;
 
     await PurchaseLottery.create({
       generateId,
-      drawDate,
       userId,
       userName,
+      marketId,
+      marketName,
       group,
       series,
       number,
       sem,
     });
-    return apiResponseSuccess(null, true, statusCode.create, 'Lottery purchase successfully', res);
-  } catch (error) {
-    console.error('Error saving ticket range:', error);
 
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    return apiResponseSuccess(
+      null,
+      true,
+      statusCode.create,
+      "Lottery purchase successfully",
+      res
+    );
+  } catch (error) {
+    console.log("error", error.message);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
   }
 };
-
 export const purchaseHistory = async (req, res) => {
   try {
     const { userId } = req.body;

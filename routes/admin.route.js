@@ -5,6 +5,7 @@ import {
   createAdmin,
   createDrawDate,
   getResult,
+  getTicketNumbersByMarket,
   login,
 } from '../controllers/admin.controller.js';
 import { authorize } from '../middlewares/auth.js';
@@ -44,4 +45,6 @@ export const adminRoutes = (app) => {
   app.post('/api/admin/draw-dates', createDrawDate);
 
   app.get('/api/admin/prize-results', authorize([string.Admin]), getResult);
+
+  app.get("/api/tickets/purchases/:marketId", getTicketNumbersByMarket)
 };

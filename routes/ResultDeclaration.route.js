@@ -4,10 +4,10 @@ import customErrorHandler from '../utils/customErrorHandler.js';
 
 export const ResultDeclarationModule = (app) => {
   app.post(
-    '/api/admin/results-declaration',
+    '/api/admin/results-declaration/:marketId',
     validationRules,
     customErrorHandler,
-    // authorize([string.Admin]),
+    authorize([string.Admin]),
     ResultDeclare,
   );
 };

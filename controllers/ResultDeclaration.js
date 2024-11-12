@@ -1,12 +1,20 @@
+import { Op } from 'sequelize';
+import PurchaseLottery from '../models/purchase.model.js';
 import LotteryResult from '../models/resultModel.js';
-import UserRange from '../models/user.model.js';
 import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
-import { statusCode } from '../utils/statusCodes';
+import { statusCode } from '../utils/statusCodes.js';
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+import TicketRange from '../models/ticketRange.model.js';
 
 export const ResultDeclare = async (req, res) => {
   try {
     const { ticketNumber, prizeCategory, prizeAmount, complementaryPrize } = req.body;
-
+    const { marketId } = req.params
+    const market = await TicketRange.findOne({ where: { marketId } });
+    if (!market) {
+      return apiResponseErr(null, false, statusCode.badRequest, 'Market not found', res);
+    }
     const prizeLimits = {
       'First Prize': 1,
       'Second Prize': 10,
@@ -30,7 +38,9 @@ export const ResultDeclare = async (req, res) => {
       );
     }
 
-    const allResults = await LotteryResult.findAll();
+    const allResults = await LotteryResult.findAll({
+      where: { marketId } 
+    });
     const isDuplicate = ticketNumbers.some((ticket) =>
       allResults.some((result) => result.ticketNumber.includes(ticket)),
     );
@@ -46,7 +56,7 @@ export const ResultDeclare = async (req, res) => {
     }
 
     const existingResults = await LotteryResult.findAll({
-      where: { prizeCategory: prizeCategory },
+      where: { prizeCategory, marketId }, 
     });
     if (existingResults.length >= prizeLimits[prizeCategory]) {
       return apiResponseErr(
@@ -71,6 +81,7 @@ export const ResultDeclare = async (req, res) => {
       lastFiveForFirstPrize = lastFive;
       generatedTickets.push({
         resultId: uuidv4(),
+        marketId,
         ticketNumber: ticketNumbers,
         prizeCategory,
         prizeAmount,
@@ -85,6 +96,7 @@ export const ResultDeclare = async (req, res) => {
         lastFourForSecondPrize = lastFive;
         generatedTickets.push({
           resultId: uuidv4(),
+          marketId,
           ticketNumber: ticketNumbers,
           prizeCategory,
           prizeAmount,
@@ -100,6 +112,7 @@ export const ResultDeclare = async (req, res) => {
         lastFourForThirdPrize = lastFour;
         generatedTickets.push({
           resultId: uuidv4(),
+          marketId,
           ticketNumber: ticketNumbers,
           prizeCategory,
           prizeAmount,
@@ -118,6 +131,7 @@ export const ResultDeclare = async (req, res) => {
         lastFourForFourthPrize = lastFour;
         generatedTickets.push({
           resultId: uuidv4(),
+          marketId,
           ticketNumber: ticketNumbers,
           prizeCategory,
           prizeAmount,
@@ -136,18 +150,66 @@ export const ResultDeclare = async (req, res) => {
       ) {
         generatedTickets.push({
           resultId: uuidv4(),
+          marketId,
           ticketNumber: ticketNumbers,
           prizeCategory,
           prizeAmount,
         });
       }
     }
+    console.log('Ticket Numbers:', ticketNumbers);
+    const matchedTickets = await PurchaseLottery.findAll({
+      where: {
+        marketId,
+        [Op.or]: ticketNumbers.map((ticket) => {
+          if (prizeCategory === 'First Prize') {
+            // Full ticket match for first prize
+            const [group, series, number] = ticket.split(' ');
+            return { group, series, number };
+          } else if (prizeCategory === 'Second Prize') {
+            // Match last 5 digits
+            return { number: { [Op.like]: `%${ticket.slice(-5)}` } };
+          } else {
+            // Match last 4 digits for other prizes
+            return { number: { [Op.like]: `%${ticket.slice(-4)}` } };
+          }
+
+        }),
+      },
+    });
 
     const savedResults = await LotteryResult.bulkCreate(generatedTickets);
 
-    const userTicket = await UserRange.findAll();
+    for (const ticket of matchedTickets) {
+      const { userId, sem } = ticket;
+      const totalPrize =
+        prizeCategory === 'First Prize'
+          ? prizeAmount
+          : sem * prizeAmount;
+
+      const response = await axios.post('http://localhost:7000/api/users/update-balance', {
+        userId,
+        prizeAmount: totalPrize,
+        marketId
+      });
+
+      if (!response.data.success) {
+        return apiResponseErr(
+          null,
+          false,
+          statusCode.badRequest,
+          `Failed to update balance for userId ${userId}.`,
+          res
+        );
+      }
+
+      console.log(`Balance updated for userId ${userId}:`, response.data);
+    }
+
     return apiResponseSuccess(savedResults, true, statusCode.create, 'Lottery results saved successfully.', res);
+
   } catch (error) {
+    console.log("error",error)
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };

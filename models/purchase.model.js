@@ -22,10 +22,6 @@ const PurchaseLottery = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    drawDate: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     group: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -42,11 +38,19 @@ const PurchaseLottery = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    marketName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    marketId : {
+      type: DataTypes.UUID,
+      allowNull: false,
+    }
   },
   {
-    tableName: 'PurchaseLottery',
+    tableName: "PurchaseLottery",
     timestamps: true,
-  },
+  }
 );
 
 export default PurchaseLottery;

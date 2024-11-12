@@ -13,6 +13,8 @@ import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
 import { statusCode } from '../utils/statusCodes.js';
 
 export const userRoute = (app) => {
+  app.get('/api/getAll-markets',authenticateUser, getAllMarkets)
+  
   app.post('/api/search-ticket', async (req, res) => {
     try {
       const tickets = await searchTickets(req.body);
@@ -30,7 +32,7 @@ export const userRoute = (app) => {
     }
   });
 
-  app.post('/api/purchase-lottery', purchaseTicketValidation, customErrorHandler, authenticateUser, PurchaseTickets);
+  app.post('/api/purchase-lottery/:marketId', purchaseTicketValidation, customErrorHandler, authenticateUser, PurchaseTickets);
 
   app.post('/api/purchase-history', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
