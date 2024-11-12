@@ -36,7 +36,7 @@ export class TicketService {
     }
 
     return tickets;
-    return tickets;
+   
   }
 
   calculatePrice() {

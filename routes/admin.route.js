@@ -5,6 +5,7 @@ import {
   createAdmin,
   createDrawDate,
   getResult,
+  GetTicketNumbersByMarket,
   login,
 } from '../controllers/admin.controller.js';
 import { authorize } from '../middlewares/auth.js';
@@ -38,6 +39,8 @@ export const adminRoutes = (app) => {
       }
     },
   );
+
+  app.get("/api/tickets/purchases/:marketId",GetTicketNumbersByMarket)
 
   app.get('/api/admin/purchase-history', adminPurchaseHistory);
 
