@@ -1,5 +1,6 @@
 import { string } from '../constructor/string.js';
 import {
+  getAllMarkets,
   getDrawDateByDate,
   getResult,
   purchaseHistory,
@@ -14,7 +15,7 @@ import { statusCode } from '../utils/statusCodes.js';
 
 export const userRoute = (app) => {
   app.get('/api/getAll-markets',authenticateUser, getAllMarkets)
-  
+
   app.post('/api/search-ticket', async (req, res) => {
     try {
       const tickets = await searchTickets(req.body);
