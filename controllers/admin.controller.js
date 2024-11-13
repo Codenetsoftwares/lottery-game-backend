@@ -111,7 +111,6 @@ export const adminSearchTickets = async ({ group, series, number, sem }) => {
       };
     }
   } catch (error) {
-    console.error('Error saving ticket range:', error);
     return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
@@ -308,7 +307,7 @@ export const getTicketNumbersByMarket = async (req, res) => {
     });
 
     if (purchasedTickets.length === 0) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         [],
         true,
         statusCode.notFound,
@@ -342,6 +341,41 @@ export const getTicketNumbersByMarket = async (req, res) => {
       true,
       statusCode.success,
       "Ticket details fetched successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+export const getAllMarkets = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
       res
     );
   } catch (error) {
