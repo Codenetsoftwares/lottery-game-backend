@@ -1,23 +1,36 @@
-import { body } from 'express-validator';
+import { body,query } from 'express-validator';
 import { string } from '../constructor/string.js';
-export const validateAdminCreate = [
-  body('userName').notEmpty().withMessage('Username is required'),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
-  body('role')
-    .notEmpty()
-    .withMessage('Role is required')
-    .isIn([string.Admin, string.SubAdmin, string.User])
-    .withMessage('Invalid role'),
-];
 
+export const validateCreateAdmin = [
+  body('userName').isString().withMessage('Username must be a string').notEmpty().withMessage('Username is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('role').isIn([string.Admin, string.SubAdmin, string.User]).withMessage('Role must be admin, subAdmin, or user'),
+];
+   
 export const validateAdminLogin = [
   body('userName').notEmpty().withMessage('Username is required'),
   body('password').notEmpty().withMessage('Password is required'),
 ];
+
+export const validateAdminSearchTickets = [
+  body('group').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
+  body('series').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
+  body('number').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
+  body('sem').isNumeric().withMessage('Sem must be a numeric value'),
+];
+
+export const validateAdminPurchaseHistory = [
+  query('sem').optional().isInt().withMessage('sem must be an integer'),
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1 }).withMessage('limit must be a positive integer'),
+];
+
+// export const validateAdminSearchTickets = [
+//   body('group').isInt().withMessage('group must be an integer'),
+//   body('series').isString().withMessage('series must be a string'),
+//   body('number').isInt().withMessage('number must be an integer'),
+//   body('sem').optional().isInt().withMessage('sem must be an integer'),
+// ];
 
 export const purchaseTicketValidation = [
   body('generateId').notEmpty().withMessage('Generate ID is required'),
@@ -60,12 +73,12 @@ export const purchaseTicketValidation = [
 //   }),
 // ];
 
-export const searchTicketValidation = [
-  body('group').notEmpty().withMessage('Group is required'),
-  body('series').notEmpty().withMessage('Series is required').isString().withMessage('Series must be a string'),
-  body('number').notEmpty().withMessage('Number is required').isString().withMessage('Series must be a string'),
-  body('sem').notEmpty().withMessage('Sem is required'),
-];
+// export const searchTicketValidation = [
+//   body('group').notEmpty().withMessage('Group is required'),
+//   body('series').notEmpty().withMessage('Series is required').isString().withMessage('Series must be a string'),
+//   body('number').notEmpty().withMessage('Number is required').isString().withMessage('Series must be a string'),
+//   body('sem').notEmpty().withMessage('Sem is required'),
+// ];
 
 export const validatePurchaseHistory = [body('userId').isUUID().withMessage('User ID must be a valid UUID.')];
 
