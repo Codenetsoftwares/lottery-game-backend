@@ -17,6 +17,7 @@ export const validateAdminSearchTickets = [
   body('series').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
   body('number').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
   body('sem').isNumeric().withMessage('Sem must be a numeric value'),
+  body('marketId').notEmpty().withMessage('Market ID is required').isUUID().withMessage('Market ID must be a valid UUID'),
 ];
 
 export const validateAdminPurchaseHistory = [

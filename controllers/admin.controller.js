@@ -79,21 +79,24 @@ export const login = async (req, res) => {
   }
 };
 
-export const adminSearchTickets = async ({ group, series, number, sem }) => {
+export const adminSearchTickets = async ({ group, series, number, sem, marketId }) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const query = {
+      group_start: { [Op.lte]: group },
+      group_end: { [Op.gte]: group },
+      series_start: { [Op.lte]: series },
+      series_end: { [Op.gte]: series },
+      number_start: { [Op.lte]: number },
+      number_end: { [Op.gte]: number },
+      createdAt: { [Op.gte]: today },
+      ...(marketId && { marketId }), // Add marketId condition if it is provided
+    };
+
     const result = await TicketRange.findOne({
-      where: {
-        group_start: { [Op.lte]: group },
-        group_end: { [Op.gte]: group },
-        series_start: { [Op.lte]: series },
-        series_end: { [Op.gte]: series },
-        number_start: { [Op.lte]: number },
-        number_end: { [Op.gte]: number },
-        createdAt: { [Op.gte]: today },
-      },
+      where: query,
     });
 
     if (result) {
@@ -107,13 +110,14 @@ export const adminSearchTickets = async ({ group, series, number, sem }) => {
         data: [],
         success: true,
         successCode: 200,
-        message: 'No tickets available in the given range.',
+        message: 'No tickets available in the given range or market.',
       };
     }
   } catch (error) {
     return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
+
 
 export const adminPurchaseHistory = async (req, res) => {
   try {
