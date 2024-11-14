@@ -42,7 +42,7 @@ export const adminRoutes = (app) => {
 
   app.get('/api/admin/purchase-history', adminPurchaseHistory);
 
-  app.post('/api/admin/draw-dates', createDrawDate);
+  app.post('/api/admin/draw-dates', createDrawDate); // no needed
 
   app.get('/api/admin/prize-results', authorize([string.Admin]), getResult);
 

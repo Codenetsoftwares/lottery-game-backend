@@ -37,7 +37,7 @@ export const userRoute = (app) => {
 
   app.post('/api/purchase-history', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
-  app.get('/api/draw-dates', getDrawDateByDate);
+  app.get('/api/draw-dates', getDrawDateByDate); // no need
 
   app.get('/api/prize-results', authenticateUser, getResult);
 };
