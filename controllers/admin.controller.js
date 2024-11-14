@@ -188,35 +188,6 @@ export const adminPurchaseHistory = async (req, res) => {
   }
 };
 
-export const createDrawDate = async (req, res) => {
-  try {
-    const { drawDate } = req.body;
-    await DrawDate.destroy({
-      where: {
-        createdAt: {
-          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1)),
-        },
-      },
-    });
-    const existingDate = await DrawDate.findOne({
-      where: {
-        drawDate: {
-          [Op.eq]: drawDate,
-        },
-      },
-    });
-
-    if (existingDate) {
-      return apiResponseErr(null, false, statusCode.badRequest, 'A draw date already exists.', res);
-    }
-
-    const newDrawDate = await DrawDate.create({ drawId: uuidv4(), drawDate });
-
-    return apiResponseSuccess(newDrawDate, true, statusCode.create, 'Draw date created successfully.', res);
-  } catch (error) {
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
-  }
-};
 
 export const getResult = async (req, res) => {
   try {
@@ -353,6 +324,7 @@ export const getTicketNumbersByMarket = async (req, res) => {
     );
   }
 };
+
 export const getAllMarkets = async (req, res) => {
   try {
     const today = new Date();

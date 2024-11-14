@@ -1,4 +1,4 @@
-import { body,query } from 'express-validator';
+import { body,query,param } from 'express-validator';
 import { string } from '../constructor/string.js';
 
 export const validateCreateAdmin = [
@@ -20,17 +20,28 @@ export const validateAdminSearchTickets = [
 ];
 
 export const validateAdminPurchaseHistory = [
-  query('sem').optional().isInt().withMessage('sem must be an integer'),
-  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
-  query('limit').optional().isInt({ min: 1 }).withMessage('limit must be a positive integer'),
+  query('sem').optional().isNumeric().withMessage('Sem must be a numeric value'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1 }).withMessage('Limit must be a positive integer'),
 ];
 
-// export const validateAdminSearchTickets = [
-//   body('group').isInt().withMessage('group must be an integer'),
-//   body('series').isString().withMessage('series must be a string'),
-//   body('number').isInt().withMessage('number must be an integer'),
-//   body('sem').optional().isInt().withMessage('sem must be an integer'),
-// ];
+export const validateGetResult = [
+  query('announce')
+    .optional()
+    .isISO8601()
+    .withMessage('Announce time must be a valid ISO8601 date.'),
+];
+
+
+
+export const validateGetTicketNumbersByMarket = [
+  param('marketId')
+    .notEmpty()
+    .withMessage('Market ID is required')
+    .isUUID()
+    .withMessage('Market ID must be a valid UUID'),
+];
+
 
 export const purchaseTicketValidation = [
   body('generateId').notEmpty().withMessage('Generate ID is required'),
