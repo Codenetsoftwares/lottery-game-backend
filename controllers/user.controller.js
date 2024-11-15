@@ -46,47 +46,41 @@ export const getAllMarkets = async (req, res) => {
   }
 };
 
-export const searchTickets = async ({ group, series, number, sem }) => {
+export const searchTickets = async ({ group, series, number, sem, marketId }) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const result = await TicketRange.findOne({
-      where: {
-        group_start: { [Op.lte]: group }, // group_start <= user group
-        group_end: { [Op.gte]: group }, // group_end >= user group
-        series_start: { [Op.lte]: series }, // series_start <= user series
-        series_end: { [Op.gte]: series }, // series_end >= user series
-        number_start: { [Op.lte]: number }, // number_start <= user number
-        number_end: { [Op.gte]: number }, // number_end >= user number
-        createdAt: { [Op.gte]: today },
-      },
-    });
+    const query = {
+      group_start: { [Op.lte]: group },
+      group_end: { [Op.gte]: group },
+      series_start: { [Op.lte]: series },
+      series_end: { [Op.gte]: series },
+      number_start: { [Op.lte]: number },
+      number_end: { [Op.gte]: number },
+      createdAt: { [Op.gte]: today },
+      ...(marketId && { marketId }), // Add marketId condition if it is provided
+    };
 
-    const createRange = await UserRange.create({
-      generateId: uuidv4(),
-      group,
-      series,
-      number,
-      sem,
+    const result = await TicketRange.findOne({
+      where: query,
     });
 
     if (result) {
-      const ticketService = new TicketService(group, series, number.toString(), sem);
+      const ticketService = new TicketService(group, series, number, sem);
 
       const tickets = ticketService.list();
       const price = ticketService.calculatePrice();
-      return { tickets, price, sem, generateId: createRange.generateId };
+      return { tickets, price, sem  };
     } else {
       return {
         data: [],
         success: true,
         successCode: 200,
-        message: 'No tickets available in the given range.',
+        message: 'No tickets available in the given range or market.',
       };
     }
   } catch (error) {
-    console.error('Error saving ticket range:', error);
     return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
@@ -158,14 +152,17 @@ export const PurchaseTickets = async (req, res) => {
     );
   }
 };
+
+
 export const purchaseHistory = async (req, res) => {
   try {
     const { userId } = req.body;
     const { sem, page = 1, limit = 10 } = req.query;
+    const { marketId } = req.params; 
     const offset = (page - 1) * parseInt(limit);
 
     const purchaseFilter = {
-      where: { userId },
+      where: { userId, marketId }, 
       include: [
         {
           model: UserRange,
@@ -196,6 +193,8 @@ export const purchaseHistory = async (req, res) => {
             price: ticketService.calculatePrice(),
             userName: purchase.userName,
             sem: userRange.sem,
+            marketId: purchase.marketId,
+            marketName: purchase.marketName, 
           };
         }
         return null;
@@ -219,6 +218,7 @@ export const purchaseHistory = async (req, res) => {
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
 
 export const getDrawDateByDate = async (req, res) => {
   try {

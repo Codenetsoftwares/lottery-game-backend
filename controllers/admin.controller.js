@@ -79,21 +79,24 @@ export const login = async (req, res) => {
   }
 };
 
-export const adminSearchTickets = async ({ group, series, number, sem }) => {
+export const adminSearchTickets = async ({ group, series, number, sem, marketId }) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const query = {
+      group_start: { [Op.lte]: group },
+      group_end: { [Op.gte]: group },
+      series_start: { [Op.lte]: series },
+      series_end: { [Op.gte]: series },
+      number_start: { [Op.lte]: number },
+      number_end: { [Op.gte]: number },
+      createdAt: { [Op.gte]: today },
+      ...(marketId && { marketId }), // Add marketId condition if it is provided
+    };
+
     const result = await TicketRange.findOne({
-      where: {
-        group_start: { [Op.lte]: group },
-        group_end: { [Op.gte]: group },
-        series_start: { [Op.lte]: series },
-        series_end: { [Op.gte]: series },
-        number_start: { [Op.lte]: number },
-        number_end: { [Op.gte]: number },
-        createdAt: { [Op.gte]: today },
-      },
+      where: query,
     });
 
     if (result) {
@@ -107,14 +110,14 @@ export const adminSearchTickets = async ({ group, series, number, sem }) => {
         data: [],
         success: true,
         successCode: 200,
-        message: 'No tickets available in the given range.',
+        message: 'No tickets available in the given range or market.',
       };
     }
   } catch (error) {
-    console.error('Error saving ticket range:', error);
     return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
+
 
 export const adminPurchaseHistory = async (req, res) => {
   try {
@@ -189,35 +192,6 @@ export const adminPurchaseHistory = async (req, res) => {
   }
 };
 
-export const createDrawDate = async (req, res) => {
-  try {
-    const { drawDate } = req.body;
-    await DrawDate.destroy({
-      where: {
-        createdAt: {
-          [Op.lt]: new Date(new Date().setDate(new Date().getDate() - 1)),
-        },
-      },
-    });
-    const existingDate = await DrawDate.findOne({
-      where: {
-        drawDate: {
-          [Op.eq]: drawDate,
-        },
-      },
-    });
-
-    if (existingDate) {
-      return apiResponseErr(null, false, statusCode.badRequest, 'A draw date already exists.', res);
-    }
-
-    const newDrawDate = await DrawDate.create({ drawId: uuidv4(), drawDate });
-
-    return apiResponseSuccess(newDrawDate, true, statusCode.create, 'Draw date created successfully.', res);
-  } catch (error) {
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
-  }
-};
 
 export const getResult = async (req, res) => {
   try {
@@ -308,7 +282,7 @@ export const getTicketNumbersByMarket = async (req, res) => {
     });
 
     if (purchasedTickets.length === 0) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         [],
         true,
         statusCode.notFound,
@@ -342,6 +316,42 @@ export const getTicketNumbersByMarket = async (req, res) => {
       true,
       statusCode.success,
       "Ticket details fetched successfully",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+export const getAllMarkets = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
       res
     );
   } catch (error) {

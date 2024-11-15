@@ -34,8 +34,8 @@ export const userRoute = (app) => {
   });
 
   app.post('/api/purchase-lottery/:marketId', purchaseTicketValidation, customErrorHandler, authenticateUser, PurchaseTickets);
-
-  app.post('/api/purchase-history', validatePurchaseHistory, customErrorHandler, purchaseHistory);
+  
+  app.post('/api/purchase-history/:marketId', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
   app.get('/api/draw-dates', getDrawDateByDate); // no need
 

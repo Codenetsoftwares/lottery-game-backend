@@ -37,7 +37,7 @@ export const geTicketRange = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const ticketData = await TicketRange.findOne({
+    const ticketData = await TicketRange.findAll({
       where: {
         createdAt: {
           [Op.gte]: today,

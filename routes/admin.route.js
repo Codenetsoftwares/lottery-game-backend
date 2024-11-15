@@ -3,23 +3,23 @@ import {
   adminPurchaseHistory,
   adminSearchTickets,
   createAdmin,
-  createDrawDate,
+  getAllMarkets,
   getResult,
   getTicketNumbersByMarket,
   login,
 } from '../controllers/admin.controller.js';
 import { authorize } from '../middlewares/auth.js';
-import { searchTicketValidation, validateAdminCreate, validateAdminLogin } from '../utils/commonSchema.js';
+import { validateAdminLogin, validateAdminPurchaseHistory, validateAdminSearchTickets, validateCreateAdmin, validateGetResult, } from '../utils/commonSchema.js';
 import customErrorHandler from '../utils/customErrorHandler.js';
 import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
 import { statusCode } from '../utils/statusCodes.js';
 
 export const adminRoutes = (app) => {
-  app.post('/api/create-admin', validateAdminCreate, customErrorHandler, createAdmin);
+  app.post('/api/create-admin', validateCreateAdmin, customErrorHandler, createAdmin);
   app.post('/api/login', validateAdminLogin, customErrorHandler, login);
   app.post(
     '/api/admin/search-ticket',
-    searchTicketValidation,
+    validateAdminSearchTickets,
     customErrorHandler,
     authorize([string.Admin]),
     async (req, res) => {
@@ -40,11 +40,11 @@ export const adminRoutes = (app) => {
     },
   );
 
-  app.get('/api/admin/purchase-history', adminPurchaseHistory);
+  app.get('/api/admin/purchase-history',validateAdminPurchaseHistory,customErrorHandler, authorize([string.Admin]), adminPurchaseHistory);
 
-  app.post('/api/admin/draw-dates', createDrawDate); // no needed
-
-  app.get('/api/admin/prize-results', authorize([string.Admin]), getResult);
+  app.get('/api/admin/prize-results',validateGetResult, authorize([string.Admin]), getResult);
 
   app.get("/api/tickets/purchases/:marketId", getTicketNumbersByMarket)
+  
+  app.get('/api/admin/getAll-markets',authorize([string.Admin]), getAllMarkets)
 };
