@@ -8,6 +8,7 @@ import UserRange from '../models/user.model.js';
 import PurchaseLottery from '../models/purchase.model.js';
 import DrawDate from '../models/drawdateModel.js';
 import LotteryResult from '../models/resultModel.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export const getAllMarkets = async (req, res) => {
   try {
