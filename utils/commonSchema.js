@@ -13,12 +13,16 @@ export const validateAdminLogin = [
 ];
 
 export const validateAdminSearchTickets = [
-  body('group').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
-  body('series').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
-  body('number').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
-  body('sem').isNumeric().withMessage('Sem must be a numeric value'),
-  body('marketId').notEmpty().withMessage('Market ID is required').isUUID().withMessage('Market ID must be a valid UUID'),
+  body('group').isInt({ min: 0 }).withMessage('Group must be a positive integer'), 
+  body('series').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'), 
+  body('number').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'), 
+  body('sem')
+    .trim() 
+    .isInt({ min: 5, max: 200 }).withMessage('Sem must be a numeric value between 5 and 200')
+    .isIn([5, 10, 25, 50, 100, 200]).withMessage('Sem must be one of the following values: 5, 10, 25, 50, 100, 200'),
+  body('marketId').notEmpty().withMessage('Market ID is required').isUUID().withMessage('Market ID must be a valid UUID'), 
 ];
+
 
 export const validateAdminPurchaseHistory = [
   query('sem').optional().isNumeric().withMessage('Sem must be a numeric value'),
