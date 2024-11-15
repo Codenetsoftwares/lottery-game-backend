@@ -2,7 +2,7 @@ import { DataTypes, Sequelize } from 'sequelize';
 import sequelize from '../config/db.js';
 
 const TicketRange = sequelize.define('TicketRange', {
-  ticketId: {
+  marketId: {
     type: DataTypes.UUID,
     allowNull: false,
   },
@@ -30,10 +30,21 @@ const TicketRange = sequelize.define('TicketRange', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  start_time: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  end_time: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  marketName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
   tableName: 'TicketRange',
   timestamps: true,
 });
 
 export default TicketRange;
-

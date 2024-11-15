@@ -1,59 +1,43 @@
-import { string } from "../constructor/string.js";
+import { string } from '../constructor/string.js';
 import {
+  getAllMarkets,
   getDrawDateByDate,
   getResult,
   purchaseHistory,
   PurchaseTickets,
   searchTickets,
-} from "../controllers/user.controller.js";
-import { authenticateUser } from "../middlewares/colorgameAuth.js";
-import {
-  purchaseTicketValidation,
-  validatePurchaseHistory,
-} from "../utils/commonSchema.js";
-import customErrorHandler from "../utils/customErrorHandler.js";
-import { apiResponseErr, apiResponseSuccess } from "../utils/response.js";
-import { statusCode } from "../utils/statusCodes.js";
+} from '../controllers/user.controller.js';
+import { authenticateUser } from '../middlewares/colorgameAuth.js';
+import { purchaseTicketValidation, validatePurchaseHistory } from '../utils/commonSchema.js';
+import customErrorHandler from '../utils/customErrorHandler.js';
+import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
+import { statusCode } from '../utils/statusCodes.js';
 
 export const userRoute = (app) => {
-  app.post("/api/search-ticket", async (req, res) => {
+  app.get('/api/getAll-markets',authenticateUser, getAllMarkets)
+
+  app.post('/api/search-ticket', async (req, res) => {
     try {
       const tickets = await searchTickets(req.body);
 
-      return apiResponseSuccess(
-        tickets,
-        true,
-        statusCode.success,
-        "Success.",
-        res
-      );
+      return apiResponseSuccess(tickets, true, statusCode.success, 'Success.', res);
     } catch (error) {
-      console.error("Error saving ticket range:", error);
+      console.error('Error saving ticket range:', error);
       return apiResponseErr(
         null,
         false,
         error.responseCode ?? statusCode.internalServerError,
         error.errMessage ?? error.message,
-        res
+        res,
       );
     }
   });
 
-  app.post(
-    "/api/purchase-lottery",
-    purchaseTicketValidation,
-    customErrorHandler,
-    PurchaseTickets
-  );
+  app.post('/api/purchase-lottery/:marketId', purchaseTicketValidation, customErrorHandler, authenticateUser, PurchaseTickets);
+  
+  app.post('/api/purchase-history/:marketId', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
-  app.post(
-    "/api/purchase-history",
-    validatePurchaseHistory,
-    customErrorHandler,
-    purchaseHistory
-  );
+  app.get('/api/draw-dates', getDrawDateByDate); // no need
 
-  app.get("/api/draw-dates", getDrawDateByDate);
-
-  app.get("/api/prize-results", authenticateUser, getResult); // fetch on the colorgame no work
+  app.get('/api/prize-results', authenticateUser, getResult);
 };

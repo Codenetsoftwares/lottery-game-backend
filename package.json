@@ -3,9 +3,12 @@
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.4.2",
     "express": "^4.21.0",
     "express-validator": "^7.2.0",
+    "format": "^0.2.2",
     "jsonwebtoken": "^9.0.2",
     "lottery-game-backend": "file:",
     "mysql2": "^3.11.3",
@@ -13,7 +16,11 @@
     "sequelize": "^6.37.3"
   },
   "scripts": {
-    "start": "nodemon server.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cross-env NODE_ENV=development nodemon server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js",
+    "format": "npx prettier --write . --config .prettier",
+    "prod": "cross-env NODE_ENV=production dotenv -e .env.production -- node server.js"
   },
   "name": "lottery-game-backend",
   "version": "1.0.0",
