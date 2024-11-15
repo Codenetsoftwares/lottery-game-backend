@@ -10,7 +10,6 @@ import TicketRange from '../models/ticketRange.model.js';
 import { Op } from 'sequelize';
 import UserRange from '../models/user.model.js';
 import PurchaseLottery from '../models/purchase.model.js';
-import DrawDate from '../models/drawdateModel.js';
 import LotteryResult from '../models/resultModel.js';
 dotenv.config();
 

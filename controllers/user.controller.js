@@ -5,7 +5,6 @@ import { TicketService } from '../constructor/ticketService.js';
 import TicketRange from '../models/ticketRange.model.js';
 import CustomError from '../utils/extendError.js';
 import UserRange from '../models/user.model.js';
-import { v4 as uuidv4 } from 'uuid';
 import PurchaseLottery from '../models/purchase.model.js';
 import DrawDate from '../models/drawdateModel.js';
 import LotteryResult from '../models/resultModel.js';
