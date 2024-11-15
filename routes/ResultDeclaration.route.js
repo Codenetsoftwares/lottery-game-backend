@@ -1,5 +1,6 @@
 import { string } from '../constructor/string.js';
-import { ResultDeclare } from '../controllers/ResultDeclaration.js';
+import { getAllMarkets } from '../controllers/admin.controller.js';
+import { getLotteryResults, ResultDeclare } from '../controllers/ResultDeclaration.js';
 import { authorize } from '../middlewares/auth.js';
 // import { validationRules } from '../utils/commonSchema.js';
 // import customErrorHandler from '../utils/customErrorHandler.js';
@@ -12,4 +13,7 @@ export const ResultDeclarationModule = (app) => {
     authorize([string.Admin]),
     ResultDeclare,
   );
+
+  app.get('/api/lottery-results/:marketId', getLotteryResults);
+
 };

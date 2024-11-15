@@ -9,13 +9,20 @@ import TicketRange from '../models/ticketRange.model.js';
 
 export const ResultDeclare = async (req, res) => {
   try {
-    const prizes = req.body; // Array of prize categories
+    const prizes = req.body; 
     const { marketId } = req.params;
     const market = await TicketRange.findOne({ where: { marketId } });
 
     if (!market) {
       return apiResponseErr(null, false, statusCode.badRequest, 'Market not found', res);
     }
+
+    const marketName = market.marketName; 
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     const prizeLimits = {
       'First Prize': 1,
@@ -53,7 +60,14 @@ export const ResultDeclare = async (req, res) => {
       }
 
       // Check for ticket number duplicates across different prize categories
-      const allResults = await LotteryResult.findAll({ where: { marketId } });
+      const allResults = await LotteryResult.findAll({
+        where: {
+          createdAt: {
+            [Op.between]: [todayStart, todayEnd],
+          },
+          marketId
+        }
+      });
       const isDuplicate = ticketNumbers.some(ticket =>
         allResults.some(result => result.ticketNumber.includes(ticket))
       );
@@ -92,6 +106,7 @@ export const ResultDeclare = async (req, res) => {
           resultId: uuidv4(),
           marketId,
           ticketNumber: ticketNumbers,
+          marketName,
           prizeCategory,
           prizeAmount,
           complementaryPrize,
@@ -106,6 +121,7 @@ export const ResultDeclare = async (req, res) => {
           generatedTickets.push({
             resultId: uuidv4(),
             marketId,
+            marketName,
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
@@ -121,6 +137,7 @@ export const ResultDeclare = async (req, res) => {
           generatedTickets.push({
             resultId: uuidv4(),
             marketId,
+            marketName,
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
@@ -140,6 +157,7 @@ export const ResultDeclare = async (req, res) => {
           generatedTickets.push({
             resultId: uuidv4(),
             marketId,
+            marketName,
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
@@ -159,17 +177,13 @@ export const ResultDeclare = async (req, res) => {
           generatedTickets.push({
             resultId: uuidv4(),
             marketId,
+            marketName,
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
           });
         }
       }
-
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
 
       const matchedTickets = await PurchaseLottery.findAll({
         where: {
@@ -257,3 +271,35 @@ export const ResultDeclare = async (req, res) => {
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
+export const getLotteryResults = async (req, res) => {
+  try {
+    const { marketId } = req.params;
+
+    const results = await LotteryResult.findAll({
+      where: { marketId },
+    });
+
+    if (results.length === 0) {
+      return apiResponseSuccess(
+        [],
+        false,
+        statusCode.success,
+        `No lottery results found.`,
+        res
+      );
+    }
+
+    return apiResponseSuccess(results, true, statusCode.success, 'Lottery results fetched successfully.', res);
+  } catch (error) {
+    console.log("Error fetching results:", error);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
