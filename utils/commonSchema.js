@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import { string } from '../constructor/string.js';
 export const validateAdminCreate = [
   body('userName').notEmpty().withMessage('Username is required'),
@@ -69,23 +69,23 @@ export const searchTicketValidation = [
 
 export const validatePurchaseHistory = [body('userId').isUUID().withMessage('User ID must be a valid UUID.')];
 
-// export const validateCreateResult = [
-//   body('ticketNumber')
-//     .notEmpty()
-//     .withMessage('Ticket number is required.')
-//     .isArray()
-//     .withMessage('Ticket number must be an array.'),
-//   body('prizeCategory')
-//     .notEmpty()
-//     .withMessage('Prize category is required.')
-//     .isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
-//     .withMessage('Invalid prize category.'),
-//   body('prizeAmount')
-//     .notEmpty()
-//     .withMessage('Prize amount is required.')
-//     .isInt({ min: 1 })
-//     .withMessage('Prize amount must be a positive integer.')
-// ];
+export const validateCreateResult = [
+  body('ticketNumber')
+    .notEmpty()
+    .withMessage('Ticket number is required.')
+    .isArray()
+    .withMessage('Ticket number must be an array.'),
+  body('prizeCategory')
+    .notEmpty()
+    .withMessage('Prize category is required.')
+    .isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
+    .withMessage('Invalid prize category.'),
+  body('prizeAmount')
+    .notEmpty()
+    .withMessage('Prize amount is required.')
+    .isInt({ min: 1 })
+    .withMessage('Prize amount must be a positive integer.')
+];
 
 // const checkTicketNumberFormat = (prizeCategory) => {
 //   return (value) => {
@@ -110,19 +110,45 @@ export const validatePurchaseHistory = [body('userId').isUUID().withMessage('Use
 // };
 
 // export const validationRules = [
-//   body('ticketNumber')
-//     .isArray()
-//     .withMessage('Ticket numbers must be an array')
-//     .custom((value, { req }) => {
-//       // Validate each ticket number based on prize category
-//       const valid = value.every((ticket) => checkTicketNumberFormat(req.body.prizeCategory)(ticket));
-//       if (!valid) {
-//         throw new Error('Ticket numbers do not match the required format for the selected prize category');
+//   param('marketId')
+//     .isUUID(4)
+//     .withMessage('Invalid marketId format. It must be a valid UUID.'),
+
+//   body()
+//     .isArray({ min: 1 })
+//     .withMessage('The body must be an array of prize objects.'),
+
+//   body('*.ticketNumber')
+//     .notEmpty()
+//     .withMessage('ticketNumber is required.')
+//     .custom((value, { req, path }) => {
+//       const prizeCategory = req.body.find((obj) => obj.ticketNumber === value)?.prizeCategory;
+//       if (!prizeCategory) {
+//         throw new Error('prizeCategory must be provided to validate ticketNumber.');
 //       }
-//       return true;
-//     }),
-//   body('prizeCategory')
+//       if (Array.isArray(value)) {
+//         return value.every((ticket) => checkTicketNumberFormat(prizeCategory, ticket));
+//       }
+//       return checkTicketNumberFormat(prizeCategory, value);
+//     })
+//     .withMessage('ticketNumber format is invalid for the provided prizeCategory.'),
+
+//   body('*.prizeCategory')
+//     .notEmpty()
+//     .withMessage('prizeCategory is required.')
+//     .isString()
+//     .withMessage('prizeCategory must be a string.')
 //     .isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
-//     .withMessage('Invalid prize category'),
-//   body('prizeAmount').isNumeric().withMessage('Prize amount must be a number'),
+//     .withMessage('Invalid prizeCategory. Accepted values are First Prize, Second Prize, Third Prize, Fourth Prize, and Fifth Prize.'),
+
+//   body('*.prizeAmount')
+//     .notEmpty()
+//     .withMessage('prizeAmount is required.')
+//     .isNumeric()
+//     .withMessage('prizeAmount must be a number.'),
+
+//   body('*.complementaryPrize')
+//     .optional()
+//     .isNumeric()
+//     .withMessage('complementaryPrize must be a number if provided.'),
 // ];
