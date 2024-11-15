@@ -216,8 +216,8 @@ export const ResultDeclare = async (req, res) => {
           // if (matchedTicketLastFive === lastFiveForFirstPrize) {
           //   totalPrize += complementaryPrize; 
           // }
-
-          const response = await axios.post('http://localhost:7000/api/users/update-balance', {
+          const baseURL = process.env.COLOR_GAME_URL;
+          const response = await axios.post(`${baseURL}/api/users/update-balance`, {
             userId,
             prizeAmount: totalPrize,
             marketId
@@ -244,7 +244,8 @@ export const ResultDeclare = async (req, res) => {
         const userIds = [...new Set(usersWithPurchases.map((user) => user.userId))];
 
         for (const userId of userIds) {
-          const response = await axios.post('http://localhost:7000/api/users/remove-exposer', {
+          const baseURL = process.env.COLOR_GAME_URL;
+          const response = await axios.post(`${baseURL}/api/users/remove-exposer`, {
             userId,
             marketId
           });
