@@ -26,6 +26,9 @@ const UserRange = sequelize.define(
     sem: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        isIn: [[5, 10, 25, 50, 100, 200]], 
+      },
     },
   },
   {
@@ -36,7 +39,7 @@ const UserRange = sequelize.define(
         fields: ['generateId'],
       },
     ],
-  },
+  }
 );
 
 export default UserRange;
