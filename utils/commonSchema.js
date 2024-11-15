@@ -1,4 +1,4 @@
-import { body,query,param, param } from 'express-validator';
+import { body,query, param } from 'express-validator';
 import { string } from '../constructor/string.js';
 
 export const validateCreateAdmin = [
