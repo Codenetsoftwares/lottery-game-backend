@@ -197,7 +197,6 @@ export const purchaseHistory = async (req, res) => {
           const ticketService = new TicketService(group, series, number, userSem);
 
           return {
-            drawDate: purchase.drawDate,
             tickets: ticketService.list(),
             price: ticketService.calculatePrice(),
             userName: purchase.userName,

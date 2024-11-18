@@ -159,11 +159,12 @@ export const adminPurchaseHistory = async (req, res) => {
           const tickets = ticketService.list();
 
           return {
-            drawDate: purchase.drawDate,
             tickets: tickets,
             price: ticketService.calculatePrice(),
             userName: purchase.userName,
             sem: userRange.sem,
+            marketName : purchase.marketName,
+            marketId : purchase.marketId
           };
         } else {
           return null;
