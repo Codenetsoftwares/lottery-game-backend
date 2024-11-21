@@ -1,5 +1,6 @@
 import { string } from '../constructor/string.js';
 import {
+  dateWiseMarkets,
   getAllMarkets,
   getDrawDateByDate,
   getResult,
@@ -40,4 +41,6 @@ export const userRoute = (app) => {
   app.get('/api/draw-dates', getDrawDateByDate); // no need
 
   app.get('/api/prize-results', authenticateUser, getResult);
+
+  app.get('/api/user/dateWise-markets',authenticateUser, dateWiseMarkets)
 };

@@ -3,6 +3,7 @@ import {
   adminPurchaseHistory,
   adminSearchTickets,
   createAdmin,
+  dateWiseMarkets,
   getAllMarkets,
   getResult,
   getTicketNumbersByMarket,
@@ -47,4 +48,6 @@ export const adminRoutes = (app) => {
   app.get("/api/tickets/purchases/:marketId", getTicketNumbersByMarket)
   
   app.get('/api/admin/getAll-markets',authorize([string.Admin]), getAllMarkets)
+
+  app.get('/api/admin/dateWise-markets',authorize([string.Admin]), dateWiseMarkets)
 };

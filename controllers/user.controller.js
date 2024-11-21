@@ -324,3 +324,65 @@ export const getResult = async (req, res) => {
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
+export const dateWiseMarkets = async (req, res) => {
+  try {
+    const { date } = req.query; 
+
+    if (!date) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Date is required",
+        res
+      );
+    }
+
+    const selectedDate = new Date(date);
+    if (isNaN(selectedDate)) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Invalid date format",
+        res
+      );
+    }
+
+
+    selectedDate.setHours(0, 0, 0, 0); 
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(nextDay.getDate() + 1); 
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+      where: {
+        createdAt: {
+          [Op.gte]: selectedDate, 
+          [Op.lt]: nextDay,      
+        },
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
