@@ -1,14 +1,18 @@
-import { Op } from 'sequelize';
-import { statusCode } from '../utils/statusCodes.js';
-import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from '../utils/response.js';
-import { TicketService } from '../constructor/ticketService.js';
-import TicketRange from '../models/ticketRange.model.js';
-import CustomError from '../utils/extendError.js';
-import UserRange from '../models/user.model.js';
-import PurchaseLottery from '../models/purchase.model.js';
-import DrawDate from '../models/drawdateModel.js';
-import LotteryResult from '../models/resultModel.js';
-import { v4 as uuidv4 } from 'uuid';
+import { Op } from "sequelize";
+import { statusCode } from "../utils/statusCodes.js";
+import {
+  apiResponseErr,
+  apiResponsePagination,
+  apiResponseSuccess,
+} from "../utils/response.js";
+import { TicketService } from "../constructor/ticketService.js";
+import TicketRange from "../models/ticketRange.model.js";
+import CustomError from "../utils/extendError.js";
+import UserRange from "../models/user.model.js";
+import PurchaseLottery from "../models/purchase.model.js";
+import DrawDate from "../models/drawdateModel.js";
+import LotteryResult from "../models/resultModel.js";
+import { v4 as uuidv4 } from "uuid";
 
 export const getAllMarkets = async (req, res) => {
   try {
@@ -46,11 +50,16 @@ export const getAllMarkets = async (req, res) => {
   }
 };
 
-export const searchTickets = async ({ group, series, number, sem, marketId }) => {
+export const searchTickets = async ({
+  group,
+  series,
+  number,
+  sem,
+  marketId,
+}) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const query = {
       group_start: { [Op.lte]: group },
       group_end: { [Op.gte]: group },
@@ -59,7 +68,7 @@ export const searchTickets = async ({ group, series, number, sem, marketId }) =>
       number_start: { [Op.lte]: number },
       number_end: { [Op.gte]: number },
       createdAt: { [Op.gte]: today },
-      ...(marketId && { marketId }), // Add marketId condition if it is provided
+      ...(marketId && { marketId }), 
     };
 
     const result = await TicketRange.findOne({
@@ -78,7 +87,8 @@ export const searchTickets = async ({ group, series, number, sem, marketId }) =>
       const ticketService = new TicketService(group, series, number, sem);
 
       const tickets = ticketService.list();
-      const price = ticketService.calculatePrice();
+
+      const price = await ticketService.calculatePrice(marketId);
       return { tickets, price, sem, generateId: createRange.generateId };
     } else {
       return {
@@ -89,7 +99,6 @@ export const searchTickets = async ({ group, series, number, sem, marketId }) =>
       };
     }
   } catch (error) {
-    console.error("Error saving ticket range:", error);
     return new CustomError(error.message, null, statusCode.internalServerError);
   }
 };
@@ -162,7 +171,6 @@ export const PurchaseTickets = async (req, res) => {
   }
 };
 
-
 export const purchaseHistory = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -175,7 +183,7 @@ export const purchaseHistory = async (req, res) => {
       include: [
         {
           model: UserRange,
-          as: 'userRange',
+          as: "userRange",
           ...(sem && { where: { sem } }),
         },
       ],
@@ -183,10 +191,18 @@ export const purchaseHistory = async (req, res) => {
       offset,
     };
 
-    const purchaseRecords = await PurchaseLottery.findAndCountAll(purchaseFilter);
+    const purchaseRecords = await PurchaseLottery.findAndCountAll(
+      purchaseFilter
+    );
 
     if (!purchaseRecords.rows.length) {
-      return apiResponseSuccess([], true, statusCode.success, 'No purchase history found', res);
+      return apiResponseSuccess(
+        [],
+        true,
+        statusCode.success,
+        "No purchase history found",
+        res
+      );
     }
 
     const historyWithTickets = await Promise.all(
@@ -194,7 +210,12 @@ export const purchaseHistory = async (req, res) => {
         const userRange = purchase.userRange;
         if (userRange) {
           const { group, series, number, sem: userSem } = userRange;
-          const ticketService = new TicketService(group, series, number, userSem);
+          const ticketService = new TicketService(
+            group,
+            series,
+            number,
+            userSem
+          );
 
           return {
             tickets: ticketService.list(),
@@ -206,11 +227,17 @@ export const purchaseHistory = async (req, res) => {
           };
         }
         return null;
-      }),
+      })
     );
 
     if (!historyWithTickets.length) {
-      return apiResponseSuccess([], true, statusCode.success, 'No purchase history found for the given sem', res);
+      return apiResponseSuccess(
+        [],
+        true,
+        statusCode.success,
+        "No purchase history found for the given sem",
+        res
+      );
     }
 
     const pagination = {
@@ -220,13 +247,25 @@ export const purchaseHistory = async (req, res) => {
       totalItems: purchaseRecords.count,
     };
 
-    return apiResponsePagination(historyWithTickets, true, statusCode.success, 'Success', pagination, res);
+    return apiResponsePagination(
+      historyWithTickets,
+      true,
+      statusCode.success,
+      "Success",
+      pagination,
+      res
+    );
   } catch (error) {
-    console.error('Error retrieving purchase history:', error);
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    console.error("Error retrieving purchase history:", error);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
   }
 };
-
 
 export const getDrawDateByDate = async (req, res) => {
   try {
@@ -237,12 +276,24 @@ export const getDrawDateByDate = async (req, res) => {
       where: {
         createdAt: { [Op.gte]: today },
       },
-      attributes: ['drawId', 'drawDate'],
+      attributes: ["drawId", "drawDate"],
     });
 
-    return apiResponseSuccess(drawDates, true, statusCode.success, 'Draw dates retrieved successfully.', res);
+    return apiResponseSuccess(
+      drawDates,
+      true,
+      statusCode.success,
+      "Draw dates retrieved successfully.",
+      res
+    );
   } catch (error) {
-    apiResponseErr(null, false, statusCode.internalServerError, error.errMessage ?? error.message, res);
+    apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.errMessage ?? error.message,
+      res
+    );
   }
 };
 
@@ -251,7 +302,13 @@ export const getResult = async (req, res) => {
     const announce = req.query.announce;
 
     const whereConditions = {
-      prizeCategory: ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'],
+      prizeCategory: [
+        "First Prize",
+        "Second Prize",
+        "Third Prize",
+        "Fourth Prize",
+        "Fifth Prize",
+      ],
     };
 
     if (announce) {
@@ -260,23 +317,35 @@ export const getResult = async (req, res) => {
 
     const results = await LotteryResult.findAll({
       where: whereConditions,
-      order: [['prizeCategory', 'ASC']],
-      attributes: { include: ['createdAt'] },
+      order: [["prizeCategory", "ASC"]],
+      attributes: { include: ["createdAt"] },
     });
 
     const groupedResults = results.reduce((acc, result) => {
-      const { prizeCategory, ticketNumber, prizeAmount, announceTime, createdAt } = result;
+      const {
+        prizeCategory,
+        ticketNumber,
+        prizeAmount,
+        announceTime,
+        createdAt,
+      } = result;
 
-      let formattedTicketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
+      let formattedTicketNumbers = Array.isArray(ticketNumber)
+        ? ticketNumber
+        : [ticketNumber];
 
-      if (prizeCategory === 'Second Prize') {
-        formattedTicketNumbers = formattedTicketNumbers.map((ticket) => ticket.slice(-5));
+      if (prizeCategory === "Second Prize") {
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
+          ticket.slice(-5)
+        );
       } else if (
-        prizeCategory === 'Third Prize' ||
-        prizeCategory === 'Fourth Prize' ||
-        prizeCategory === 'Fifth Prize'
+        prizeCategory === "Third Prize" ||
+        prizeCategory === "Fourth Prize" ||
+        prizeCategory === "Fifth Prize"
       ) {
-        formattedTicketNumbers = formattedTicketNumbers.map((ticket) => ticket.slice(-4));
+        formattedTicketNumbers = formattedTicketNumbers.map((ticket) =>
+          ticket.slice(-4)
+        );
       }
 
       if (!acc[prizeCategory]) {
@@ -297,16 +366,25 @@ export const getResult = async (req, res) => {
       ([prizeCategory, { prizeAmount, ticketNumbers, announceTime, date }]) => {
         let limitedTicketNumbers;
 
-        if (prizeCategory === 'First Prize') {
+        if (prizeCategory === "First Prize") {
           limitedTicketNumbers = ticketNumbers.slice(0, 1);
-        } else if (['Second Prize', 'Third Prize', 'Fourth Prize'].includes(prizeCategory)) {
+        } else if (
+          ["Second Prize", "Third Prize", "Fourth Prize"].includes(
+            prizeCategory
+          )
+        ) {
           limitedTicketNumbers = ticketNumbers.slice(0, 10);
-        } else if (prizeCategory === 'Fifth Prize') {
+        } else if (prizeCategory === "Fifth Prize") {
           limitedTicketNumbers = ticketNumbers.slice(0, 50);
         }
 
-        while (limitedTicketNumbers.length < 10 && prizeCategory !== 'First Prize') {
-          limitedTicketNumbers.push(limitedTicketNumbers[limitedTicketNumbers.length - 1]);
+        while (
+          limitedTicketNumbers.length < 10 &&
+          prizeCategory !== "First Prize"
+        ) {
+          limitedTicketNumbers.push(
+            limitedTicketNumbers[limitedTicketNumbers.length - 1]
+          );
         }
 
         return {
@@ -316,18 +394,30 @@ export const getResult = async (req, res) => {
           date,
           ticketNumbers: [...new Set(limitedTicketNumbers)],
         };
-      },
+      }
     );
 
-    return apiResponseSuccess(data, true, statusCode.success, 'Prize results retrieved successfully.', res);
+    return apiResponseSuccess(
+      data,
+      true,
+      statusCode.success,
+      "Prize results retrieved successfully.",
+      res
+    );
   } catch (error) {
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
   }
 };
 
 export const dateWiseMarkets = async (req, res) => {
   try {
-    const { date } = req.query; 
+    const { date } = req.query;
 
     if (!date) {
       return apiResponseErr(
@@ -350,17 +440,16 @@ export const dateWiseMarkets = async (req, res) => {
       );
     }
 
-
-    selectedDate.setHours(0, 0, 0, 0); 
+    selectedDate.setHours(0, 0, 0, 0);
     const nextDay = new Date(selectedDate);
-    nextDay.setDate(nextDay.getDate() + 1); 
+    nextDay.setDate(nextDay.getDate() + 1);
 
     const ticketData = await TicketRange.findAll({
       attributes: ["marketId", "marketName"],
       where: {
         createdAt: {
-          [Op.gte]: selectedDate, 
-          [Op.lt]: nextDay,      
+          [Op.gte]: selectedDate,
+          [Op.lt]: nextDay,
         },
       },
     });
