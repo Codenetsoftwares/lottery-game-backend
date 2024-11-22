@@ -2,9 +2,9 @@ import { body,query,param } from 'express-validator';
 import { string } from '../constructor/string.js';
 
 export const validateCreateAdmin = [
-  body('userName').isString().withMessage('Username must be a string').notEmpty().withMessage('Username is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-  body('role').isIn([string.Admin, string.SubAdmin, string.User]).withMessage('Role must be admin, subAdmin, or user'),
+  body('userName').notEmpty().withMessage('Username is required').isString().withMessage('Username must be a string'),
+  body('password').notEmpty().withMessage('Password is required').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('role').notEmpty().withMessage('Role is required').isIn([string.Admin, string.SubAdmin, string.User]).withMessage('Role must be admin, subAdmin, or user'),
 ];
    
 export const validateAdminLogin = [
@@ -77,10 +77,10 @@ export const validateTicketRange = [
 
 
 export const validateAdminSearchTickets = [
-  body('group').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
-  body('series').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
-  body('number').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
-  body('sem').isNumeric().withMessage('Sem must be a numeric value'),
+  body('group').notEmpty().withMessage('Group is required').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
+  body('series').notEmpty().withMessage('Series is required').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
+  body('number').notEmpty().withMessage('Number is required').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
+  body('sem').notEmpty().withMessage('Sem is required').isNumeric().withMessage('Sem must be a numeric value'),
 ];
 
 export const validateAdminPurchaseHistory = [
