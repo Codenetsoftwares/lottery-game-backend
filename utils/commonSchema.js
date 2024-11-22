@@ -13,25 +13,68 @@ export const validateAdminLogin = [
 ];
 
 
+
 export const validateTicketRange = [
-  body('group.min').isInt({ min: 1, max: 99 }).withMessage('Group min must be an integer between 1 and 99'),
-  body('group.max').isInt({ min: 1, max: 99 }).withMessage('Group max must be an integer between 1 and 99'),
-  body('series.start').isLength({ min: 1, max: 1 }).withMessage('Series start must be a single character'),
-  body('series.end').isLength({ min: 1, max: 1 }).withMessage('Series end must be a single character'),
-  body('number.min')
+  body('group.min').notEmpty().withMessage('Group min is required')
+    .isInt({ min: 1, max: 99 })
+    .withMessage('Group min must be an integer between 1 and 99')
+    ,
+  
+  body('group.max').notEmpty().withMessage('Group max is required')
+    .isInt({ min: 1, max: 99 })
+    .withMessage('Group max must be an integer between 1 and 99')
+    ,
+  
+  body('series')
+  .notEmpty().withMessage('Series is required')
+    .custom((series) => {
+      const seriesStartCode = series.start.charCodeAt(0);
+      const seriesEndCode = series.end.charCodeAt(0);
+      const seriesRange = seriesEndCode - seriesStartCode + 1;
+
+      if (seriesRange < 10) {
+        throw new Error('Series must have a minimum range of 10');
+      }
+      return true;
+    }).withMessage('Series must have a start and end range'),
+  
+  body('number.min').notEmpty().withMessage('Number min is required')
     .isLength({ min: 5, max: 5 })
     .isNumeric()
-    .withMessage('Number min must be a 5-digit numeric string'),
-  body('number.max')
+    .withMessage('Number min must be a 5-digit numeric string')
+    ,
+  
+  body('number.max').notEmpty().withMessage('Number max is required')
     .isLength({ min: 5, max: 5 })
     .isNumeric()
-    .withMessage('Number max must be a 5-digit numeric string'),
-  body('start_time').isISO8601().withMessage('Start time must be a valid ISO8601 date'),
-  body('end_time').isISO8601().withMessage('End time must be a valid ISO8601 date'),
-  body('marketName').notEmpty().withMessage('Market name is required'),
-  body('date').isISO8601().withMessage('Date must be a valid ISO8601 date'),
-  body('price').isInt({ min: 0 }).withMessage('Price must be a non-negative number'),
+    .withMessage('Number max must be a 5-digit numeric string')
+    ,
+  
+  body('start_time').notEmpty().withMessage('Start time is required')
+    .isISO8601()
+    .withMessage('Start time must be a valid ISO8601 date')
+    ,
+  
+  body('end_time').notEmpty().withMessage('End time is required')
+    .isISO8601()
+    .withMessage('End time must be a valid ISO8601 date')
+    ,
+  
+  body('marketName')
+    .notEmpty()
+    .withMessage('Market name is required'),
+  
+  body('date').notEmpty().withMessage('Date is required')
+    .isISO8601()
+    .withMessage('Date must be a valid ISO8601 date')
+    ,
+  
+  body('price').exists().withMessage('Price is required')
+    .isInt({ min: 0 })
+    .withMessage('Price must be a non-negative number')
+    ,
 ];
+
 
 export const validateAdminSearchTickets = [
   body('group').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
