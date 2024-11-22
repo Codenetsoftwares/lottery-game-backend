@@ -206,7 +206,7 @@ export const ResultDeclare = async (req, res) => {
 
       if (matchedTickets.length > 0) {
         for (const ticket of matchedTickets) {
-          const { userId, sem } = ticket;
+          const { userId, sem, userName, marketName, number, lotteryPrice } = ticket;
           const totalPrize =
             prizeCategory === 'First Prize'
               ? prizeAmount
@@ -221,6 +221,17 @@ export const ResultDeclare = async (req, res) => {
             userId,
             prizeAmount: totalPrize,
             marketId
+          });
+
+          const res = await axios.post(`${baseURL}/api/lottery-profit-loss`, {
+            userId,
+            userName,
+            marketId,
+            marketName,
+            ticketNumber: number,
+            price: lotteryPrice,
+            sem,
+            profitLoss: totalPrize,
           });
 
           if (!response.data.success) {

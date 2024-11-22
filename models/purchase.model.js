@@ -45,7 +45,11 @@ const PurchaseLottery = sequelize.define(
     marketId : {
       type: DataTypes.UUID,
       allowNull: false,
-    }
+    },
+    lotteryPrice: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+  },
   },
   {
     tableName: "PurchaseLottery",

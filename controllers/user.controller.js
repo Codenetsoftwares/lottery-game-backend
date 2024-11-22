@@ -96,7 +96,7 @@ export const searchTickets = async ({ group, series, number, sem, marketId }) =>
 
 export const PurchaseTickets = async (req, res) => {
   try {
-    const { generateId, userId, userName } = req.body;
+    const { generateId, userId, userName ,lotteryPrice } = req.body;
     const { marketId } = req.params;
 
     const userRange = await UserRange.findOne({
@@ -141,6 +141,7 @@ export const PurchaseTickets = async (req, res) => {
       series,
       number,
       sem,
+      lotteryPrice
     });
 
     return apiResponseSuccess(
