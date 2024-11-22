@@ -249,7 +249,7 @@ export const ResultDeclare = async (req, res) => {
       } else {
         const usersWithPurchases = await PurchaseLottery.findAll({
           where: { marketId },
-          attributes: ['userId'],
+          attributes: ['userId' , 'marketName'],
         });
 
         const userIds = [...new Set(usersWithPurchases.map((user) => user.userId))];
@@ -258,12 +258,13 @@ export const ResultDeclare = async (req, res) => {
           const baseURL = process.env.COLOR_GAME_URL;
           const response = await axios.post(`${baseURL}/api/users/remove-exposer`, {
             userId,
-            marketId
+            marketId,
+            marketName ,
           });
 
           if (!response.data.success) {
             return apiResponseErr(
-              null,
+              null,            
               false,
               statusCode.badRequest,
               `Failed to update balance for userId ${userId}.`,
