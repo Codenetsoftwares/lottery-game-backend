@@ -175,11 +175,11 @@ export const validateCreateResult = [
     .withMessage('Prize amount must be a positive integer.')
 ];
 
-export const validateMarketIds =[ body('marketIds')
-.notEmpty().withMessage('marketIds is required')   
-.isArray().withMessage('marketIds must be an array')  
-.custom((value) => value.length > 0).withMessage('marketIds must contain at least one market ID')  
-];
+// export const validateMarketIds =[ body('marketIds')
+// .notEmpty().withMessage('marketIds is required')   
+// .isArray().withMessage('marketIds must be an array')  
+// .custom((value) => value.length > 0).withMessage('marketIds must contain at least one market ID')  
+// ];
 
 // const checkTicketNumberFormat = (prizeCategory) => {
 //   return (value) => {
