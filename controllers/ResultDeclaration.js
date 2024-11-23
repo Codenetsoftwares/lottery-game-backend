@@ -304,3 +304,73 @@ export const getLotteryResults = async (req, res) => {
   }
 };
 
+export const getMultipleLotteryResults = async (req, res) => {
+  try {
+    const { marketIds } = req.body; 
+
+    if (!Array.isArray(marketIds) || marketIds.length === 0) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Invalid input. Please provide an array of marketIds.",
+        res
+      );
+    }
+
+    const results = await LotteryResult.findAll({
+      where: {
+        marketId: marketIds, 
+      },
+    });
+
+    if (results.length === 0) {
+      return apiResponseSuccess(
+        [],
+        false,
+        statusCode.success,
+        `No lottery results found for the provided marketIds.`,
+        res
+      );
+    }
+
+    const structuredResults = {};
+
+    results.forEach((result) => {
+      const marketName = result.marketName;
+
+      if (!structuredResults[marketName]) {
+        structuredResults[marketName] = [];
+      }
+
+      structuredResults[marketName].push({
+        ticketNumber: result.ticketNumber, 
+        prizeCategory: result.prizeCategory, 
+        prizeAmount: result.prizeAmount, 
+        complementaryPrize: result.complementaryPrize || 0, 
+        marketName: marketName, 
+        marketId: result.marketId,
+      });
+    });
+
+    return apiResponseSuccess(
+      structuredResults ,
+      true,
+      statusCode.success,
+      "Lottery results fetched successfully.",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
+
+
