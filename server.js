@@ -9,6 +9,7 @@ import { adminRoutes } from './routes/admin.route.js';
 import PurchaseLottery from './models/purchase.model.js';
 import UserRange from './models/user.model.js';
 import { ResultDeclarationModule } from './routes/ResultDeclaration.route.js';
+import { ExternalApiModule } from './routes/externalApis.route.js';
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,7 @@ adminRoutes(app);
 ticketRoute(app);
 userRoute(app);
 ResultDeclarationModule(app);
+ExternalApiModule(app);
 
 PurchaseLottery.belongsTo(UserRange, {
   foreignKey: 'generateId',
