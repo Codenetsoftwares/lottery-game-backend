@@ -60,7 +60,9 @@ export const searchTickets = async ({
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
     const query = {
+      marketId,
       group_start: { [Op.lte]: group },
       group_end: { [Op.gte]: group },
       series_start: { [Op.lte]: series },
@@ -68,7 +70,6 @@ export const searchTickets = async ({
       number_start: { [Op.lte]: number },
       number_end: { [Op.gte]: number },
       createdAt: { [Op.gte]: today },
-      ...(marketId && { marketId }), 
     };
 
     const result = await TicketRange.findOne({
@@ -84,11 +85,11 @@ export const searchTickets = async ({
     });
 
     if (result) {
-      const ticketService = new TicketService(group, series, number, sem);
+      const ticketService = new TicketService();
 
-      const tickets = ticketService.list();
+      const tickets = await ticketService.list(group, series, number, sem, marketId );
+      const price = await ticketService.calculatePrice(marketId, sem);
 
-      const price = await ticketService.calculatePrice(marketId);
       return { tickets, price, sem, generateId: createRange.generateId };
     } else {
       return {
