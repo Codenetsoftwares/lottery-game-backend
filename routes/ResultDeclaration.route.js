@@ -16,7 +16,7 @@ export const ResultDeclarationModule = (app) => {
 
   app.get('/api/lottery-results/:marketId', getLotteryResults);
 
-  app.post('/api/lottery-results',validateMarketIds,customErrorHandler,getMultipleLotteryResults);
+  app.post('/api/lottery-results',validateMarketIds,customErrorHandler,authorize([string.Admin]),getMultipleLotteryResults);
 
 
 };

@@ -308,15 +308,15 @@ export const getMultipleLotteryResults = async (req, res) => {
   try {
     const { marketIds } = req.body; 
 
-    if (!Array.isArray(marketIds) || marketIds.length === 0) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Invalid input. Please provide an array of marketIds.",
-        res
-      );
-    }
+    // if (!Array.isArray(marketIds) || marketIds.length === 0) {
+    //   return apiResponseErr(
+    //     null,
+    //     false,
+    //     statusCode.badRequest,
+    //     "Invalid input. Please provide an array of marketIds.",
+    //     res
+    //   );
+    // }
 
     const results = await LotteryResult.findAll({
       where: {
