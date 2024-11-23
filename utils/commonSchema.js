@@ -2,9 +2,9 @@ import { body,query,param } from 'express-validator';
 import { string } from '../constructor/string.js';
 
 export const validateCreateAdmin = [
-  body('userName').isString().withMessage('Username must be a string').notEmpty().withMessage('Username is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-  body('role').isIn([string.Admin, string.SubAdmin, string.User]).withMessage('Role must be admin, subAdmin, or user'),
+  body('userName').notEmpty().withMessage('Username is required').isString().withMessage('Username must be a string'),
+  body('password').notEmpty().withMessage('Password is required').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('role').notEmpty().withMessage('Role is required').isIn([string.Admin, string.SubAdmin, string.User]).withMessage('Role must be admin, subAdmin, or user'),
 ];
    
 export const validateAdminLogin = [
@@ -12,11 +12,75 @@ export const validateAdminLogin = [
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
+
+
+export const validateTicketRange = [
+  body('group.min').notEmpty().withMessage('Group min is required')
+    .isInt({ min: 1, max: 99 })
+    .withMessage('Group min must be an integer between 1 and 99')
+    ,
+  
+  body('group.max').notEmpty().withMessage('Group max is required')
+    .isInt({ min: 1, max: 99 })
+    .withMessage('Group max must be an integer between 1 and 99')
+    ,
+  
+  body('series')
+  .notEmpty().withMessage('Series is required')
+    .custom((series) => {
+      const seriesStartCode = series.start.charCodeAt(0);
+      const seriesEndCode = series.end.charCodeAt(0);
+      const seriesRange = seriesEndCode - seriesStartCode + 1;
+
+      if (seriesRange < 10) {
+        throw new Error('Series must have a minimum range of 10');
+      }
+      return true;
+    }).withMessage('Series must have a start and end range'),
+  
+  body('number.min').notEmpty().withMessage('Number min is required')
+    .isLength({ min: 5, max: 5 })
+    .isNumeric()
+    .withMessage('Number min must be a 5-digit numeric string')
+    ,
+  
+  body('number.max').notEmpty().withMessage('Number max is required')
+    .isLength({ min: 5, max: 5 })
+    .isNumeric()
+    .withMessage('Number max must be a 5-digit numeric string')
+    ,
+  
+  body('start_time').notEmpty().withMessage('Start time is required')
+    .isISO8601()
+    .withMessage('Start time must be a valid ISO8601 date')
+    ,
+  
+  body('end_time').notEmpty().withMessage('End time is required')
+    .isISO8601()
+    .withMessage('End time must be a valid ISO8601 date')
+    ,
+  
+  body('marketName')
+    .notEmpty()
+    .withMessage('Market name is required'),
+  
+  body('date').notEmpty().withMessage('Date is required')
+    .isISO8601()
+    .withMessage('Date must be a valid ISO8601 date')
+    ,
+  
+  body('price').exists().withMessage('Price is required')
+    .isInt({ min: 0 })
+    .withMessage('Price must be a non-negative number')
+    ,
+];
+
+
 export const validateAdminSearchTickets = [
-  body('group').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
-  body('series').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
-  body('number').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
-  body('sem').isNumeric().withMessage('Sem must be a numeric value'),
+  body('group').notEmpty().withMessage('Group is required').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
+  body('series').notEmpty().withMessage('Series is required').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
+  body('number').notEmpty().withMessage('Number is required').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
+  body('sem').notEmpty().withMessage('Sem is required').isNumeric().withMessage('Sem must be a numeric value'),
 ];
 
 export const validateAdminPurchaseHistory = [
@@ -110,6 +174,12 @@ export const validateCreateResult = [
     .isInt({ min: 1 })
     .withMessage('Prize amount must be a positive integer.')
 ];
+
+// export const validateMarketIds =[ body('marketIds')
+// .notEmpty().withMessage('marketIds is required')   
+// .isArray().withMessage('marketIds must be an array')  
+// .custom((value) => value.length > 0).withMessage('marketIds must contain at least one market ID')  
+// ];
 
 // const checkTicketNumberFormat = (prizeCategory) => {
 //   return (value) => {

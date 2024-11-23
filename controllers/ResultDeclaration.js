@@ -353,3 +353,67 @@ export const getLotteryResults = async (req, res) => {
   }
 };
 
+export const getMultipleLotteryResults = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const results = await LotteryResult.findAll({
+      attributes: ["marketId", "marketName", "ticketNumber", "prizeCategory", "prizeAmount", "complementaryPrize", "createdAt"],
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+      },
+    });
+
+    if (results.length === 0) {
+      return apiResponseSuccess(
+        {},
+        false,
+        statusCode.success,
+        `No lottery results found for today.`,
+        res
+      );
+    }
+
+    const structuredResults = {};
+
+    results.forEach((result) => {
+      const marketName = result.marketName;
+      if (!structuredResults[marketName]) {
+        structuredResults[marketName] = [];
+      }
+
+      structuredResults[marketName].push({
+        ticketNumber: Array.isArray(result.ticketNumber) ? result.ticketNumber : [result.ticketNumber],
+        prizeCategory: result.prizeCategory,
+        prizeAmount: result.prizeAmount,
+        complementaryPrize: result.complementaryPrize || 0,
+        marketName: marketName,
+        marketId: result.marketId,
+      });
+    });
+
+    return apiResponseSuccess(
+      structuredResults,
+      true,
+      statusCode.success,
+      "Lottery results fetched successfully.",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
+
+
+

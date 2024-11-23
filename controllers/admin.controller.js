@@ -55,7 +55,7 @@ export const login = async (req, res) => {
     }
 
     const userResponse = {
-      adminId: existingUser.adminId, // assuming 'id' is the primary key
+      adminId: existingUser.adminId, 
       userName: existingUser.userName,
       role: existingUser.role,
     };
@@ -91,7 +91,7 @@ export const adminSearchTickets = async ({ group, series, number, sem, marketId 
       number_start: { [Op.lte]: number },
       number_end: { [Op.gte]: number },
       createdAt: { [Op.gte]: today },
-      ...(marketId && { marketId }), // Add marketId condition if it is provided
+      ...(marketId && { marketId }), 
     };
 
     const result = await TicketRange.findOne({
@@ -102,7 +102,7 @@ export const adminSearchTickets = async ({ group, series, number, sem, marketId 
       const ticketService = new TicketService(group, series, number, sem);
 
       const tickets = ticketService.list();
-      const price = ticketService.calculatePrice();
+      const price = await ticketService.calculatePrice(marketId);
       return { tickets, price, sem };
     } else {
       return {
@@ -364,3 +364,65 @@ export const getAllMarkets = async (req, res) => {
     );
   }
 };
+
+export const dateWiseMarkets = async (req, res) => {
+  try {
+    const { date } = req.query; 
+
+    if (!date) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Date is required",
+        res
+      );
+    }
+
+    const selectedDate = new Date(date);
+    if (isNaN(selectedDate)) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        "Invalid date format",
+        res
+      );
+    }
+
+    selectedDate.setHours(0, 0, 0, 0);
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(nextDay.getDate() + 1); 
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+      where: {
+        createdAt: {
+          [Op.gte]: selectedDate, 
+          [Op.lt]: nextDay,       
+        },
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+

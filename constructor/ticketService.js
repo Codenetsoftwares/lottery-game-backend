@@ -1,3 +1,6 @@
+import TicketRange from "../models/ticketRange.model.js";
+import CustomError from "../utils/extendError.js";
+
 export class TicketService {
   constructor(group, series, number, sem) {
     this.group = group;
@@ -7,7 +10,31 @@ export class TicketService {
   }
 
   list() {
-    const allSeries = ['A', 'B', 'C', 'D', 'E', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    const allSeries = [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "G",
+      "H",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+    ];
 
     let currentSeriesIndex = allSeries.indexOf(this.series);
     if (currentSeriesIndex === -1) {
@@ -16,10 +43,14 @@ export class TicketService {
 
     let currentGroup = this.group;
     const tickets = [];
-    const incrementThreshold = (this.sem === 5 || this.sem === 25) ? 5 : 10; 
+    const incrementThreshold = this.sem === 5 || this.sem === 25 ? 5 : 10;
 
     for (let i = 0; i < this.sem; i++) {
-      tickets.push(`${String(currentGroup).padStart(2, '0')} ${allSeries[currentSeriesIndex]} ${String(this.number).padStart(5, '0')}`);
+      tickets.push(
+        `${String(currentGroup).padStart(2, "0")} ${
+          allSeries[currentSeriesIndex]
+        } ${String(this.number).padStart(5, "0")}`
+      );
 
       currentSeriesIndex++;
       if (currentSeriesIndex >= allSeries.length) {
@@ -38,8 +69,20 @@ export class TicketService {
     return tickets;
   }
 
-  calculatePrice() {
-    const price = 6 * this.sem;
-    return price;
+  async calculatePrice(marketId) {
+    try {
+      const ticketRange = await TicketRange.findOne({
+        where: {
+          marketId,
+        },
+      });
+      if (!ticketRange) {
+        throw new CustomError("TicketRange not found for the given marketId");
+      }
+      const prices = ticketRange.price * this.sem;
+      return prices;
+    } catch (error) {
+      return new CustomError("error", error);
+    }
   }
 }
