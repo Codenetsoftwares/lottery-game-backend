@@ -9,7 +9,7 @@ import TicketRange from '../models/ticketRange.model.js';
 
 export const ResultDeclare = async (req, res) => {
   try {
-    const prizes = req.body; 
+    const prizes = req.body;
     const { marketId } = req.params;
     const market = await TicketRange.findOne({ where: { marketId } });
 
@@ -17,7 +17,7 @@ export const ResultDeclare = async (req, res) => {
       return apiResponseErr(null, false, statusCode.badRequest, 'Market not found', res);
     }
 
-    const marketName = market.marketName; 
+    const marketName = market.marketName;
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -34,6 +34,7 @@ export const ResultDeclare = async (req, res) => {
 
     let generatedTickets = [];
     let lastFiveForFirstPrize = null;
+    let lastFourForFirstPrize = null;
     let lastFourForSecondPrize = null;
     let lastFourForThirdPrize = null;
     let lastFourForFourthPrize = null;
@@ -101,7 +102,9 @@ export const ResultDeclare = async (req, res) => {
       if (prizeCategory === 'First Prize') {
         const firstTicket = ticketNumbers[0];
         const lastFive = firstTicket.slice(-5);
+        const lastFour = firstTicket.slice(-4);
         lastFiveForFirstPrize = lastFive;
+        lastFourForFirstPrize = lastFour
         generatedTickets.push({
           resultId: uuidv4(),
           marketId,
@@ -126,13 +129,21 @@ export const ResultDeclare = async (req, res) => {
             prizeCategory,
             prizeAmount,
           });
+        } else {
+          return apiResponseErr(
+            null,
+            false,
+            statusCode.badRequest,
+            'Ticket number must be unique',
+            res,
+          );
         }
       }
 
       if (prizeCategory === 'Third Prize') {
         const thirdTicket = ticketNumbers[0];
         const lastFour = thirdTicket.slice(-4);
-        if (lastFour !== lastFiveForFirstPrize && lastFour !== lastFourForSecondPrize) {
+        if (lastFour !== lastFiveForFirstPrize && lastFour !== lastFourForSecondPrize && lastFour !== lastFourForFirstPrize) {
           lastFourForThirdPrize = lastFour;
           generatedTickets.push({
             resultId: uuidv4(),
@@ -142,6 +153,14 @@ export const ResultDeclare = async (req, res) => {
             prizeCategory,
             prizeAmount,
           });
+        } else {
+          return apiResponseErr(
+            null,
+            false,
+            statusCode.badRequest,
+            'Ticket number must be unique',
+            res,
+          );
         }
       }
 
@@ -151,7 +170,8 @@ export const ResultDeclare = async (req, res) => {
         if (
           lastFour !== lastFiveForFirstPrize &&
           lastFour !== lastFourForSecondPrize &&
-          lastFour !== lastFourForThirdPrize
+          lastFour !== lastFourForThirdPrize &&
+          lastFour !== lastFourForFirstPrize
         ) {
           lastFourForFourthPrize = lastFour;
           generatedTickets.push({
@@ -162,6 +182,14 @@ export const ResultDeclare = async (req, res) => {
             prizeCategory,
             prizeAmount,
           });
+        } else {
+          return apiResponseErr(
+            null,
+            false,
+            statusCode.badRequest,
+            'Ticket number must be unique',
+            res,
+          );
         }
       }
 
@@ -172,7 +200,8 @@ export const ResultDeclare = async (req, res) => {
           lastFour !== lastFiveForFirstPrize &&
           lastFour !== lastFourForSecondPrize &&
           lastFour !== lastFourForThirdPrize &&
-          lastFour !== lastFourForFourthPrize
+          lastFour !== lastFourForFourthPrize &&
+          lastFour !== lastFourForFirstPrize
         ) {
           generatedTickets.push({
             resultId: uuidv4(),
@@ -182,6 +211,14 @@ export const ResultDeclare = async (req, res) => {
             prizeCategory,
             prizeAmount,
           });
+        } else {
+          return apiResponseErr(
+            null,
+            false,
+            statusCode.badRequest,
+            'Ticket number must be unique',
+            res,
+          );
         }
       }
 
@@ -249,7 +286,7 @@ export const ResultDeclare = async (req, res) => {
       } else {
         const usersWithPurchases = await PurchaseLottery.findAll({
           where: { marketId },
-          attributes: ['userId' , 'marketName'],
+          attributes: ['userId', 'marketName'],
         });
 
         const userIds = [...new Set(usersWithPurchases.map((user) => user.userId))];
@@ -259,12 +296,12 @@ export const ResultDeclare = async (req, res) => {
           const response = await axios.post(`${baseURL}/api/users/remove-exposer`, {
             userId,
             marketId,
-            marketName ,
+            marketName,
           });
 
           if (!response.data.success) {
             return apiResponseErr(
-              null,            
+              null,
               false,
               statusCode.badRequest,
               `Failed to update balance for userId ${userId}.`,

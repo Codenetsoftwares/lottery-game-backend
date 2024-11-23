@@ -115,7 +115,7 @@ export const PurchaseTickets = async (req, res) => {
 
     const ticketRange = await TicketRange.findOne({
       where: { marketId: marketId },
-      attributes: ["marketId", "marketName"],
+      attributes: ["marketId", "marketName", "price"],
     });
 
     if (!ticketRange) {
@@ -128,7 +128,7 @@ export const PurchaseTickets = async (req, res) => {
       );
     }
 
-    const { marketName } = ticketRange;
+    const { marketName , price} = ticketRange;
     const { group, series, number, sem } = userRange;
 
     await PurchaseLottery.create({
@@ -141,7 +141,8 @@ export const PurchaseTickets = async (req, res) => {
       series,
       number,
       sem,
-      lotteryPrice
+      lotteryPrice,
+      price
     });
 
     return apiResponseSuccess(

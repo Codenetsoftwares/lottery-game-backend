@@ -42,6 +42,10 @@ const TicketRange = sequelize.define('TicketRange', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  price: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  }
 }, {
   tableName: 'TicketRange',
   timestamps: true,

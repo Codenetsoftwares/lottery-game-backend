@@ -49,7 +49,11 @@ const PurchaseLottery = sequelize.define(
     lotteryPrice: {
       type: DataTypes.INTEGER,
       allowNull: false,
-  },
+    },
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    }
   },
   {
     tableName: "PurchaseLottery",

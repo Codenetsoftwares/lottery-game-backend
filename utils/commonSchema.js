@@ -133,46 +133,49 @@ export const validateCreateResult = [
 //   };
 // };
 
-// export const validationRules = [
-//   param('marketId')
-//     .isUUID(4)
-//     .withMessage('Invalid marketId format. It must be a valid UUID.'),
+export const validationRules = [
+  body('*.ticketNumber') 
+    .isArray()
+    .withMessage('Ticket number must be an array.')
+    .bail()
+    .custom((ticketNumbers, { req }) => {
+      const prizeLimits = {
+        'First Prize': 1,
+        'Second Prize': 10,
+        'Third Prize': 10,
+        'Fourth Prize': 10,
+        'Fifth Prize': 50
+      };
 
-//   body()
-//     .isArray({ min: 1 })
-//     .withMessage('The body must be an array of prize objects.'),
+      const prizeCategory = req.body.find((entry) => entry.ticketNumber === ticketNumbers)?.prizeCategory;
 
-//   body('*.ticketNumber')
-//     .notEmpty()
-//     .withMessage('ticketNumber is required.')
-//     .custom((value, { req, path }) => {
-//       const prizeCategory = req.body.find((obj) => obj.ticketNumber === value)?.prizeCategory;
-//       if (!prizeCategory) {
-//         throw new Error('prizeCategory must be provided to validate ticketNumber.');
-//       }
-//       if (Array.isArray(value)) {
-//         return value.every((ticket) => checkTicketNumberFormat(prizeCategory, ticket));
-//       }
-//       return checkTicketNumberFormat(prizeCategory, value);
-//     })
-//     .withMessage('ticketNumber format is invalid for the provided prizeCategory.'),
+      if (!prizeCategory) {
+        throw new Error('Prize category is required for ticket validation.');
+      }
 
-//   body('*.prizeCategory')
-//     .notEmpty()
-//     .withMessage('prizeCategory is required.')
-//     .isString()
-//     .withMessage('prizeCategory must be a string.')
-//     .isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
-//     .withMessage('Invalid prizeCategory. Accepted values are First Prize, Second Prize, Third Prize, Fourth Prize, and Fifth Prize.'),
+      if (ticketNumbers.length !== prizeLimits[prizeCategory]) {
+        throw new Error(`The ${prizeCategory} requires exactly ${prizeLimits[prizeCategory]} ticket number(s).`);
+      }
 
-//   body('*.prizeAmount')
-//     .notEmpty()
-//     .withMessage('prizeAmount is required.')
-//     .isNumeric()
-//     .withMessage('prizeAmount must be a number.'),
+      const ticketSet = new Set(ticketNumbers);
+      if (ticketSet.size !== ticketNumbers.length) {
+        throw new Error('Ticket numbers must be unique within each prize category.');
+      }
 
-//   body('*.complementaryPrize')
-//     .optional()
-//     .isNumeric()
-//     .withMessage('complementaryPrize must be a number if provided.'),
-// ];
+      return true;
+    }),
+
+  body('*.prizeCategory') 
+    .isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
+    .withMessage('Invalid prize category.'),
+
+  body('*.prizeAmount') 
+    .isFloat({ min: 0 })
+    .withMessage('Prize amount must be a valid number greater than 0.'),
+
+  body('*.complementaryPrize') 
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Complementary prize must be a valid number greater than 0.')
+];
+
