@@ -444,3 +444,33 @@ export const dateWiseMarkets = async (req, res) => {
   }
 };
 
+export const getMarkets = async (req, res) => {
+  try {
+    
+
+    const ticketData = await TicketRange.findAll({
+      attributes: ["marketId", "marketName"],
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+

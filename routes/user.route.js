@@ -2,14 +2,13 @@ import { string } from '../constructor/string.js';
 import {
   dateWiseMarkets,
   getAllMarkets,
-  getDrawDateByDate,
   getResult,
   purchaseHistory,
   PurchaseTickets,
   searchTickets,
 } from '../controllers/user.controller.js';
 import { authenticateUser } from '../middlewares/colorgameAuth.js';
-import { purchaseTicketValidation, validatePurchaseHistory } from '../utils/commonSchema.js';
+import { purchaseTicketValidation, validateSearchTickets, validatePurchaseHistory, validateGetResult, validateDateQuery } from '../utils/commonSchema.js';
 import customErrorHandler from '../utils/customErrorHandler.js';
 import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
 import { statusCode } from '../utils/statusCodes.js';
@@ -17,7 +16,11 @@ import { statusCode } from '../utils/statusCodes.js';
 export const userRoute = (app) => {
   app.get('/api/getAll-markets',authenticateUser, getAllMarkets)
 
-  app.post('/api/search-ticket', async (req, res) => {
+  app.post('/api/search-ticket',
+    validateSearchTickets,
+    customErrorHandler,
+    authenticateUser,
+     async (req, res) => {
     try {
       const tickets = await searchTickets(req.body);
 
@@ -38,9 +41,7 @@ export const userRoute = (app) => {
   
   app.post('/api/purchase-history/:marketId', validatePurchaseHistory, customErrorHandler, purchaseHistory);
 
-  app.get('/api/draw-dates', getDrawDateByDate); // no need
+  app.get('/api/prize-results',validateGetResult,customErrorHandler, authenticateUser, getResult);
 
-  app.get('/api/prize-results', authenticateUser, getResult);
-
-  app.get('/api/user/dateWise-markets',authenticateUser, dateWiseMarkets)
+  app.get('/api/user/dateWise-markets',validateDateQuery,customErrorHandler,authenticateUser, dateWiseMarkets)
 };

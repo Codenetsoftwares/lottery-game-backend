@@ -76,11 +76,21 @@ export const validateTicketRange = [
 ];
 
 
-export const validateAdminSearchTickets = [
+export const validateSearchTickets = [
   body('group').notEmpty().withMessage('Group is required').isInt({ min: 0 }).withMessage('Group must be a positive integer'),
   body('series').notEmpty().withMessage('Series is required').isLength({ min: 1, max: 1 }).withMessage('Series must be a single character'),
   body('number').notEmpty().withMessage('Number is required').isString().isLength({ min: 1 }).withMessage('Number must be a non-empty string'),
-  body('sem').notEmpty().withMessage('Sem is required').isNumeric().withMessage('Sem must be a numeric value'),
+  body('sem')
+  .notEmpty()
+  .withMessage('Sem is required')
+  .bail() 
+  .isNumeric()
+  .withMessage('Sem must be a numeric value')
+  .bail() 
+  .isIn([5, 10, 25, 50, 100, 200])
+  .withMessage('Sem must be one of the following values: 5, 10, 25, 50, 100, 200'),
+  body('marketId').notEmpty().withMessage('marketId is required').isUUID().withMessage('MarketId must be a valid UUID'),
+
 ];
 
 export const validateAdminPurchaseHistory = [
@@ -89,8 +99,32 @@ export const validateAdminPurchaseHistory = [
   query('limit').optional().isInt({ min: 1 }).withMessage('Limit must be a positive integer'),
 ];
 
+export const validateMarketId = [
+  param("marketId").notEmpty().withMessage('marketId is required')
+    .isUUID()
+    .withMessage("Invalid marketId. It should be a valid UUID."),
+];
+
+export const validateDateQuery = [
+  query("date")
+    .exists()
+    .withMessage("Date is required")
+    .isISO8601()
+    .withMessage("Invalid date format. Use ISO8601 (YYYY-MM-DD)."),
+];
+
+export const validateGetLotteryBetHistory = [
+  body('userId')
+    .exists()
+    .withMessage('User ID is required')
+    .bail()
+    .isUUID()
+    .withMessage("Invalid userId. It should be a valid UUID."),
+];
+
 export const validateGetResult = [
-  query('announce')
+  query('announce').notEmpty()
+  .withMessage('announce is required')
     .optional()
     .isISO8601()
     .withMessage('Announce time must be a valid ISO8601 date.'),

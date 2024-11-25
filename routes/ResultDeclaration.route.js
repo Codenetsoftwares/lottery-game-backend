@@ -2,7 +2,7 @@ import { string } from '../constructor/string.js';
 import { getAllMarkets } from '../controllers/admin.controller.js';
 import { getLotteryResults, getMultipleLotteryResults, ResultDeclare } from '../controllers/ResultDeclaration.js';
 import { authorize } from '../middlewares/auth.js';
-import { validationRules } from '../utils/commonSchema.js';
+import { validateMarketId, validationRules } from '../utils/commonSchema.js';
 import customErrorHandler from '../utils/customErrorHandler.js';
 
 export const ResultDeclarationModule = (app) => {
@@ -14,7 +14,7 @@ export const ResultDeclarationModule = (app) => {
     ResultDeclare,
   );
 
-  app.get('/api/lottery-results/:marketId', getLotteryResults);
+  app.get('/api/lottery-results/:marketId',validateMarketId, customErrorHandler,authorize([string.Admin]), getLotteryResults);
 
   app.get('/api/lottery-results', authorize([string.Admin]), getMultipleLotteryResults);
 

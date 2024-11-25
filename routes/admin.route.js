@@ -5,12 +5,13 @@ import {
   createAdmin,
   dateWiseMarkets,
   getAllMarkets,
+  getMarkets,
   getResult,
   getTicketNumbersByMarket,
   login,
 } from '../controllers/admin.controller.js';
 import { authorize } from '../middlewares/auth.js';
-import { validateAdminLogin, validateAdminPurchaseHistory, validateAdminSearchTickets, validateCreateAdmin, validateGetResult, } from '../utils/commonSchema.js';
+import { validateAdminLogin, validateAdminPurchaseHistory, validateSearchTickets, validateCreateAdmin, validateDateQuery, validateGetResult, validateMarketId, } from '../utils/commonSchema.js';
 import customErrorHandler from '../utils/customErrorHandler.js';
 import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
 import { statusCode } from '../utils/statusCodes.js';
@@ -20,7 +21,7 @@ export const adminRoutes = (app) => {
   app.post('/api/login', validateAdminLogin, customErrorHandler, login); // done
   app.post(
     '/api/admin/search-ticket',
-    validateAdminSearchTickets,
+    validateSearchTickets,
     customErrorHandler,
     authorize([string.Admin]),
     async (req, res) => {
@@ -45,9 +46,10 @@ export const adminRoutes = (app) => {
 
   app.get('/api/admin/prize-results',validateGetResult,customErrorHandler, authorize([string.Admin]), getResult);
 
-  app.get("/api/tickets/purchases/:marketId", getTicketNumbersByMarket) //done
+  app.get("/api/tickets/purchases/:marketId",validateMarketId,customErrorHandler,authorize([string.Admin]), getTicketNumbersByMarket) //done
   
   app.get('/api/admin/getAll-markets',authorize([string.Admin]), getAllMarkets) //done
 
-  app.get('/api/admin/dateWise-markets',authorize([string.Admin]), dateWiseMarkets) //done
+  app.get('/api/admin/dateWise-markets',validateDateQuery,customErrorHandler,authorize([string.Admin]), dateWiseMarkets) //done
+  app.get('/api/admin/get-markets',authorize([string.Admin]), getMarkets)
 };
