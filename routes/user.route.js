@@ -2,6 +2,7 @@ import { string } from '../constructor/string.js';
 import {
   dateWiseMarkets,
   getAllMarkets,
+  getMarkets,
   getResult,
   purchaseHistory,
   PurchaseTickets,
@@ -44,4 +45,6 @@ export const userRoute = (app) => {
   app.get('/api/prize-results',validateGetResult,customErrorHandler, authenticateUser, getResult);
 
   app.get('/api/user/dateWise-markets',validateDateQuery,customErrorHandler,authenticateUser, dateWiseMarkets)
+
+  app.get('/api/user/get-markets',authenticateUser, getMarkets)
 };
