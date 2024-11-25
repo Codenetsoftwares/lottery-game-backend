@@ -16,8 +16,8 @@ import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
 import { statusCode } from '../utils/statusCodes.js';
 
 export const adminRoutes = (app) => {
-  app.post('/api/create-admin', validateCreateAdmin, customErrorHandler, createAdmin);
-  app.post('/api/login', validateAdminLogin, customErrorHandler, login);
+  app.post('/api/create-admin', validateCreateAdmin, customErrorHandler, createAdmin); //done
+  app.post('/api/login', validateAdminLogin, customErrorHandler, login); // done
   app.post(
     '/api/admin/search-ticket',
     validateAdminSearchTickets,
@@ -39,15 +39,15 @@ export const adminRoutes = (app) => {
         );
       }
     },
-  );
+  );   //done
 
-  app.get('/api/admin/purchase-history/:marketId',validateAdminPurchaseHistory,customErrorHandler, authorize([string.Admin]), adminPurchaseHistory);
+  app.get('/api/admin/purchase-history/:marketId',validateAdminPurchaseHistory,customErrorHandler, authorize([string.Admin]), adminPurchaseHistory); // done
 
-  app.get('/api/admin/prize-results',validateGetResult, authorize([string.Admin]), getResult);
+  app.get('/api/admin/prize-results',validateGetResult,customErrorHandler, authorize([string.Admin]), getResult);
 
-  app.get("/api/tickets/purchases/:marketId", getTicketNumbersByMarket)
+  app.get("/api/tickets/purchases/:marketId", getTicketNumbersByMarket) //done
   
-  app.get('/api/admin/getAll-markets',authorize([string.Admin]), getAllMarkets)
+  app.get('/api/admin/getAll-markets',authorize([string.Admin]), getAllMarkets) //done
 
-  app.get('/api/admin/dateWise-markets',authorize([string.Admin]), dateWiseMarkets)
+  app.get('/api/admin/dateWise-markets',authorize([string.Admin]), dateWiseMarkets) //done
 };

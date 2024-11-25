@@ -333,7 +333,7 @@ export const getLotteryResults = async (req, res) => {
     if (results.length === 0) {
       return apiResponseSuccess(
         [],
-        false,
+        true,
         statusCode.success,
         `No lottery results found.`,
         res
