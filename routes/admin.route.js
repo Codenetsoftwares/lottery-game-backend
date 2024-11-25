@@ -17,8 +17,8 @@ import { apiResponseErr, apiResponseSuccess } from '../utils/response.js';
 import { statusCode } from '../utils/statusCodes.js';
 
 export const adminRoutes = (app) => {
-  app.post('/api/create-admin', validateCreateAdmin, customErrorHandler, createAdmin); 
-  app.post('/api/login', validateAdminLogin, customErrorHandler, login); 
+  app.post('/api/create-admin', validateCreateAdmin, customErrorHandler, createAdmin);
+  app.post('/api/login', validateAdminLogin, customErrorHandler, login);
   app.post(
     '/api/admin/search-ticket',
     validateSearchTickets,
@@ -40,16 +40,17 @@ export const adminRoutes = (app) => {
         );
       }
     },
-  );   
+  );
 
-  app.get('/api/admin/purchase-history/:marketId',validateAdminPurchaseHistory,customErrorHandler, authorize([string.Admin]), adminPurchaseHistory); 
+  app.get('/api/admin/purchase-history/:marketId', validateAdminPurchaseHistory, customErrorHandler, authorize([string.Admin]), adminPurchaseHistory);
 
-  app.get('/api/admin/prize-results',validateGetResult,customErrorHandler, authorize([string.Admin]), getResult);
+  app.get('/api/admin/prize-results', validateGetResult, customErrorHandler, authorize([string.Admin]), getResult);
 
-  app.get("/api/tickets/purchases/:marketId",validateMarketId,customErrorHandler,authorize([string.Admin]), getTicketNumbersByMarket) 
-  
-  app.get('/api/admin/getAll-markets',authorize([string.Admin]), getAllMarkets) 
+  app.get("/api/tickets/purchases/:marketId", validateMarketId, customErrorHandler, authorize([string.Admin]), getTicketNumbersByMarket)
 
-  app.get('/api/admin/dateWise-markets',validateDateQuery,customErrorHandler,authorize([string.Admin]), dateWiseMarkets) 
-  app.get('/api/admin/get-markets',authorize([string.Admin]), getMarkets)
+  app.get('/api/admin/getAll-markets', authorize([string.Admin]), getAllMarkets)
+
+  app.get('/api/admin/dateWise-markets', validateDateQuery, customErrorHandler, authorize([string.Admin]), dateWiseMarkets)
+
+  app.get('/api/admin/get-markets', authorize([string.Admin]), getMarkets)
 };
