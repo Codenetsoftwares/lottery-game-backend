@@ -490,7 +490,7 @@ export const getMarkets = async (req, res) => {
   try {
     
 
-    const ticketData = await TicketRange.findAll({
+    const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
     });
 

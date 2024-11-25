@@ -352,7 +352,7 @@ export const getAllMarkets = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const ticketData = await TicketRange.findAll({
+    const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
       where: {
         createdAt: {
