@@ -53,6 +53,16 @@ const PurchaseLottery = sequelize.define(
     price: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    resultAnnouncement : {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    gameName :
+    {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'Lottery',
     }
   },
   {

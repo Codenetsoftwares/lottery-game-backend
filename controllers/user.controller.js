@@ -488,7 +488,6 @@ export const dateWiseMarkets = async (req, res) => {
 
 export const getMarkets = async (req, res) => {
   try {
-    
 
     const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],

@@ -314,6 +314,11 @@ export const ResultDeclare = async (req, res) => {
 
     const savedResults = await LotteryResult.bulkCreate(generatedTickets);
 
+    await PurchaseLottery.update(
+      { resultAnnouncement: true }, 
+      { where: { marketId } }       
+    );
+    
     return apiResponseSuccess(savedResults, true, statusCode.create, 'Lottery results saved successfully.', res);
 
   } catch (error) {

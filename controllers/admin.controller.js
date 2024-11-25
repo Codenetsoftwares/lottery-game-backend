@@ -55,7 +55,7 @@ export const login = async (req, res) => {
     }
 
     const userResponse = {
-      adminId: existingUser.adminId, 
+      adminId: existingUser.adminId,
       userName: existingUser.userName,
       role: existingUser.role,
     };
@@ -101,7 +101,7 @@ export const adminSearchTickets = async ({ group, series, number, sem, marketId 
     if (result) {
       const ticketService = new TicketService();
 
-      const tickets = await ticketService.list(group, series, number, sem, marketId );
+      const tickets = await ticketService.list(group, series, number, sem, marketId);
       const price = await ticketService.calculatePrice(marketId, sem);
       return { tickets, price, sem };
     } else {
@@ -125,7 +125,7 @@ export const adminPurchaseHistory = async (req, res) => {
     const offset = (page - 1) * parseInt(limit);
 
     const purchaseRecords = await PurchaseLottery.findAndCountAll({
-      where: {marketId },
+      where: { marketId },
       include: [
         {
           model: UserRange,
@@ -160,7 +160,7 @@ export const adminPurchaseHistory = async (req, res) => {
           const ticketService = new TicketService();
 
           return {
-             tickets: await ticketService.list(
+            tickets: await ticketService.list(
               group,
               series,
               number,
@@ -170,8 +170,8 @@ export const adminPurchaseHistory = async (req, res) => {
             price: await ticketService.calculatePrice(marketId, userSem),
             userName: purchase.userName,
             sem: userRange.sem,
-            marketName : purchase.marketName,
-            marketId : purchase.marketId
+            marketName: purchase.marketName,
+            marketId: purchase.marketId
           };
         } else {
           return null;
@@ -324,7 +324,7 @@ export const getTicketNumbersByMarket = async (req, res) => {
           userName: ticket.userName,
           sem: ticket.sem,
           marketName: ticket.marketName,
-          ticketList: formattedTicketList,  
+          ticketList: formattedTicketList,
         };
       })
     );
@@ -385,7 +385,7 @@ export const getAllMarkets = async (req, res) => {
 
 export const dateWiseMarkets = async (req, res) => {
   try {
-    const { date } = req.query; 
+    const { date } = req.query;
 
     if (!date) {
       return apiResponseErr(
@@ -410,14 +410,14 @@ export const dateWiseMarkets = async (req, res) => {
 
     selectedDate.setHours(0, 0, 0, 0);
     const nextDay = new Date(selectedDate);
-    nextDay.setDate(nextDay.getDate() + 1); 
+    nextDay.setDate(nextDay.getDate() + 1);
 
     const ticketData = await TicketRange.findAll({
       attributes: ["marketId", "marketName"],
       where: {
         createdAt: {
-          [Op.gte]: selectedDate, 
-          [Op.lt]: nextDay,       
+          [Op.gte]: selectedDate,
+          [Op.lt]: nextDay,
         },
       },
     });
@@ -446,10 +446,47 @@ export const dateWiseMarkets = async (req, res) => {
 
 export const getMarkets = async (req, res) => {
   try {
-    
+
 
     const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+export const getLiveMarkets = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ticketData = await PurchaseLottery.findAll({
+      attributes: ["marketId", "marketName", "gameName"],
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+        resultAnnouncement: false
+      },
     });
 
     if (!ticketData || ticketData.length === 0) {
