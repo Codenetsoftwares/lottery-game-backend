@@ -60,7 +60,7 @@ export const searchTickets = async ({
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const query = {
       marketId,
       group_start: { [Op.lte]: group },
@@ -87,7 +87,13 @@ export const searchTickets = async ({
     if (result) {
       const ticketService = new TicketService();
 
-      const tickets = await ticketService.list(group, series, number, sem, marketId );
+      const tickets = await ticketService.list(
+        group,
+        series,
+        number,
+        sem,
+        marketId
+      );
       const price = await ticketService.calculatePrice(marketId, sem);
 
       return { tickets, price, sem, generateId: createRange.generateId };
@@ -106,7 +112,7 @@ export const searchTickets = async ({
 
 export const PurchaseTickets = async (req, res) => {
   try {
-    const { generateId, userId, userName ,lotteryPrice } = req.body;
+    const { generateId, userId, userName, lotteryPrice } = req.body;
     const { marketId } = req.params;
 
     const userRange = await UserRange.findOne({
@@ -138,7 +144,7 @@ export const PurchaseTickets = async (req, res) => {
       );
     }
 
-    const { marketName , price} = ticketRange;
+    const { marketName, price } = ticketRange;
     const { group, series, number, sem } = userRange;
 
     await PurchaseLottery.create({
@@ -152,7 +158,7 @@ export const PurchaseTickets = async (req, res) => {
       number,
       sem,
       lotteryPrice,
-      price
+      price,
     });
 
     return apiResponseSuccess(
@@ -213,16 +219,17 @@ export const purchaseHistory = async (req, res) => {
         const userRange = purchase.userRange;
         if (userRange) {
           const { group, series, number, sem: userSem } = userRange;
-          const ticketService = new TicketService(
-            group,
-            series,
-            number,
-            userSem
-          );
+          const ticketService = new TicketService();
 
           return {
-            tickets: ticketService.list(),
-            price: ticketService.calculatePrice(),
+            tickets: await ticketService.list(
+              group,
+              series,
+              number,
+              userSem,
+              marketId
+            ),
+            price: await ticketService.calculatePrice(marketId, userSem),
             userName: purchase.userName,
             sem: userRange.sem,
             marketId: purchase.marketId,

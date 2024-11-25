@@ -41,7 +41,7 @@ export const adminRoutes = (app) => {
     },
   );
 
-  app.get('/api/admin/purchase-history',validateAdminPurchaseHistory,customErrorHandler, authorize([string.Admin]), adminPurchaseHistory);
+  app.get('/api/admin/purchase-history/:marketId',validateAdminPurchaseHistory,customErrorHandler, authorize([string.Admin]), adminPurchaseHistory);
 
   app.get('/api/admin/prize-results',validateGetResult, authorize([string.Admin]), getResult);
 

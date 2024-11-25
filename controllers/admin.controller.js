@@ -121,9 +121,11 @@ export const adminSearchTickets = async ({ group, series, number, sem, marketId 
 export const adminPurchaseHistory = async (req, res) => {
   try {
     const { sem, page = 1, limit = 10 } = req.query;
+    const { marketId } = req.params;
     const offset = (page - 1) * parseInt(limit);
 
     const purchaseRecords = await PurchaseLottery.findAndCountAll({
+      where: {marketId },
       include: [
         {
           model: UserRange,
@@ -155,12 +157,17 @@ export const adminPurchaseHistory = async (req, res) => {
         if (userRange) {
           const { group, series, number, sem: userSem } = userRange;
 
-          const ticketService = new TicketService(group, series, number, userSem);
-          const tickets = ticketService.list();
+          const ticketService = new TicketService();
 
           return {
-            tickets: tickets,
-            price: ticketService.calculatePrice(),
+             tickets: await ticketService.list(
+              group,
+              series,
+              number,
+              userSem,
+              marketId
+            ),
+            price: await ticketService.calculatePrice(marketId, userSem),
             userName: purchase.userName,
             sem: userRange.sem,
             marketName : purchase.marketName,
@@ -291,25 +298,36 @@ export const getTicketNumbersByMarket = async (req, res) => {
       );
     }
 
-    const ticketsWithFullNumbers = purchasedTickets.map(ticket => {
-      const ticketService = new TicketService(ticket.group, ticket.series, ticket.number, ticket.sem);
+    const ticketsWithFullNumbers = await Promise.all(
+      purchasedTickets.map(async (ticket) => {
+        const ticketService = new TicketService();
+        const ticketList = await ticketService.list(
+          ticket.group,
+          ticket.series,
+          ticket.number,
+          ticket.sem,
+          marketId
+        );
 
-      const ticketList = ticketService.list(); 
+        if (!Array.isArray(ticketList)) {
+          throw new Error("Invalid ticket list returned from TicketService");
+        }
 
-      const formattedTicketList = ticketList.map(ticketNumber => {
-        const [group, series, number] = ticketNumber.split(' ');
-        return `${group} ${series} ${number}`;
-      });
+        const formattedTicketList = ticketList.map(ticketNumber => {
+          const [group, series, number] = ticketNumber.split(' ');
+          return `${group} ${series} ${number}`;
+        });
 
-      return {
-        generateId: ticket.generateId,
-        userId: ticket.userId,
-        userName: ticket.userName,
-        sem: ticket.sem,
-        marketName: ticket.marketName,
-        ticketList: formattedTicketList,  
-      };
-    });
+        return {
+          generateId: ticket.generateId,
+          userId: ticket.userId,
+          userName: ticket.userName,
+          sem: ticket.sem,
+          marketName: ticket.marketName,
+          ticketList: formattedTicketList,  
+        };
+      })
+    );
 
     return apiResponseSuccess(
       { tickets: ticketsWithFullNumbers },
