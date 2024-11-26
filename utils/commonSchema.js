@@ -113,15 +113,6 @@ export const validateDateQuery = [
     .withMessage("Invalid date format. Use ISO8601 (YYYY-MM-DD)."),
 ];
 
-export const validateGetLotteryBetHistory = [
-  body('userId')
-    .exists()
-    .withMessage('User ID is required')
-    .bail()
-    .isUUID()
-    .withMessage("Invalid userId. It should be a valid UUID."),
-];
-
 export const validateGetResult = [
   query('announce').notEmpty()
   .withMessage('announce is required')

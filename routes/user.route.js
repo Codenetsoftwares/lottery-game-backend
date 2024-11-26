@@ -47,4 +47,5 @@ export const userRoute = (app) => {
   app.get('/api/user/dateWise-markets', validateDateQuery, customErrorHandler, authenticateUser, dateWiseMarkets)
 
   app.get('/api/user/get-markets', authenticateUser, getMarkets)
+
 };

@@ -14,9 +14,9 @@ export const ResultDeclarationModule = (app) => {
     ResultDeclare,
   );
 
-  app.get('/api/lottery-results/:marketId', validateMarketId, customErrorHandler, authorize([string.Admin]), getLotteryResults);
+  app.get('/api/lottery-results/:marketId', validateMarketId, customErrorHandler, getLotteryResults);
 
-  app.get('/api/lottery-results', authorize([string.Admin]), getMultipleLotteryResults);
+  app.get('/api/lottery-results', getMultipleLotteryResults);
 
 
 };

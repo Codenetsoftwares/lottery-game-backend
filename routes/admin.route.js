@@ -5,6 +5,7 @@ import {
   createAdmin,
   dateWiseMarkets,
   getAllMarkets,
+  getLiveMarkets,
   getMarkets,
   getResult,
   getTicketNumbersByMarket,
@@ -53,4 +54,6 @@ export const adminRoutes = (app) => {
   app.get('/api/admin/dateWise-markets', validateDateQuery, customErrorHandler, authorize([string.Admin]), dateWiseMarkets)
 
   app.get('/api/admin/get-markets', authorize([string.Admin]), getMarkets)
+
+  app.get('/api/get-live-markets', getLiveMarkets)
 };
