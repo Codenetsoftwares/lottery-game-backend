@@ -488,9 +488,10 @@ export const dateWiseMarkets = async (req, res) => {
 
 export const getMarkets = async (req, res) => {
   try {
-    
+    const userId = req.user.userId;
 
     const ticketData = await PurchaseLottery.findAll({
+      where: { userId }, 
       attributes: ["marketId", "marketName"],
     });
 
@@ -498,8 +499,12 @@ export const getMarkets = async (req, res) => {
       return apiResponseSuccess([], true, statusCode.success, "No data", res);
     }
 
+    const uniqueMarkets = Array.from(
+      new Map(ticketData.map((item) => [item.marketId, item])).values()
+    );
+
     return apiResponseSuccess(
-      ticketData,
+      uniqueMarkets,
       true,
       statusCode.success,
       "Success",
@@ -515,3 +520,6 @@ export const getMarkets = async (req, res) => {
     );
   }
 };
+
+
+

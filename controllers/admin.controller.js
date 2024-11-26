@@ -446,8 +446,6 @@ export const dateWiseMarkets = async (req, res) => {
 
 export const getMarkets = async (req, res) => {
   try {
-    
-
     const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
     });
@@ -456,8 +454,12 @@ export const getMarkets = async (req, res) => {
       return apiResponseSuccess([], true, statusCode.success, "No data", res);
     }
 
+    const uniqueMarkets = Array.from(
+      new Map(ticketData.map((item) => [item.marketId, item])).values()
+    );
+
     return apiResponseSuccess(
-      ticketData,
+      uniqueMarkets,
       true,
       statusCode.success,
       "Success",
