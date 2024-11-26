@@ -478,46 +478,7 @@ export const getMarkets = async (req, res) => {
   }
 };
 
-export const getLiveMarkets = async (req, res) => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
-    const ticketData = await PurchaseLottery.findAll({
-      attributes: ["marketId", "marketName", "gameName"],
-      where: {
-        createdAt: {
-          [Op.gte]: today,
-        },
-        resultAnnouncement: false
-      },
-    });
-
-    if (!ticketData || ticketData.length === 0) {
-      return apiResponseSuccess([], true, statusCode.success, "No data", res);
-    }
-
-    const uniqueMarkets = Array.from(
-      new Map(ticketData.map((item) => [item.marketId, item])).values()
-    );
-
-    return apiResponseSuccess(
-      uniqueMarkets,
-      true,
-      statusCode.success,
-      "Success",
-      res
-    );
-  } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
-  }
-};
 
 export const getLiveMarkets = async (req, res) => {
   try {
