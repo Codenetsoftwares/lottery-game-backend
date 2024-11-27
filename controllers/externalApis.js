@@ -10,7 +10,6 @@ import { statusCode } from "../utils/statusCodes.js";
 
 export const getLotteryBetHistory = async (req, res) => {
   try {
-    console.log("req", req);
     const { userId, userName } = req.body;
     const pageSize = parseInt(req.query.pageSize) || 10;
     const page = parseInt(req.query.page) || 1;
@@ -18,13 +17,6 @@ export const getLotteryBetHistory = async (req, res) => {
     const { dataType } = req.query;
 
     let startDate, endDate;
-    console.log(
-      "userName dataType, startDate endDate ",
-      userName,
-      dataType,
-      startDate,
-      endDate
-    );
 
     if (dataType === "live") {
       const today = new Date();
