@@ -5,5 +5,4 @@ export const ExternalApiModule = (app) => {
 
     app.get('/api/lottery-external-marketAnalysis/:marketId', lotteryMarketAnalysis);
 
-
 }

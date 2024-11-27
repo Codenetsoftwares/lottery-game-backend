@@ -29,6 +29,7 @@ export const getLotteryBetHistory = async (req, res) => {
                 const tickets = await ticketService.list(group, series, number, sem, marketId);
 
                 return {
+                    userName: userName,
                     gameName: "Lottery",
                     marketName: purchase.marketName,
                     marketId: purchase.marketId,
