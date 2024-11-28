@@ -6,15 +6,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const saveTicketRange = async (req, res) => {
   try {
-    const { 
-      group, 
-      series, 
-      number, 
-      start_time, 
-      end_time, 
-      marketName, 
-      date, 
-      price 
+    const {
+      group,
+      series,
+      number,
+      start_time,
+      end_time,
+      marketName,
+      date,
+      price,
     } = req.body;
 
     const currentDate = new Date();
@@ -30,6 +30,23 @@ export const saveTicketRange = async (req, res) => {
       );
     }
 
+    const existingMarket = await TicketRange.findOne({
+      where: {
+        marketName,
+        date: providedDate,
+      },
+    });
+
+    if (existingMarket) {
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.badRequest,
+        'A market with this name already exists for the selected date.',
+        res
+      );
+    }
+
     const ticket = await TicketRange.create({
       marketId: uuidv4(),
       group_start: group.min,
@@ -40,17 +57,17 @@ export const saveTicketRange = async (req, res) => {
       number_end: number.max,
       start_time: new Date(start_time),
       end_time: new Date(end_time),
-      marketName: marketName,
+      marketName,
       date: providedDate,
-      price: price,
+      price,
     });
 
     return apiResponseSuccess(ticket, true, statusCode.create, 'Ticket range generated successfully', res);
-
   } catch (error) {
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
 
 
 export const geTicketRange = async (req, res) => {
