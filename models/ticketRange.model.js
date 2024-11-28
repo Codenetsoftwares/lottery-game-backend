@@ -54,6 +54,11 @@ const TicketRange = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     tableName: 'TicketRange',
