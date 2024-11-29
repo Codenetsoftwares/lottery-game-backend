@@ -8,11 +8,8 @@ import {
   getLiveMarkets,
   getMarkets,
   getResult,
-<<<<<<< Updated upstream
   getTicketNumbersByMarket,
-=======
   getTicketRange,
->>>>>>> Stashed changes
   login,
 } from '../controllers/admin.controller.js';
 import { authorize } from '../middlewares/auth.js';
@@ -53,7 +50,6 @@ export const adminRoutes = (app) => {
 
   app.get("/api/tickets/purchases/:marketId", validateMarketId, customErrorHandler, authorize([string.Admin]), getTicketNumbersByMarket)
 
-<<<<<<< Updated upstream
   app.get('/api/admin/getAll-markets', authorize([string.Admin]), getAllMarkets)
 
   app.get('/api/admin/dateWise-markets', validateDateQuery, customErrorHandler, authorize([string.Admin]), dateWiseMarkets)
@@ -61,9 +57,8 @@ export const adminRoutes = (app) => {
   app.get('/api/admin/get-markets', authorize([string.Admin]), getMarkets)
 
   app.get('/api/get-live-markets', getLiveMarkets)
-=======
+
   app.get("/api/admin/prize-results", authorize([string.Admin]), getResult);
 
   app.get("/api/admin/ticketRange",getTicketRange)
->>>>>>> Stashed changes
 };
