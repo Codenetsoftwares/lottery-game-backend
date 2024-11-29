@@ -189,4 +189,51 @@ export const lotteryMarketAnalysis = async (req, res) => {
     } catch (error) {
         return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
     }
-  }
+}
+
+export const getBetHistoryP_L = async (req, res) => {
+    try {
+        const { userId, userName } = req.body
+        const queryConditions = {}
+        if (userId) queryConditions.userId = userId;
+        if (userName) queryConditions.userName = userName;
+
+        const purchaseLotteries = await PurchaseLottery.findAll({
+            where: queryConditions,
+        });
+
+        if (purchaseLotteries.length === 0) {
+            return apiResponseSuccess([], true, statusCode.success, "No bet history found", res);
+        }
+
+        const betHistory = await Promise.all(
+            purchaseLotteries.map(async (purchase) => {
+                const { group, series, number, sem, marketId } = purchase;
+                const ticketService = new TicketService();
+
+                const tickets = await ticketService.list(
+                    group,
+                    series,
+                    number,
+                    sem,
+                    marketId
+                );
+
+                return {
+                    userName: purchase.userName,
+                    gameName: "Lottery",
+                    marketName: purchase.marketName,
+                    marketId: purchase.marketId,
+                    amount: purchase.lotteryPrice,
+                    ticketPrice: purchase.price,
+                    tickets,
+                    sem,
+                };
+            })
+        );
+
+        return apiResponseSuccess(betHistory, true, statusCode.success, 'success', res);
+    } catch (error) {
+        return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    }
+};
