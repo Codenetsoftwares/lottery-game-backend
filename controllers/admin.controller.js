@@ -517,3 +517,17 @@ export const getLiveMarkets = async (req, res) => {
   }
 };
 
+export const getTicketRange = async (req, res) => {
+    try {
+        const ticketRange = await TicketRange.findAll()
+        
+        if (!ticketRange || ticketRange.length === 0) {
+          return apiResponseErr(null, false, statusCode.badRequest,"No ticket range data found.", res);
+        }
+        return apiResponseSuccess(ticketRange, true, statusCode.success,"Ticket range retrieved successfully.",  res);
+        
+    } catch (error) {
+      return apiResponseErr(null, false, statusCode.internalServerError, error.message,  res);
+    }
+}
+

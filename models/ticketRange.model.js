@@ -54,6 +54,10 @@ const TicketRange = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    isVoid : {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   },
   {
     tableName: 'TicketRange',
