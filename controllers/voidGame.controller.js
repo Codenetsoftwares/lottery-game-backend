@@ -11,14 +11,15 @@ export const voidMarket = async(req, res)=>{
         return apiResponseErr(null, false, statusCode.badRequest, 'Market Not Found', res);
         }
 
-        TicketRange.isVoid = true;
-        await TicketRange.save();  
+        market.isVoid = true;
+        await market.save();  
         
         const usersByMarket = await PurchaseLottery.findAll({
             where: { marketId }, 
             attributes: ['marketId', 'userId', 'userName'], 
           });
-          return apiResponseSuccess(usersByMarket, true , statusCode.success, " Successfully", res)
+
+         return apiResponseSuccess(usersByMarket, true , statusCode.success, " Successfully", res)
     } catch (error) {
         return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
     }
