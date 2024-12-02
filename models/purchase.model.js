@@ -63,6 +63,10 @@ const PurchaseLottery = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
       defaultValue: 'Lottery',
+    },
+    hidePurchase : {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     }
   },
   {

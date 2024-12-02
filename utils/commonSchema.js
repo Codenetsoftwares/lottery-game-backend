@@ -274,3 +274,9 @@ export const validationRules = [
     .withMessage('Complementary prize must be a valid number greater than 0.')
 ];
 
+export const validateVoidMarket = [
+  body('marketId')
+    .notEmpty().withMessage('Market ID is required')
+    .isUUID().withMessage('Market ID must be a valid UUID'),
+];
+
