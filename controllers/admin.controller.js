@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import { TicketService } from '../constructor/ticketService.js';
 import CustomError from '../utils/extendError.js';
 import TicketRange from '../models/ticketRange.model.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import UserRange from '../models/user.model.js';
 import PurchaseLottery from '../models/purchase.model.js';
 import LotteryResult from '../models/resultModel.js';
@@ -412,8 +412,11 @@ export const dateWiseMarkets = async (req, res) => {
     const nextDay = new Date(selectedDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName"],
+    const ticketData = await LotteryResult.findAll({
+      attributes: [
+        [Sequelize.fn("DISTINCT", Sequelize.col("marketName")), "marketName"],
+        "marketId",
+      ],
       where: {
         createdAt: {
           [Op.gte]: selectedDate,
@@ -443,6 +446,7 @@ export const dateWiseMarkets = async (req, res) => {
     );
   }
 };
+
 
 export const getMarkets = async (req, res) => {
   try {
