@@ -7,7 +7,7 @@ import { string } from "../constructor/string.js";
 
 export const voidGameRoute = (app) => {
   app.post(
-    "/api/void-market-lottery",validateVoidMarket,customErrorHandler, //authorize([string.Admin]),
+    "/api/void-market-lottery",validateVoidMarket,customErrorHandler, authorize([string.Admin]),
     voidMarket);
 
 };
