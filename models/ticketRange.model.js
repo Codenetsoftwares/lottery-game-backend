@@ -16,7 +16,7 @@ const TicketRange = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    
+
     series_start: {
       type: DataTypes.CHAR(1),
       allowNull: false,
@@ -33,7 +33,7 @@ const TicketRange = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    
+
     start_time: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -47,7 +47,7 @@ const TicketRange = sequelize.define(
       allowNull: false,
     },
     date: {
-      type: DataTypes.DATE, 
+      type: DataTypes.DATE,
       allowNull: false,
     },
     price: {
@@ -59,6 +59,15 @@ const TicketRange = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    isWin: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    isVoid: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   },
   {
     tableName: 'TicketRange',

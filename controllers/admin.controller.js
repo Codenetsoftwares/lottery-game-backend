@@ -358,6 +358,7 @@ export const getAllMarkets = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
+        isWin: false
       },
     });
 
@@ -446,8 +447,6 @@ export const dateWiseMarkets = async (req, res) => {
 
 export const getMarkets = async (req, res) => {
   try {
-
-
     const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
     });
@@ -517,3 +516,67 @@ export const getLiveMarkets = async (req, res) => {
   }
 };
 
+
+export const getInactiveMarket = async (req, res) => {
+  try {
+    const ticketData = await PurchaseLottery.findAll({
+      attributes: ["marketId", "marketName", "gameName"],
+      where: {
+        resultAnnouncement: true
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, "No data", res);
+    }
+
+    return apiResponseSuccess(
+      ticketData,
+      true,
+      statusCode.success,
+      "Success",
+      res
+    );
+
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};
+
+
+export const updateMarketStatus = async (req, res) => {
+  const { status, marketId } = req.body;
+
+  try {
+    const market = await TicketRange.findOne({ where: { marketId } });
+
+    if (!market) {
+      return res
+        .status(statusCode.badRequest)
+        .send(
+          apiResponseErr(null, false, statusCode.badRequest, "Market not found")
+        );
+    }
+
+    market.isActive = status;
+    await market.save();
+
+    const statusMessage = status ? "Market is active" : "Market is suspended";
+    
+    return apiResponseSuccess(null, true, statusCode.success, statusMessage, res);
+  } catch (error) {
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
+  }
+};

@@ -315,10 +315,15 @@ export const ResultDeclare = async (req, res) => {
     const savedResults = await LotteryResult.bulkCreate(generatedTickets);
 
     await PurchaseLottery.update(
-      { resultAnnouncement: true }, 
-      { where: { marketId } }       
+      { resultAnnouncement: true },
+      { where: { marketId } }
     );
-    
+
+    await TicketRange.update(
+      { isActive: false, isWin: true, },
+      { where: { marketId } }
+    );
+
     return apiResponseSuccess(savedResults, true, statusCode.create, 'Lottery results saved successfully.', res);
 
   } catch (error) {

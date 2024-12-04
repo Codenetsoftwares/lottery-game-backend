@@ -25,6 +25,8 @@ export const getAllMarkets = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
+        isWin: false,
+        isActive: true
       },
     });
 
@@ -491,7 +493,7 @@ export const getMarkets = async (req, res) => {
     const userId = req.user.userId;
 
     const ticketData = await PurchaseLottery.findAll({
-      where: { userId }, 
+      where: { userId },
       attributes: ["marketId", "marketName"],
     });
 

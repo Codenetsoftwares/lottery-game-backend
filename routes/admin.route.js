@@ -5,11 +5,13 @@ import {
   createAdmin,
   dateWiseMarkets,
   getAllMarkets,
+  getInactiveMarket,
   getLiveMarkets,
   getMarkets,
   getResult,
   getTicketNumbersByMarket,
   login,
+  updateMarketStatus,
 } from '../controllers/admin.controller.js';
 import { authorize } from '../middlewares/auth.js';
 import { validateAdminLogin, validateAdminPurchaseHistory, validateSearchTickets, validateCreateAdmin, validateDateQuery, validateGetResult, validateMarketId, } from '../utils/commonSchema.js';
@@ -56,4 +58,9 @@ export const adminRoutes = (app) => {
   app.get('/api/admin/get-markets', authorize([string.Admin]), getMarkets)
 
   app.get('/api/get-live-markets', getLiveMarkets)
+
+  app.get('/api/get-inactive-markets', getInactiveMarket)
+
+  app.get('/api/update-market-status', updateMarketStatus)
+
 };

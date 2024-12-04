@@ -68,8 +68,6 @@ export const saveTicketRange = async (req, res) => {
   }
 };
 
-
-
 export const geTicketRange = async (req, res) => {
   try {
     const today = new Date();
@@ -80,6 +78,8 @@ export const geTicketRange = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
+        isWin: false,
+        isActive: true
       },
     });
 
