@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { statusCode } from "../utils/statusCodes.js";
 import {
   apiResponseErr,
@@ -432,32 +432,23 @@ export const dateWiseMarkets = async (req, res) => {
     const { date } = req.query;
 
     if (!date) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Date is required",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, "Date is required", res);
     }
 
     const selectedDate = new Date(date);
     if (isNaN(selectedDate)) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Invalid date format",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, "Invalid date format", res);
     }
 
     selectedDate.setHours(0, 0, 0, 0);
     const nextDay = new Date(selectedDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName"],
+    const ticketData = await LotteryResult.findAll({
+      attributes: [
+        [Sequelize.fn("DISTINCT", Sequelize.col("marketName")), "marketName"], 
+        "marketId", 
+      ],
       where: {
         createdAt: {
           [Op.gte]: selectedDate,
@@ -470,23 +461,12 @@ export const dateWiseMarkets = async (req, res) => {
       return apiResponseSuccess([], true, statusCode.success, "No data", res);
     }
 
-    return apiResponseSuccess(
-      ticketData,
-      true,
-      statusCode.success,
-      "Success",
-      res
-    );
+    return apiResponseSuccess(ticketData, true, statusCode.success, "Success", res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
 
 export const getMarkets = async (req, res) => {
   try {
