@@ -358,7 +358,9 @@ export const getAllMarkets = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
+        isVoid: false,
       },
+      
     });
 
     if (!ticketData || ticketData.length === 0) {
@@ -419,6 +421,7 @@ export const dateWiseMarkets = async (req, res) => {
           [Op.gte]: selectedDate,
           [Op.lt]: nextDay,
         },
+        isVoid: false,
       },
     });
 
@@ -450,6 +453,9 @@ export const getMarkets = async (req, res) => {
 
     const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
+      where: {
+        hidePurchase: false, 
+      },
     });
 
     if (!ticketData || ticketData.length === 0) {
@@ -491,7 +497,8 @@ export const getLiveMarkets = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
-        resultAnnouncement: false
+        resultAnnouncement: false,
+        isVoid :false
       },
     });
 
@@ -518,16 +525,28 @@ export const getLiveMarkets = async (req, res) => {
 };
 
 export const getTicketRange = async (req, res) => {
-    try {
-        const ticketRange = await TicketRange.findAll()
-        
-        if (!ticketRange || ticketRange.length === 0) {
-          return apiResponseErr(null, false, statusCode.badRequest,"No ticket range data found.", res);
-        }
-        return apiResponseSuccess(ticketRange, true, statusCode.success,"Ticket range retrieved successfully.",  res);
-        
-    } catch (error) {
-      return apiResponseErr(null, false, statusCode.internalServerError, error.message,  res);
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ticketData = await TicketRange.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+        isVoid: false,
+      },
+    });
+
+    if (!ticketData || ticketData.length === 0) {
+      return apiResponseSuccess([], true, statusCode.success, 'No data', res);
     }
+
+    return apiResponseSuccess(ticketData, true, statusCode.success, 'Success', res);
+  } catch (error) {
+    console.error('Error saving ticket range:', error);
+
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+  }
 }
 

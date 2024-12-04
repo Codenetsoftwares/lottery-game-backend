@@ -80,6 +80,7 @@ export const geTicketRange = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
+        isVoid: false,
       },
     });
 

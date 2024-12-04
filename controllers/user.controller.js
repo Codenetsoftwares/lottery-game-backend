@@ -25,6 +25,7 @@ export const getAllMarkets = async (req, res) => {
         createdAt: {
           [Op.gte]: today,
         },
+        isVoid: false,
       },
     });
 
@@ -63,6 +64,7 @@ export const searchTickets = async ({
 
     const query = {
       marketId,
+      isVoid:false,
       group_start: { [Op.lte]: group },
       group_end: { [Op.gte]: group },
       series_start: { [Op.lte]: series },
@@ -99,7 +101,7 @@ export const searchTickets = async ({
       return { tickets, price, sem, generateId: createRange.generateId };
     } else {
       return {
-        data: [],
+        tickets: [],
         success: true,
         successCode: 200,
         message: "No tickets available in the given range.",
@@ -130,7 +132,9 @@ export const PurchaseTickets = async (req, res) => {
     }
 
     const ticketRange = await TicketRange.findOne({
-      where: { marketId: marketId },
+      where: { marketId: marketId ,
+              isVoid :false
+      },
       attributes: ["marketId", "marketName", "price"],
     });
 
@@ -285,6 +289,7 @@ export const getDrawDateByDate = async (req, res) => {
     const drawDates = await DrawDate.findAll({
       where: {
         createdAt: { [Op.gte]: today },
+        isVoid: false,
       },
       attributes: ["drawId", "drawDate"],
     });
@@ -461,6 +466,7 @@ export const dateWiseMarkets = async (req, res) => {
           [Op.gte]: selectedDate,
           [Op.lt]: nextDay,
         },
+        isVoid: false
       },
     });
 
@@ -493,6 +499,9 @@ export const getMarkets = async (req, res) => {
     const ticketData = await PurchaseLottery.findAll({
       where: { userId }, 
       attributes: ["marketId", "marketName"],
+      where: {
+        hidePurchase: false, 
+      },
     });
 
     if (!ticketData || ticketData.length === 0) {
