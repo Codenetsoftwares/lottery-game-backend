@@ -355,7 +355,7 @@ export const getAllMarkets = async (req, res) => {
     const ticketData = await TicketRange.findAll({
       attributes: ["marketId", "marketName"],
       where: {
-        createdAt: {
+        date: {
           [Op.gte]: today,
         },
         isWin: false
@@ -476,7 +476,6 @@ export const getMarkets = async (req, res) => {
     );
   }
 };
-
 
 
 export const getLiveMarkets = async (req, res) => {

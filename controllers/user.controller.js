@@ -22,7 +22,7 @@ export const getAllMarkets = async (req, res) => {
     const ticketData = await TicketRange.findAll({
       attributes: ["marketId", "marketName"],
       where: {
-        createdAt: {
+        date: {
           [Op.gte]: today,
         },
         isWin: false,

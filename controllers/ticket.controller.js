@@ -75,7 +75,7 @@ export const geTicketRange = async (req, res) => {
 
     const ticketData = await TicketRange.findAll({
       where: {
-        createdAt: {
+        date: {
           [Op.gte]: today,
         },
         isWin: false,
