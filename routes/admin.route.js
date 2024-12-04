@@ -10,6 +10,7 @@ import {
   getMarkets,
   getResult,
   getTicketNumbersByMarket,
+  getTicketRange,
   login,
   updateMarketStatus,
 } from '../controllers/admin.controller.js';
@@ -63,4 +64,7 @@ export const adminRoutes = (app) => {
 
   app.get('/api/update-market-status', updateMarketStatus)
 
+  app.get("/api/admin/prize-results", authorize([string.Admin]), getResult);
+
+  app.get("/api/admin/ticketRange",getTicketRange)
 };
