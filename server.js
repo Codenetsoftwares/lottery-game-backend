@@ -15,6 +15,7 @@ import TicketRange from './models/ticketRange.model.js';
 import cron from 'node-cron'
 import { Op } from 'sequelize';
 import moment from 'moment';
+import { revokeGameRoute } from './routes/revoke.route.js';
 
 dotenv.config();
 const app = express();
@@ -36,6 +37,7 @@ userRoute(app);
 ResultDeclarationModule(app);
 ExternalApiModule(app);
 voidGameRoute(app) 
+revokeGameRoute(app)
 
 PurchaseLottery.belongsTo(UserRange, {
   foreignKey: 'generateId',
@@ -120,7 +122,7 @@ sequelize
           client.write(`data: ${JSON.stringify(updateMarket)}\n\n`);
         });
 
-        console.log(`Message sent: ${JSON.stringify(updateMarket)}\n`);
+        //console.log(`Message sent: ${JSON.stringify(updateMarket)}\n`);
 
       } catch (error) {
         console.error('Error checking market statuses:', error);

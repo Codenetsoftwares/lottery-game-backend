@@ -32,6 +32,10 @@ const LotteryResult = sequelize.define(
     marketId : {
       type: DataTypes.UUID,
       allowNull: false,
+    },
+    isRevoke : {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     }
   },
   {

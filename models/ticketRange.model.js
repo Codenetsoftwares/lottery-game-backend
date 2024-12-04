@@ -62,7 +62,12 @@ const TicketRange = sequelize.define(
     isVoid : {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-    }
+    },
+    isWin: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     tableName: 'TicketRange',
