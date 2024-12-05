@@ -122,7 +122,7 @@ sequelize
           client.write(`data: ${JSON.stringify(updateMarket)}\n\n`);
         });
 
-        //console.log(`Message sent: ${JSON.stringify(updateMarket)}\n`);
+        console.log(`Message sent: ${JSON.stringify(updateMarket)}\n`);
 
       } catch (error) {
         console.error('Error checking market statuses:', error);
