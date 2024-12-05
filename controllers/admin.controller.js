@@ -353,7 +353,7 @@ export const getAllMarkets = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName"],
+      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid"],
       where: {
         date: {
           [Op.gte]: today,
@@ -361,7 +361,7 @@ export const getAllMarkets = async (req, res) => {
         isWin: false,
         isVoid: false,
       },
-      
+
     });
 
     if (!ticketData || ticketData.length === 0) {
@@ -457,7 +457,7 @@ export const getMarkets = async (req, res) => {
     const ticketData = await PurchaseLottery.findAll({
       attributes: ["marketId", "marketName"],
       where: {
-        hidePurchase: false, 
+        hidePurchase: false,
       },
     });
 
@@ -608,7 +608,7 @@ export const updateMarketStatus = async (req, res) => {
     await market.save();
 
     const statusMessage = status ? "Market is active" : "Market is suspended";
-    
+
     return apiResponseSuccess(null, true, statusCode.success, statusMessage, res);
   } catch (error) {
     return apiResponseErr(

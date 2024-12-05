@@ -20,7 +20,7 @@ export const getAllMarkets = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName"],
+      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid"],
       where: {
         date: {
           [Op.gte]: today,
@@ -66,7 +66,7 @@ export const searchTickets = async ({
 
     const query = {
       marketId,
-      isVoid:false,
+      isVoid: false,
       group_start: { [Op.lte]: group },
       group_end: { [Op.gte]: group },
       series_start: { [Op.lte]: series },
@@ -134,8 +134,9 @@ export const PurchaseTickets = async (req, res) => {
     }
 
     const ticketRange = await TicketRange.findOne({
-      where: { marketId: marketId ,
-              isVoid :false
+      where: {
+        marketId: marketId,
+        isVoid: false
       },
       attributes: ["marketId", "marketName", "price"],
     });
@@ -451,8 +452,8 @@ export const dateWiseMarkets = async (req, res) => {
 
     const ticketData = await LotteryResult.findAll({
       attributes: [
-        [Sequelize.fn("DISTINCT", Sequelize.col("marketName")), "marketName"], 
-        "marketId", 
+        [Sequelize.fn("DISTINCT", Sequelize.col("marketName")), "marketName"],
+        "marketId",
       ],
       where: {
         createdAt: {
@@ -482,7 +483,7 @@ export const getMarkets = async (req, res) => {
       where: { userId },
       attributes: ["marketId", "marketName"],
       where: {
-        hidePurchase: false, 
+        hidePurchase: false,
       },
     });
 
