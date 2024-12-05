@@ -79,7 +79,6 @@ export const geTicketRange = async (req, res) => {
           [Op.gte]: today,
         },
         isWin: false,
-        isActive: true,
         isVoid: false,
       },
     });
