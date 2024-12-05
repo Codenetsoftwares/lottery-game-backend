@@ -6,6 +6,15 @@ import axios from "axios";
 
 export const revokeMarket = async (req, res) => {
   try {
+
+    const token = jwt.sign(
+      { role: req.user.role },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
     const { marketId } = req.body;
     const market = await LotteryResult.findOne({ where: { marketId } });
     if (!market) {
@@ -31,8 +40,9 @@ export const revokeMarket = async (req, res) => {
         {
           marketId,
         },
-        //{ headers }
+        { headers }
       );
+     
       return apiResponseSuccess(
         usersByMarket,
         true,
