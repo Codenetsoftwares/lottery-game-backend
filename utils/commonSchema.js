@@ -24,7 +24,13 @@ export const validateTicketRange = [
     .isInt({ min: 1, max: 99 })
     .withMessage('Group max must be an integer between 1 and 99')
     ,
-  
+    body()
+    .custom(({ group }) => {
+      if (group.min >= group.max) {
+        throw new Error('Group min must be less than Group max');
+      }
+      return true;
+    }),
   body('series')
   .notEmpty().withMessage('Series is required')
     .custom((series) => {
@@ -49,7 +55,13 @@ export const validateTicketRange = [
     .isNumeric()
     .withMessage('Number max must be a 5-digit numeric string')
     ,
-  
+    body()
+    .custom(({ number }) => {
+      if (number.min >= number.max) {
+        throw new Error('Number min must be less than Number max');
+      }
+      return true;
+    }),
   body('start_time').notEmpty().withMessage('Start time is required')
     .isISO8601()
     .withMessage('Start time must be a valid ISO8601 date')
@@ -59,6 +71,32 @@ export const validateTicketRange = [
     .isISO8601()
     .withMessage('End time must be a valid ISO8601 date')
     ,
+    body()
+    .custom((fields) => {
+      const { start_time, end_time } = fields;
+      const startTime = new Date(start_time);
+      const endTime = new Date(end_time);
+
+      if (startTime >= endTime) {
+        throw new Error('Start time must be before End time');
+      }
+
+      const startHours = startTime.getHours();
+      const startMinutes = startTime.getMinutes();
+      const startAMPM = startHours < 12 ? 'AM' : 'PM';
+
+      const endHours = endTime.getHours();
+      const endMinutes = endTime.getMinutes();
+      const endAMPM = endHours < 12 ? 'AM' : 'PM';
+
+      if (startAMPM === endAMPM && startHours === endHours && startMinutes === endMinutes) {
+        throw new Error('Start time and End time cannot be identical');
+      }
+
+      return true;
+    }),
+
+
   
   body('marketName')
     .notEmpty()
@@ -69,10 +107,11 @@ export const validateTicketRange = [
     .withMessage('Date must be a valid ISO8601 date')
     ,
   
-  body('price').exists().withMessage('Price is required')
-    .isInt({ min: 0 })
-    .withMessage('Price must be a non-negative number')
-    ,
+    body('price')
+    .exists()
+    .withMessage('Price is required')
+    .isInt({ min: 1 })
+    .withMessage('Price must be greater than 0'),
 ];
 
 

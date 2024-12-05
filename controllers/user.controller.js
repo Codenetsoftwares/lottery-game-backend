@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { statusCode } from "../utils/statusCodes.js";
 import {
   apiResponseErr,
@@ -22,9 +22,12 @@ export const getAllMarkets = async (req, res) => {
     const ticketData = await TicketRange.findAll({
       attributes: ["marketId", "marketName"],
       where: {
-        createdAt: {
+        date: {
           [Op.gte]: today,
         },
+        isVoid: false,
+        isWin: false,
+        isActive: true
       },
     });
 
@@ -63,6 +66,7 @@ export const searchTickets = async ({
 
     const query = {
       marketId,
+      isVoid:false,
       group_start: { [Op.lte]: group },
       group_end: { [Op.gte]: group },
       series_start: { [Op.lte]: series },
@@ -99,7 +103,7 @@ export const searchTickets = async ({
       return { tickets, price, sem, generateId: createRange.generateId };
     } else {
       return {
-        data: [],
+        tickets: [],
         success: true,
         successCode: 200,
         message: "No tickets available in the given range.",
@@ -130,7 +134,9 @@ export const PurchaseTickets = async (req, res) => {
     }
 
     const ticketRange = await TicketRange.findOne({
-      where: { marketId: marketId },
+      where: { marketId: marketId ,
+              isVoid :false
+      },
       attributes: ["marketId", "marketName", "price"],
     });
 
@@ -285,6 +291,7 @@ export const getDrawDateByDate = async (req, res) => {
     const drawDates = await DrawDate.findAll({
       where: {
         createdAt: { [Op.gte]: today },
+        isVoid: false,
       },
       attributes: ["drawId", "drawDate"],
     });
@@ -430,37 +437,29 @@ export const dateWiseMarkets = async (req, res) => {
     const { date } = req.query;
 
     if (!date) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Date is required",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, "Date is required", res);
     }
 
     const selectedDate = new Date(date);
     if (isNaN(selectedDate)) {
-      return apiResponseErr(
-        null,
-        false,
-        statusCode.badRequest,
-        "Invalid date format",
-        res
-      );
+      return apiResponseErr(null, false, statusCode.badRequest, "Invalid date format", res);
     }
 
     selectedDate.setHours(0, 0, 0, 0);
     const nextDay = new Date(selectedDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName"],
+    const ticketData = await LotteryResult.findAll({
+      attributes: [
+        [Sequelize.fn("DISTINCT", Sequelize.col("marketName")), "marketName"], 
+        "marketId", 
+      ],
       where: {
         createdAt: {
           [Op.gte]: selectedDate,
           [Op.lt]: nextDay,
         },
+        isVoid: false
       },
     });
 
@@ -468,31 +467,23 @@ export const dateWiseMarkets = async (req, res) => {
       return apiResponseSuccess([], true, statusCode.success, "No data", res);
     }
 
-    return apiResponseSuccess(
-      ticketData,
-      true,
-      statusCode.success,
-      "Success",
-      res
-    );
+    return apiResponseSuccess(ticketData, true, statusCode.success, "Success", res);
   } catch (error) {
-    return apiResponseErr(
-      null,
-      false,
-      statusCode.internalServerError,
-      error.message,
-      res
-    );
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
+
 
 export const getMarkets = async (req, res) => {
   try {
     const userId = req.user.userId;
 
     const ticketData = await PurchaseLottery.findAll({
-      where: { userId }, 
+      where: { userId },
       attributes: ["marketId", "marketName"],
+      where: {
+        hidePurchase: false, 
+      },
     });
 
     if (!ticketData || ticketData.length === 0) {

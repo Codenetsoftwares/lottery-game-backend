@@ -68,8 +68,6 @@ export const saveTicketRange = async (req, res) => {
   }
 };
 
-
-
 export const geTicketRange = async (req, res) => {
   try {
     const today = new Date();
@@ -77,9 +75,11 @@ export const geTicketRange = async (req, res) => {
 
     const ticketData = await TicketRange.findAll({
       where: {
-        createdAt: {
+        date: {
           [Op.gte]: today,
         },
+        isWin: false,
+        isVoid: false,
       },
     });
 
