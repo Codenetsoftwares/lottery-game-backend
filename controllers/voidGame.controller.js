@@ -1,8 +1,12 @@
 import PurchaseLottery from "../models/purchase.model.js";
 import TicketRange from "../models/ticketRange.model.js";
-import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utils/response.js";
+import {
+  apiResponseErr,
+  apiResponsePagination,
+  apiResponseSuccess,
+} from "../utils/response.js";
 import { statusCode } from "../utils/statusCodes.js";
-import { Op } from 'sequelize';
+import { Op } from "sequelize";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 
@@ -38,38 +42,22 @@ export const voidMarket = async (req, res) => {
 
     const userIds = usersByMarket.map((user) => user.userId);
 
-    const baseURL = process.env.COLOR_GAME_URL;
+    if (userIds.length > 0) {
+      const baseURL = process.env.COLOR_GAME_URL;
 
-    const response = await axios.post(
-      `${baseURL}/api/external/void-market-lottery`,
-      {
-        marketId,
-        userId: userIds,
-      },
-      { headers }
-    );
-    let { data } = response.data;
-    if (typeof data === "string") {
-      try {
-        data = JSON.parse(data);
-      } catch (err) {
-        return res
-          .status(statusCode.internalServerError)
-          .send(
-            apiResponseErr(
-              null,
-              false,
-              statusCode.internalServerError,
-              "Failed to parse response data"
-            )
-          );
-      }
+      const response = await axios.post(
+        `${baseURL}/api/external/void-market-lottery`,
+        { marketId, userId: userIds },
+        { headers }
+      );
     }
 
     await PurchaseLottery.update(
       { hidePurchase: true },
       { where: { marketId } }
     );
+
+    await TicketRange.update({ isActive: false }, { where: { marketId } });
 
     return apiResponseSuccess(
       usersByMarket,
@@ -79,6 +67,7 @@ export const voidMarket = async (req, res) => {
       res
     );
   } catch (error) {
+    console.log("err", error);
     return apiResponseErr(
       null,
       false,
@@ -91,7 +80,7 @@ export const voidMarket = async (req, res) => {
 
 export const getVoidMarkets = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
+    const { page = 1, limit = 10, search = "" } = req.query;
 
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
@@ -102,24 +91,19 @@ export const getVoidMarkets = async (req, res) => {
       whereCondition.marketName = { [Op.like]: `%${search}%` };
     }
 
-    const { rows: voidMarkets, count: totalItems } = await TicketRange.findAndCountAll({
-      where: whereCondition,
-      limit: parsedLimit,
-      offset: offset,
-      order: [['createdAt', 'DESC']],
-    });
+    const { rows: voidMarkets, count: totalItems } =
+      await TicketRange.findAndCountAll({
+        where: whereCondition,
+        limit: parsedLimit,
+        offset: offset,
+        order: [["createdAt", "DESC"]],
+      });
 
     if (voidMarkets.length === 0) {
       const message = search
         ? `No void markets found with the name '${search}'.`
-        : 'No void markets found.';
-      return apiResponseErr(
-        [],
-        true,
-        statusCode.badRequest,
-        message,
-        res
-      );
+        : "No void markets found.";
+      return apiResponseErr([], true, statusCode.badRequest, message, res);
     }
 
     const totalPages = Math.ceil(totalItems / parsedLimit);
@@ -128,7 +112,7 @@ export const getVoidMarkets = async (req, res) => {
       voidMarkets,
       true,
       statusCode.success,
-      'Void markets retrieved successfully',
+      "Void markets retrieved successfully",
       {
         page: parsedPage,
         limit: parsedLimit,
