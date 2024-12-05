@@ -487,7 +487,6 @@ export const getMarkets = async (req, res) => {
   }
 };
 
-
 export const getLiveMarkets = async (req, res) => {
   try {
     const today = new Date();
@@ -500,7 +499,6 @@ export const getLiveMarkets = async (req, res) => {
           [Op.gte]: today,
         },
         resultAnnouncement: false,
-        isVoid :false
       },
     });
 

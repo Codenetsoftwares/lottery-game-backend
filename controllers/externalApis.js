@@ -151,7 +151,7 @@ export const lotteryMarketAnalysis = async (req, res) => {
     const purchaseLotteries = await PurchaseLottery.findAll({
       where: {
         marketId,
-        date: {
+        createdAt: {
           [Op.gte]: today,
         },
         resultAnnouncement: false
