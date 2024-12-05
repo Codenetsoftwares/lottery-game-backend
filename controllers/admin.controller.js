@@ -556,7 +556,11 @@ export const getTicketRange = async (req, res) => {
 export const getInactiveMarket = async (req, res) => {
   try {
     const ticketData = await PurchaseLottery.findAll({
-      attributes: ["marketId", "marketName", "gameName"],
+      attributes: [
+        [Sequelize.fn("DISTINCT", Sequelize.col("marketId")), "marketId"],
+        "marketName",
+        "gameName"
+      ],
       where: {
         resultAnnouncement: true
       },
@@ -584,6 +588,8 @@ export const getInactiveMarket = async (req, res) => {
     );
   }
 };
+
+
 
 
 export const updateMarketStatus = async (req, res) => {
