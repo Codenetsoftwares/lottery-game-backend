@@ -1,8 +1,10 @@
 import PurchaseLottery from "../models/purchase.model.js";
 import LotteryResult from "../models/resultModel.js";
+import TicketRange from "../models/ticketRange.model.js";
 import { apiResponseErr, apiResponsePagination, apiResponseSuccess } from "../utils/response.js";
 import { statusCode } from "../utils/statusCodes.js";
 import axios from "axios";
+import jwt from "jsonwebtoken";
 
 export const revokeMarket = async (req, res) => {
   try {
@@ -43,6 +45,7 @@ export const revokeMarket = async (req, res) => {
         { headers }
       );
      
+      await TicketRange.update({ isWin: false }, { where: { marketId } });
       return apiResponseSuccess(
         usersByMarket,
         true,
