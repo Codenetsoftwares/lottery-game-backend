@@ -32,49 +32,51 @@ export const revokeMarket = async (req, res) => {
     await market.save();
 
     const usersByMarket = await PurchaseLottery.findAll({
-        where: { marketId },
-        attributes: ["marketId", "userId", "userName"],
-      });
+      where: { marketId },
+      attributes: ["marketId", "userId", "userName"],
+    });
 
-      const baseURL = process.env.COLOR_GAME_URL;
-      const response = await axios.post(
-        `${baseURL}/api/external/revoke-market-lottery`,
-        {
-          marketId,
-        },
-        { headers }
-      );
-     
-      await TicketRange.update({ isWin: false }, { where: { marketId } });
-      return apiResponseSuccess(
-        usersByMarket,
-        true,
-        statusCode.success,
-        " Balances updated successfully and market revoked",
-        res
-      );  
+    const baseURL = process.env.COLOR_GAME_URL;
+    const response = await axios.post(
+      `${baseURL}/api/external/revoke-market-lottery`,
+      {
+        marketId,
+      },
+      { headers }
+    );
+
+    await TicketRange.update({ isWin: false }, { where: { marketId } });
+    await PurchaseLottery.update({ resultAnnouncement: false }, { where: { marketId } })
+
+    return apiResponseSuccess(
+      usersByMarket,
+      true,
+      statusCode.success,
+      " Balances updated successfully and market revoked",
+      res
+    );
   } catch (error) {
     if (error.response) {
-        console.log("Error Response:", error.response.data);
-        return apiResponseErr(
-          null,
-          false,
-          error.response.status || statusCode.internalServerError,
-          error.response.data.errMessage || "An error occurred while revoking the market",
-          res
-        );
-      } 
-        else {
-        console.log("Unexpected Error:", error.message);
-        return apiResponseErr(
-          null,
-          false,
-          statusCode.internalServerError,
-          error.message,
-          res
-        );
-      }
+      console.log("Error Response:", error.response.data);
+      return apiResponseErr(
+        null,
+        false,
+        error.response.status || statusCode.internalServerError,
+        error.response.data.errMessage || "An error occurred while revoking the market",
+        res
+      );
     }
+    else {
+      console.log("Unexpected Error:", error.message);
+      return apiResponseErr(
+        null,
+        false,
+        statusCode.internalServerError,
+        error.message,
+        res
+      );
+    }
+  }
 };
 
 export const getRevokeMarkets = async (req, res) => {
