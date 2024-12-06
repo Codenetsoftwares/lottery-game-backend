@@ -15,6 +15,7 @@ import TicketRange from './models/ticketRange.model.js';
 import cron from 'node-cron'
 import { Op } from 'sequelize';
 import moment from 'moment';
+import { revokeGameRoute } from './routes/revoke.route.js';
 
 dotenv.config();
 const app = express();
@@ -36,6 +37,7 @@ userRoute(app);
 ResultDeclarationModule(app);
 ExternalApiModule(app);
 voidGameRoute(app) 
+revokeGameRoute(app)
 
 PurchaseLottery.belongsTo(UserRange, {
   foreignKey: 'generateId',
