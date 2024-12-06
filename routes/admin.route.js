@@ -60,11 +60,11 @@ export const adminRoutes = (app) => {
 
   app.get('/api/get-live-markets', getLiveMarkets)
 
-  app.get('/api/get-inactive-markets', getInactiveMarket)
+  app.get('/api/get-inactive-markets', authorize([string.Admin]), getInactiveMarket)
 
   app.post('/api/update-market-status', updateMarketStatus)
 
   app.get("/api/admin/prize-results", authorize([string.Admin]), getResult);
 
-  app.get("/api/admin/ticketRange",getTicketRange)
+  app.get("/api/admin/ticketRange", getTicketRange)
 };

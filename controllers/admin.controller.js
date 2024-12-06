@@ -550,9 +550,17 @@ export const getTicketRange = async (req, res) => {
   }
 }
 
-
 export const getInactiveMarket = async (req, res) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * parseInt(limit);
+
+    const totalItems = await PurchaseLottery.count({
+      where: {
+        resultAnnouncement: true
+      }
+    });
+
     const ticketData = await PurchaseLottery.findAll({
       attributes: [
         [Sequelize.fn("DISTINCT", Sequelize.col("marketId")), "marketId"],
@@ -562,17 +570,29 @@ export const getInactiveMarket = async (req, res) => {
       where: {
         resultAnnouncement: true
       },
+      limit: parseInt(limit),
+      offset
     });
 
     if (!ticketData || ticketData.length === 0) {
       return apiResponseSuccess([], true, statusCode.success, "No data", res);
     }
 
-    return apiResponseSuccess(
+    const totalPages = Math.ceil(totalItems / parseInt(limit));
+
+    const paginatedData = {
+      currentPage: parseInt(page),
+      limit: parseInt(limit),
+      totalItems,
+      totalPages
+    };
+
+    return apiResponsePagination(
       ticketData,
       true,
       statusCode.success,
       "Success",
+      paginatedData,
       res
     );
 
