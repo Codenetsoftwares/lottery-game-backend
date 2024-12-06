@@ -27,7 +27,7 @@ export const getAllMarkets = async (req, res) => {
         },
         isVoid: false,
         isWin: false,
-        isActive: true
+        hideMarketUser: true
       },
     });
 

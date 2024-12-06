@@ -587,9 +587,6 @@ export const getInactiveMarket = async (req, res) => {
   }
 };
 
-
-
-
 export const updateMarketStatus = async (req, res) => {
   const { status, marketId } = req.body;
 
@@ -605,6 +602,7 @@ export const updateMarketStatus = async (req, res) => {
     }
 
     market.isActive = status;
+    market.hideMarketUser = status ? true : market.hideMarketUser;
     await market.save();
 
     const statusMessage = status ? "Market is active" : "Market is suspended";

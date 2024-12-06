@@ -16,7 +16,6 @@ const TicketRange = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-
     series_start: {
       type: DataTypes.CHAR(1),
       allowNull: false,
@@ -67,8 +66,11 @@ const TicketRange = sequelize.define(
     isVoid: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    hideMarketUser: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     }
-   
   },
   {
     tableName: 'TicketRange',

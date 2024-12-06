@@ -60,6 +60,7 @@ export const saveTicketRange = async (req, res) => {
       marketName,
       date: providedDate,
       price,
+      hideMarketUser : false
     });
 
     return apiResponseSuccess(ticket, true, statusCode.create, 'Ticket range generated successfully', res);
