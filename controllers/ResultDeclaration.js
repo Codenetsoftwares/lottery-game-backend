@@ -8,12 +8,15 @@ import axios from 'axios';
 import TicketRange from '../models/ticketRange.model.js';
 
 export const ResultDeclare = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const prizes = req.body;
     const { marketId } = req.params;
     const market = await TicketRange.findOne({ where: { marketId } });
+    const { makerId, checkerId } = req.body;
 
     if (!market) {
+      await transaction.rollback();
       return apiResponseErr(null, false, statusCode.badRequest, 'Market not found', res);
     }
 
@@ -45,12 +48,14 @@ export const ResultDeclare = async (req, res) => {
 
       // Check prize category validity
       if (!prizeLimits[prizeCategory]) {
+        await transaction.rollback();
         return apiResponseErr(null, false, statusCode.badRequest, 'Invalid prize category.', res);
       }
 
       // Ensure the correct number of tickets for each prize category
       const ticketNumbers = Array.isArray(ticketNumber) ? ticketNumber : [ticketNumber];
       if (ticketNumbers.length !== prizeLimits[prizeCategory]) {
+        await transaction.rollback();
         return apiResponseErr(
           null,
           false,
@@ -74,6 +79,7 @@ export const ResultDeclare = async (req, res) => {
       );
 
       if (isDuplicate) {
+        await transaction.rollback();
         return apiResponseErr(
           null,
           false,
@@ -85,10 +91,11 @@ export const ResultDeclare = async (req, res) => {
 
       // Check if we have already reached the limit for this prize category
       const existingResults = await LotteryResult.findAll({
-        where: { prizeCategory, marketId },
+        where: { prizeCategory, marketId, status: approval.Pending },
       });
 
       if (existingResults.length >= prizeLimits[prizeCategory]) {
+        await transaction.rollback();
         return apiResponseErr(
           null,
           false,
@@ -113,6 +120,9 @@ export const ResultDeclare = async (req, res) => {
           prizeCategory,
           prizeAmount,
           complementaryPrize,
+          makerId,
+          checkerId,
+          status: approval.Pending,
         });
       }
 
@@ -130,6 +140,7 @@ export const ResultDeclare = async (req, res) => {
             prizeAmount,
           });
         } else {
+          await transaction.rollback();
           return apiResponseErr(
             null,
             false,
@@ -152,8 +163,12 @@ export const ResultDeclare = async (req, res) => {
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
+            makerId,
+            checkerId,
+            status: approval.Pending,
           });
         } else {
+          await transaction.rollback();
           return apiResponseErr(
             null,
             false,
@@ -181,8 +196,12 @@ export const ResultDeclare = async (req, res) => {
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
+            makerId,
+            checkerId,
+            status: approval.Pending,
           });
         } else {
+          await transaction.rollback();
           return apiResponseErr(
             null,
             false,
@@ -210,8 +229,12 @@ export const ResultDeclare = async (req, res) => {
             ticketNumber: ticketNumbers,
             prizeCategory,
             prizeAmount,
+            makerId,
+            checkerId,
+            status: approval.Pending,
           });
         } else {
+          await transaction.rollback();
           return apiResponseErr(
             null,
             false,
@@ -324,10 +347,12 @@ export const ResultDeclare = async (req, res) => {
       { where: { marketId } }
     );
 
+    await transaction.commit();
     return apiResponseSuccess(savedResults, true, statusCode.create, 'Lottery results saved successfully.', res);
 
   } catch (error) {
-    console.log("error", error);
+    await transaction.rollback();
+    console.error('Transaction Error:', error);
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 };
@@ -423,7 +448,34 @@ export const getMultipleLotteryResults = async (req, res) => {
   }
 };
 
+export const getResultByMarketId = async (req, res) => {
+  try {
+    const { marketId } = req.params;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const results = await LotteryResult.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+        },
+        marketId,
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (!results.length) {
+      return apiResponseSuccess([], true, statusCode.success, 'No results found for the specified market.', res);
+    }
+
+    return apiResponseSuccess(results, true, statusCode.success, 'Lottery results retrieved successfully.', res);
+
+  } catch (error) {
+    console.error('Error fetching lottery results:', error);
+    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+  }
+};
 
 
 

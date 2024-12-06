@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
+import { approval } from '../constructor/string.js';
 
 const LotteryResult = sequelize.define(
   'LotteryResult',
@@ -29,14 +30,31 @@ const LotteryResult = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    marketId : {
+    marketId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    checkerId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    makerId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
     isRevoke : {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-    }
+    },
+    status: {
+      type: DataTypes.ENUM(
+        approval.Pending,
+        approval.Tally,
+        approval.Paid,
+        approval.Rejected,
+      ),
+      defaultValue: approval.Pending,
+    },
   },
   {
     tableName: 'LotteryResult',
