@@ -21,13 +21,19 @@ export const validateTicketRange = [
     ,
   
   body('group.max').notEmpty().withMessage('Group max is required')
-    .isInt({ min: 1, max: 99 })
-    .withMessage('Group max must be an integer between 1 and 99')
+    .isInt({ min: 10, max: 99 })
+    .withMessage('Group max must be an integer between 10 and 99')
     ,
     body()
     .custom(({ group }) => {
+      if (!group || group.min === undefined || group.max === undefined) {
+        throw new Error('Group min and max are required.');
+      }
       if (group.min >= group.max) {
-        throw new Error('Group min must be less than Group max');
+        throw new Error('Group min must be less than Group max.');
+      }
+      if (group.max - group.min < 10) {
+        throw new Error('Group range must include at least 10 numbers. Please select a valid range.');
       }
       return true;
     }),
