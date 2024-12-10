@@ -6,6 +6,7 @@ import { statusCode } from '../utils/statusCodes.js';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import TicketRange from '../models/ticketRange.model.js';
+import { TicketService } from '../constructor/ticketService.js';
 
 export const ResultDeclare = async (req, res) => {
   try {
@@ -222,22 +223,35 @@ export const ResultDeclare = async (req, res) => {
         }
       }
 
+      const marketData = await PurchaseLottery.findOne({
+        attributes: ['sem', 'group', 'series', 'number'],
+        where: { marketId },
+      });
+
+      const { sem, group, series, number } = marketData;
+
+      const ticketService = new TicketService();
+
+      const ticketConditions = await Promise.all(
+        ticketNumbers.map(async (ticket) => {
+          if (prizeCategory === 'First Prize') {
+            const tickets = await ticketService.list(group, series, number, sem, marketId);
+            return { group, series, number }; 
+          } else if (prizeCategory === 'Second Prize') {
+            return { number: { [Op.like]: `%${ticket.slice(-5)}` } };
+          } else {
+            return { number: { [Op.like]: `%${ticket.slice(-4)}` } }; 
+          }
+        })
+      );
+
       const matchedTickets = await PurchaseLottery.findAll({
         where: {
           marketId,
           createdAt: {
             [Op.between]: [todayStart, todayEnd],
           },
-          [Op.or]: ticketNumbers.map((ticket) => {
-            if (prizeCategory === 'First Prize') {
-              const [group, series, number] = ticket.split(' ');
-              return { group, series, number };
-            } else if (prizeCategory === 'Second Prize') {
-              return { number: { [Op.like]: `%${ticket.slice(-5)}` } };
-            } else {
-              return { number: { [Op.like]: `%${ticket.slice(-4)}` } };
-            }
-          }),
+          [Op.or]: ticketConditions, 
         },
       });
 
