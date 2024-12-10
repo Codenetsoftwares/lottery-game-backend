@@ -273,23 +273,33 @@ export const validationRules = [
     .withMessage('Ticket number must be an array.')
     .bail()
     .custom((ticketNumbers, { req }) => {
-      const prizeLimits = {
-        'First Prize': 1,
-        'Second Prize': 10,
-        'Third Prize': 10,
-        'Fourth Prize': 10,
-        'Fifth Prize': 50
-      };
-
       const prizeCategory = req.body.find((entry) => entry.ticketNumber === ticketNumbers)?.prizeCategory;
 
       if (!prizeCategory) {
         throw new Error('Prize category is required for ticket validation.');
       }
 
+      const prizeLimits = {
+        'First Prize': 1,
+        'Second Prize': 10,
+        'Third Prize': 10,
+        'Fourth Prize': 10,
+        'Fifth Prize': 50,
+      };
+
       if (ticketNumbers.length !== prizeLimits[prizeCategory]) {
-        throw new Error(`The ${prizeCategory} requires exactly ${prizeLimits[prizeCategory]} ticket number(s).`);
+        throw new Error(
+          `The ${prizeCategory} requires exactly ${prizeLimits[prizeCategory]} ticket number(s).`
+        );
       }
+
+      ticketNumbers.forEach((ticketNumber) => {
+        if (!validateTicketNumber(ticketNumber, prizeCategory)) {
+          throw new Error(
+            `Invalid ticket number format for ${prizeCategory}: ${ticketNumber}`
+          );
+        }
+      });
 
       const ticketSet = new Set(ticketNumbers);
       if (ticketSet.size !== ticketNumbers.length) {
@@ -299,19 +309,47 @@ export const validationRules = [
       return true;
     }),
 
-  body('*.prizeCategory') 
-    .isIn(['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize'])
+  body('*.prizeCategory')
+    .isIn([
+      'First Prize',
+      'Second Prize',
+      'Third Prize',
+      'Fourth Prize',
+      'Fifth Prize',
+    ])
     .withMessage('Invalid prize category.'),
 
-  body('*.prizeAmount') 
+  body('*.prizeAmount')
     .isFloat({ min: 0 })
     .withMessage('Prize amount must be a valid number greater than 0.'),
 
-  body('*.complementaryPrize') 
+  body('*.complementaryPrize')
     .optional()
     .isFloat({ min: 0 })
-    .withMessage('Complementary prize must be a valid number greater than 0.')
+    .withMessage('Complementary prize must be a valid number greater than 0.'),
 ];
+
+// Helper function to validate ticket number based on prize category
+function validateTicketNumber(ticketNumber, prizeCategory) {
+  const trimmedNumber = ticketNumber.trim();
+
+  if (prizeCategory === 'Second Prize') {
+    // Second prize: last 5 digits (e.g., 00001)
+    const ticketRegex = /^\d{5}$/;
+    return ticketRegex.test(trimmedNumber);
+  } else if (
+    ['Third Prize', 'Fourth Prize', 'Fifth Prize'].includes(prizeCategory)
+  ) {
+    // Third, Fourth, Fifth prize: last 4 digits (e.g., 0001)
+    const ticketRegex = /^\d{4}$/;
+    return ticketRegex.test(trimmedNumber);
+  } else if (prizeCategory === 'First Prize') {
+    // First prize: whole ticket number (e.g., 38 A 00001)
+    const ticketRegex = /^\d{1,2} [A-Z] \d{5}$/;
+    return ticketRegex.test(trimmedNumber);
+  }
+  return false;
+}
 
 export const validateVoidMarket = [
   body('marketId')
