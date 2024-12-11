@@ -292,7 +292,7 @@ export const getTicketNumbersByMarket = async (req, res) => {
       return apiResponseSuccess(
         [],
         true,
-        statusCode.notFound,
+        statusCode.success,
         "No tickets purchased for this market",
         res
       );
