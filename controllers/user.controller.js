@@ -460,7 +460,6 @@ export const dateWiseMarkets = async (req, res) => {
           [Op.gte]: selectedDate,
           [Op.lt]: nextDay,
         },
-        isVoid: false
       },
     });
 
