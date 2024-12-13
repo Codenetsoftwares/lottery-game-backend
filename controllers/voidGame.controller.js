@@ -103,7 +103,7 @@ export const getVoidMarkets = async (req, res) => {
       const message = search
         ? `No void markets found with the name '${search}'.`
         : "No void markets found.";
-      return apiResponseErr([], true, statusCode.badRequest, message, res);
+      return apiResponseSuccess([], true, statusCode.success, message, res);
     }
 
     const totalPages = Math.ceil(totalItems / parsedLimit);
