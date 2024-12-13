@@ -138,7 +138,7 @@ export const PurchaseTickets = async (req, res) => {
         marketId: marketId,
         isVoid: false
       },
-      attributes: ["marketId", "marketName", "price"],
+      attributes: ["marketId", "marketName", "price", "isActive"],
     });
 
     if (!ticketRange) {
@@ -147,6 +147,16 @@ export const PurchaseTickets = async (req, res) => {
         false,
         statusCode.badRequest,
         "Market not found in TicketRange",
+        res
+      );
+    }
+
+    if (!ticketRange.isActive) {
+      return apiResponseSuccess(
+        null,
+        false,
+        statusCode.success,
+        "Market is suspend",
         res
       );
     }
