@@ -610,23 +610,29 @@ export const updateMarketStatus = async (req, res) => {
   const { status, marketId } = req.body;
 
   try {
-    const market = await TicketRange.findOne({ where: { marketId } });
+    const [updatedCount] = await TicketRange.update(
+      { isActive: status, hideMarketUser: status ? true : Sequelize.col('hideMarketUser') },
+      { where: { marketId } }
+    );
 
-    if (!market) {
-      return res
-        .status(statusCode.badRequest)
-        .send(
-          apiResponseErr(null, false, statusCode.badRequest, "Market not found")
-        );
+    if (updatedCount === 0) {
+      return apiResponseErr(
+        updatedCount,
+        false,
+        statusCode.badRequest,
+        "Market not found",
+        res
+      );
+    } else {
+      return apiResponseErr(
+        updatedCount,
+        true,
+        statusCode.success,
+        "Market updated Successfully",
+        res
+      );
     }
 
-    market.isActive = status;
-    market.hideMarketUser = status ? true : market.hideMarketUser;
-    await market.save();
-
-    const statusMessage = status ? "Market is active" : "Market is suspended";
-
-    return apiResponseSuccess(null, true, statusCode.success, statusMessage, res);
   } catch (error) {
     return apiResponseErr(
       null,
