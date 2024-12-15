@@ -20,7 +20,7 @@ export const getAllMarkets = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid"],
+      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid", "hideMarketUser"],
       where: {
         date: {
           [Op.gte]: today,
