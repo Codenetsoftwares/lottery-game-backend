@@ -14,13 +14,48 @@ import DrawDate from "../models/drawdateModel.js";
 import LotteryResult from "../models/resultModel.js";
 import { v4 as uuidv4 } from "uuid";
 
+const getISTTime = () => {
+  const currentTime = new Date();
+  const istOffset = 5 * 60 + 30; // IST is UTC + 5:30
+  const localTime = new Date(currentTime.getTime() + istOffset * 60 * 1000);
+  console.log("currentTime",currentTime)
+
+  return localTime;
+};
+
 export const getAllMarkets = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const currentTime = getISTTime();
+
+    console.log("currentTime",currentTime)
+
+    await TicketRange.update(
+      { isActive: false },
+      {
+        where: {
+          [Op.or]: [
+            { start_time: { [Op.gt]: currentTime } }, 
+            { end_time: { [Op.lt]: currentTime } }   
+          ]
+        },
+      }
+    );
+
+    await TicketRange.update(
+      { isActive: true },
+      {
+        where: {
+          start_time: { [Op.lte]: currentTime },
+          end_time: { [Op.gte]: currentTime },
+        },
+      }
+    );
+
     const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid", "hideMarketUser"],
+      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid", "hideMarketUser", "start_time", "end_time"],
       where: {
         date: {
           [Op.gte]: today,
@@ -119,6 +154,8 @@ export const PurchaseTickets = async (req, res) => {
     const { generateId, userId, userName, lotteryPrice } = req.body;
     const { marketId } = req.params;
 
+    const currentTime = getISTTime();
+
     const userRange = await UserRange.findOne({
       where: { generateId: generateId },
     });
@@ -151,11 +188,19 @@ export const PurchaseTickets = async (req, res) => {
       );
     }
 
+
+    if (currentTime >= new Date(ticketRange.end_time)) {
+      ticketRange.isActive = false;
+      const response = await ticketRange.save();
+      console.log("Markets Inactivated:", JSON.stringify(response, null, 2));
+      return apiResponseSuccess(null, false, statusCode.success, "Market's time ended", res);
+    }
+
     if (!ticketRange.isActive) {
-      return apiResponseSuccess(
+      return apiResponseErr(
         null,
         false,
-        statusCode.success,
+        statusCode.badRequest,
         "Market is suspend",
         res
       );

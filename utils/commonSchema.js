@@ -32,8 +32,8 @@ export const validateTicketRange = [
       if (group.min >= group.max) {
         throw new Error('Group min must be less than Group max.');
       }
-      if (group.max - group.min < 10) {
-        throw new Error('Group range must include at least 10 numbers. Please select a valid range.');
+      if (group.max - group.min < 22) {
+        throw new Error('Group range must include at least 22 numbers. Please select a valid range.');
       }
       return true;
     }),
