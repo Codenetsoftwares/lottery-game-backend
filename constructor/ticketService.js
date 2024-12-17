@@ -1,5 +1,6 @@
 import TicketRange from "../models/ticketRange.model.js";
 import CustomError from "../utils/extendError.js";
+import { statusCode } from "../utils/statusCodes.js";
 
 export class TicketService {
   constructor(group, series, number, sem) {
@@ -13,8 +14,9 @@ export class TicketService {
     const ticketRangeData = await TicketRange.findOne({ where: { marketId } });
 
     if (!ticketRangeData) {
-      throw new Error("Ticket range not found for the given market.");
+      throw new CustomError('Ticket not found.', null, statusCode.success)
     }
+    
 
     const {
       group_start,

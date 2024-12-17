@@ -142,6 +142,7 @@ export const validateAdminPurchaseHistory = [
   query('sem').optional().isNumeric().withMessage('Sem must be a numeric value'),
   query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
   query('limit').optional().isInt({ min: 1 }).withMessage('Limit must be a positive integer'),
+  param("marketId").isUUID().withMessage("Invalid marketId. It should be a valid UUID."),
 ];
 
 export const validateMarketId = [

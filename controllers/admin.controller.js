@@ -124,15 +124,13 @@ export const adminPurchaseHistory = async (req, res) => {
     const { marketId } = req.params;
     const offset = (page - 1) * parseInt(limit);
 
+    const whereFilter =  { marketId: marketId }
+    if (sem) {
+      whereFilter['sem'] = sem;
+    }
+
     const purchaseRecords = await PurchaseLottery.findAndCountAll({
-      where: { marketId },
-      include: [
-        {
-          model: UserRange,
-          as: 'userRange',
-          ...(sem && { where: { sem } }),
-        },
-      ],
+      where: { ...whereFilter },
       limit: parseInt(limit),
       offset,
     });
@@ -195,7 +193,13 @@ export const adminPurchaseHistory = async (req, res) => {
     return apiResponsePagination(filteredHistoryWithTickets, true, statusCode.success, 'Success', pagination, res);
   } catch (error) {
     console.error('Error fetching purchase history:', error);
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    apiResponseErr(
+      error.data ?? null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.errMessage ?? error.message,
+      res
+    )
   }
 };
 
