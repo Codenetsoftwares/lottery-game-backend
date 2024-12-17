@@ -13,14 +13,41 @@ import PurchaseLottery from "../models/purchase.model.js";
 import DrawDate from "../models/drawdateModel.js";
 import LotteryResult from "../models/resultModel.js";
 import { v4 as uuidv4 } from "uuid";
+import { getISTTime } from "../utils/commonMethods.js"
 
 export const getAllMarkets = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const currentTime = getISTTime();
+
+    console.log("currentTime",currentTime)
+
+    await TicketRange.update(
+      { isActive: false },
+      {
+        where: {
+          [Op.or]: [
+            { start_time: { [Op.gt]: currentTime } }, 
+            { end_time: { [Op.lt]: currentTime } }   
+          ]
+        },
+      }
+    );
+
+    await TicketRange.update(
+      { isActive: true },
+      {
+        where: {
+          start_time: { [Op.lte]: currentTime },
+          end_time: { [Op.gte]: currentTime },
+        },
+      }
+    );
+
     const ticketData = await TicketRange.findAll({
-      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid", "hideMarketUser"],
+      attributes: ["marketId", "marketName", "isActive", "isWin", "isVoid", "hideMarketUser", "start_time", "end_time"],
       where: {
         date: {
           [Op.gte]: today,
@@ -119,6 +146,8 @@ export const PurchaseTickets = async (req, res) => {
     const { generateId, userId, userName, lotteryPrice } = req.body;
     const { marketId } = req.params;
 
+    const currentTime = getISTTime();
+
     const userRange = await UserRange.findOne({
       where: { generateId: generateId },
     });
@@ -149,6 +178,14 @@ export const PurchaseTickets = async (req, res) => {
         "Market not found in TicketRange",
         res
       );
+    }
+
+
+    if (currentTime >= new Date(ticketRange.end_time)) {
+      ticketRange.isActive = false;
+      const response = await ticketRange.save();
+      console.log("Markets Inactivated:", JSON.stringify(response, null, 2));
+      return apiResponseSuccess(null, false, statusCode.success, "Market's time ended", res);
     }
 
     if (!ticketRange.isActive) {
