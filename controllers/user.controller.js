@@ -13,15 +13,7 @@ import PurchaseLottery from "../models/purchase.model.js";
 import DrawDate from "../models/drawdateModel.js";
 import LotteryResult from "../models/resultModel.js";
 import { v4 as uuidv4 } from "uuid";
-
-const getISTTime = () => {
-  const currentTime = new Date();
-  const istOffset = 5 * 60 + 30; // IST is UTC + 5:30
-  const localTime = new Date(currentTime.getTime() + istOffset * 60 * 1000);
-  console.log("currentTime",currentTime)
-
-  return localTime;
-};
+import { getISTTime } from "../utils/commonMethods.js"
 
 export const getAllMarkets = async (req, res) => {
   try {
@@ -197,10 +189,10 @@ export const PurchaseTickets = async (req, res) => {
     }
 
     if (!ticketRange.isActive) {
-      return apiResponseErr(
+      return apiResponseSuccess(
         null,
         false,
-        statusCode.badRequest,
+        statusCode.success,
         "Market is suspend",
         res
       );
