@@ -153,8 +153,7 @@ export const validateMarketId = [
 
 export const validateDateQuery = [
   query("date")
-    .exists()
-    .withMessage("Date is required")
+  .optional()
     .isISO8601()
     .withMessage("Invalid date format. Use ISO8601 (YYYY-MM-DD)."),
 ];
@@ -179,9 +178,13 @@ export const validateGetTicketNumbersByMarket = [
 
 
 export const purchaseTicketValidation = [
-  body('generateId').notEmpty().withMessage('Generate ID is required'),
-  body('userId').notEmpty().withMessage('User  ID is required'),
-  body('userName').notEmpty().withMessage('User name is required').isString().withMessage('User name must be a string'),
+  param("marketId").isUUID().withMessage("marketId must be a valid UUID"),
+  body("generateId").notEmpty().withMessage("generateId is required"),
+  body("userId").notEmpty().withMessage("userId is required").isUUID().withMessage("userId must be a valid UUID"),
+  body("userName").isString().notEmpty().withMessage("userName is required"),
+  body("lotteryPrice")
+  .isInt({ gt: 0 })
+  .withMessage("lotteryPrice must be a positive integer"),
 ];
 
 // export const createTicketValidation = [
@@ -226,7 +229,25 @@ export const purchaseTicketValidation = [
 //   body('sem').notEmpty().withMessage('Sem is required'),
 // ];
 
-export const validatePurchaseHistory = [body('userId').isUUID().withMessage('User ID must be a valid UUID.')];
+export const validatePurchaseHistory = [
+  param("marketId").isUUID().withMessage("marketId must be a valid UUID"),
+  body("userId")
+    .notEmpty()
+    .withMessage("userId is required")
+    .isUUID()
+    .withMessage("userId must be a valid UUID"),
+    query("sem")
+    .optional()
+    .isIn([5, 10, 25, 50, 100, 200])
+    .withMessage("sem must be one of 5, 10, 25, 50, 100, 200"),
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("page must be a positive integer"),
+  query("limit")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("limit must be a positive integer"),];
 
 export const validateCreateResult = [
   body('ticketNumber')

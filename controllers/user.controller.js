@@ -21,9 +21,7 @@ export const getAllMarkets = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     const currentTime = getISTTime();
-
-    console.log("currentTime",currentTime)
-
+   
     await TicketRange.update(
       { isActive: false },
       {
@@ -80,14 +78,10 @@ export const getAllMarkets = async (req, res) => {
   }
 };
 
-export const searchTickets = async ({
-  group,
-  series,
-  number,
-  sem,
-  marketId,
-}) => {
+export const searchTickets = async (req, res) => {
   try {
+    const { group, series, number, sem, marketId } = req.body;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -115,6 +109,8 @@ export const searchTickets = async ({
       sem,
     });
 
+    let response;
+
     if (result) {
       const ticketService = new TicketService();
 
@@ -127,17 +123,32 @@ export const searchTickets = async ({
       );
       const price = await ticketService.calculatePrice(marketId, sem);
 
-      return { tickets, price, sem, generateId: createRange.generateId };
-    } else {
-      return {
-        tickets: [],
+      response = {
+        tickets,
+        price,
+        sem,
+        generateId: createRange.generateId,
         success: true,
-        successCode: 200,
-        message: "No tickets available in the given range.",
+        message: 'Success.'
       };
-    }
+    } 
+    // else {
+    //   response = {
+    //     tickets: [],
+    //     success: true,
+    //     message: "No tickets available in the given range.",
+    //   };
+    // }
+
+    return apiResponseSuccess(response, true, statusCode.success, response.message, res);
   } catch (error) {
-    return new CustomError(error.message, null, statusCode.internalServerError);
+    return apiResponseErr(
+      null,
+      false,
+      statusCode.internalServerError,
+      error.message,
+      res
+    );
   }
 };
 
@@ -484,9 +495,9 @@ export const dateWiseMarkets = async (req, res) => {
   try {
     const { date } = req.query;
 
-    if (!date) {
-      return apiResponseErr(null, false, statusCode.badRequest, "Date is required", res);
-    }
+    // if (!date) {
+    //   return apiResponseErr(null, false, statusCode.badRequest, "Date is required", res);
+    // }
 
     const selectedDate = new Date(date);
     if (isNaN(selectedDate)) {
