@@ -558,20 +558,20 @@ export const getInactiveMarket = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * parseInt(limit);
 
-    const totalItems = await PurchaseLottery.count({
+    const totalItems = await TicketRange.count({
       where: {
-        resultAnnouncement: true
+        isWin: true
       }
     });
 
-    const ticketData = await PurchaseLottery.findAll({
+    const ticketData = await TicketRange.findAll({
       attributes: [
         [Sequelize.fn("DISTINCT", Sequelize.col("marketId")), "marketId"],
         "marketName",
         "gameName"
       ],
       where: {
-        resultAnnouncement: true
+        isWin: true
       },
       limit: parseInt(limit),
       offset

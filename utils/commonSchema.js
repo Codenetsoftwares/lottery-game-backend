@@ -32,8 +32,8 @@ export const validateTicketRange = [
       if (group.min >= group.max) {
         throw new Error('Group min must be less than Group max.');
       }
-      if (group.max - group.min < 22) {
-        throw new Error('Group range must include at least 22 numbers. Please select a valid range.');
+      if (group.max - group.min < 20) {
+        throw new Error('Group range must include at least 20 numbers. Please select a valid range.');
       }
       return true;
     }),
@@ -275,9 +275,9 @@ export const validateCreateResult = [
 // };
 
 export const validationRules = [
-  body('*.ticketNumber') 
-    .isArray()
-    .withMessage('Ticket number must be an array.')
+  body('*.ticketNumber')
+    .isArray({ min: 1 })
+    .withMessage('Ticket number must be a non-empty array.')
     .bail()
     .custom((ticketNumbers, { req }) => {
       const prizeCategory = req.body.find((entry) => entry.ticketNumber === ticketNumbers)?.prizeCategory;
@@ -324,16 +324,24 @@ export const validationRules = [
       'Fourth Prize',
       'Fifth Prize',
     ])
-    .withMessage('Invalid prize category.'),
+    .withMessage('Invalid prize category.')
+    .bail()
+    .notEmpty()
+    .withMessage('Prize category is required.'),
+
 
   body('*.prizeAmount')
+    .notEmpty()
+    .withMessage('Prize amount is required.')
+    .bail()
     .isFloat({ min: 0 })
     .withMessage('Prize amount must be a valid number greater than 0.'),
 
   body('*.complementaryPrize')
     .optional()
     .isFloat({ min: 0 })
-    .withMessage('Complementary prize must be a valid number greater than 0.'),
+    .withMessage('Complementary prize must be a valid number greater than 0.')
+
 ];
 
 // Helper function to validate ticket number based on prize category
