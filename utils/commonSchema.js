@@ -146,9 +146,7 @@ export const validateAdminPurchaseHistory = [
 ];
 
 export const validateMarketId = [
-  param("marketId").notEmpty().withMessage('marketId is required')
-    .isUUID()
-    .withMessage("Invalid marketId. It should be a valid UUID."),
+  param("marketId").isUUID().withMessage("Invalid marketId. It should be a valid UUID."),
 ];
 
 export const validateDateQuery = [
@@ -372,3 +370,12 @@ export const validateVoidMarket = [
     .isUUID().withMessage('Market ID must be a valid UUID'),
 ];
 
+export const validategetInactiveMarket = [
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1 }).withMessage('Limit must be a positive integer'),
+];
+
+export const validateUpdateMarketStatus = [
+  body('status').notEmpty().withMessage('Status is required'),
+  body('marketId').notEmpty().withMessage('Market  ID is required'),
+];

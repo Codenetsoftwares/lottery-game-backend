@@ -35,7 +35,7 @@ export const createAdmin = async (req, res) => {
 
     return apiResponseSuccess(newAdmin, true, statusCode.create, 'created successfully', res);
   } catch (error) {
-    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
+    return apiResponseErr(null, false,  statusCode.internalServerError, error.message, res);
   }
 };
 
@@ -74,12 +74,14 @@ export const login = async (req, res) => {
       res,
     );
   } catch (error) {
-    apiResponseErr(null, false, statusCode.internalServerError, error.errMessage ?? error.message, res);
+    apiResponseErr(null, false, statusCode.internalServerError,  error.message, res);
   }
 };
 
-export const adminSearchTickets = async ({ group, series, number, sem, marketId }) => {
+export const adminSearchTickets = async (req, res) => {
   try {
+
+    const {marketId, group, series, number, sem} = req.body 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -97,23 +99,25 @@ export const adminSearchTickets = async ({ group, series, number, sem, marketId 
     const result = await TicketRange.findOne({
       where: query,
     });
-
     if (result) {
       const ticketService = new TicketService();
 
       const tickets = await ticketService.list(group, series, number, sem, marketId);
       const price = await ticketService.calculatePrice(marketId, sem);
-      return { tickets, price, sem };
+      const ticketData = { tickets, price, sem };
+      return apiResponseSuccess(ticketData , true, statusCode.success, 'Success.', res);
+
     } else {
-      return {
-        data: [],
-        success: true,
-        successCode: 200,
-        message: 'No tickets available in the given range or market.',
-      };
+      return apiResponseSuccess([], true, statusCode.success, 'No tickets available in the given range or market.', res);
     }
   } catch (error) {
-    return new CustomError(error.message, null, statusCode.internalServerError);
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.errMessage ?? error.message,
+      res,
+    );
   }
 };
 
@@ -547,8 +551,6 @@ export const getTicketRange = async (req, res) => {
 
     return apiResponseSuccess(ticketData, true, statusCode.success, 'Success', res);
   } catch (error) {
-    console.error('Error saving ticket range:', error);
-
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 }
