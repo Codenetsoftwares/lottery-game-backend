@@ -227,116 +227,145 @@ export const ResultDeclare = async (req, res) => {
         attributes: ['sem', 'group', 'series', 'number'],
         where: { marketId },
       });
+      if (marketData) {
+        const { sem, group, series, number } = marketData;
 
-      const { sem, group, series, number } = marketData;
+        const ticketService = new TicketService();
 
-      const ticketService = new TicketService();
+        const ticketConditions = await Promise.all(
+          ticketNumbers.map(async (ticket) => {
+            if (prizeCategory === 'First Prize') {
+              const tickets = await ticketService.list(group, series, number, sem, marketId);
+              return { group, series, number };
+            } else if (prizeCategory === 'Second Prize') {
+              return { number: { [Op.like]: `%${ticket.slice(-5)}` } };
+            } else {
+              return { number: { [Op.like]: `%${ticket.slice(-4)}` } };
+            }
+          })
+        );
 
-      const ticketConditions = await Promise.all(
-        ticketNumbers.map(async (ticket) => {
-          if (prizeCategory === 'First Prize') {
-            const tickets = await ticketService.list(group, series, number, sem, marketId);
-            return { group, series, number }; 
-          } else if (prizeCategory === 'Second Prize') {
-            return { number: { [Op.like]: `%${ticket.slice(-5)}` } };
-          } else {
-            return { number: { [Op.like]: `%${ticket.slice(-4)}` } }; 
-          }
-        })
-      );
-
-      const matchedTickets = await PurchaseLottery.findAll({
-        where: {
-          marketId,
-          createdAt: {
-            [Op.between]: [todayStart, todayEnd],
-          },
-          [Op.or]: ticketConditions, 
-        },
-      });
-
-      if (matchedTickets.length > 0) {
-        for (const ticket of matchedTickets) {
-          const { userId, sem, userName, marketName, number, lotteryPrice } = ticket;
-          const totalPrize =
-            prizeCategory === 'First Prize'
-              ? prizeAmount
-              : sem * prizeAmount
-
-          // const matchedTicketLastFive = ticket.ticketNumber.slice(-5);
-          // if (matchedTicketLastFive === lastFiveForFirstPrize) {
-          //   totalPrize += complementaryPrize; 
-          // }
-          const baseURL = process.env.COLOR_GAME_URL;
-          const response = await axios.post(`${baseURL}/api/users/update-balance`, {
-            userId,
-            prizeAmount: totalPrize,
-            marketId
-          });
-
-          const res = await axios.post(`${baseURL}/api/lottery-profit-loss`, {
-            userId,
-            userName,
+        const matchedTickets = await PurchaseLottery.findAll({
+          where: {
             marketId,
-            marketName,
-            ticketNumber: number,
-            price: lotteryPrice,
-            sem,
-            profitLoss: totalPrize,
-          });
-
-          if (!response.data.success) {
-            return apiResponseErr(
-              null,
-              false,
-              statusCode.badRequest,
-              `Failed to update balance for userId ${userId}.`,
-              res
-            );
-          }
-
-          console.log(`Balance updated for userId ${userId}:`, response.data);
-        }
-      } else {
-        const usersWithPurchases = await PurchaseLottery.findAll({
-          where: { marketId },
-          attributes: ['userId', 'marketName'],
+            createdAt: {
+              [Op.between]: [todayStart, todayEnd],
+            },
+            [Op.or]: ticketConditions,
+          },
         });
 
-        const userIds = [...new Set(usersWithPurchases.map((user) => user.userId))];
+        if (matchedTickets.length > 0) {
+          for (const ticket of matchedTickets) {
+            const { userId, sem, userName, marketName, number, lotteryPrice } = ticket;
+            const totalPrize =
+              prizeCategory === 'First Prize'
+                ? prizeAmount
+                : sem * prizeAmount
 
-        for (const userId of userIds) {
-          const baseURL = process.env.COLOR_GAME_URL;
-          const response = await axios.post(`${baseURL}/api/users/remove-exposer`, {
-            userId,
-            marketId,
-            marketName,
+            // const matchedTicketLastFive = ticket.ticketNumber.slice(-5);
+            // if (matchedTicketLastFive === lastFiveForFirstPrize) {
+            //   totalPrize += complementaryPrize; 
+            // }
+            const baseURL = process.env.COLOR_GAME_URL;
+            const response = await axios.post(`${baseURL}/api/users/update-balance`, {
+              userId,
+              prizeAmount: totalPrize,
+              marketId
+            });
+
+            const res = await axios.post(`${baseURL}/api/lottery-profit-loss`, {
+              userId,
+              userName,
+              marketId,
+              marketName,
+              ticketNumber: number,
+              price: lotteryPrice,
+              sem,
+              profitLoss: totalPrize,
+            });
+
+            if (!response.data.success) {
+              return apiResponseErr(
+                null,
+                false,
+                statusCode.badRequest,
+                `Failed to update balance for userId ${userId}.`,
+                res
+              );
+            }
+
+            console.log(`Balance updated for userId ${userId}:`, response.data);
+          }
+        } else {
+          const usersWithPurchases = await PurchaseLottery.findAll({
+            where: { marketId },
+            attributes: ['userId', 'marketName'],
           });
 
-          if (!response.data.success) {
-            return apiResponseErr(
-              null,
-              false,
-              statusCode.badRequest,
-              `Failed to update balance for userId ${userId}.`,
-              res
-            );
+          const userIds = [...new Set(usersWithPurchases.map((user) => user.userId))];
+
+          for (const userId of userIds) {
+            const baseURL = process.env.COLOR_GAME_URL;
+            const response = await axios.post(`${baseURL}/api/users/remove-exposer`, {
+              userId,
+              marketId,
+              marketName,
+            });
+
+            if (!response.data.success) {
+              return apiResponseErr(
+                null,
+                false,
+                statusCode.badRequest,
+                `Failed to update balance for userId ${userId}.`,
+                res
+              );
+            }
           }
         }
       }
     }
+    let savedResults
 
-    const savedResults = await LotteryResult.bulkCreate(generatedTickets);
+    if (generatedTickets.length > 0) {
+      savedResults = await LotteryResult.bulkCreate(generatedTickets);
+    } else {
+      return apiResponseErr(null, false, statusCode.badRequest, 'No valid tickets to save.', res);
+    }
 
-    await PurchaseLottery.update(
-      { resultAnnouncement: true },
-      { where: { marketId } }
+    const allPrizeCategories = [
+      'First Prize',
+      'Second Prize',
+      'Third Prize',
+      'Fourth Prize',
+      'Fifth Prize',
+    ];
+
+    const declaredPrizes = await LotteryResult.findAll({
+      where: { marketId },
+      attributes: ['prizeCategory'],
+      raw: true,
+    });
+
+    const declaredPrizeCategories = declaredPrizes.map((prize) => prize.prizeCategory);
+
+    const isAllPrizesDeclared = allPrizeCategories.every((category) =>
+      declaredPrizeCategories.includes(category)
     );
 
-    await TicketRange.update(
-      { isActive: false, isWin: true, },
-      { where: { marketId } }
-    );
+    if (isAllPrizesDeclared) {
+      await PurchaseLottery.update(
+        { resultAnnouncement: true },
+        { where: { marketId } }
+      );
+
+      await TicketRange.update(
+        { isActive: false, isWin: true },
+        { where: { marketId } }
+      );
+
+    }
 
     return apiResponseSuccess(savedResults, true, statusCode.create, 'Lottery results saved successfully.', res);
 

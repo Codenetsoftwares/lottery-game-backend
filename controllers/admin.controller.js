@@ -35,7 +35,7 @@ export const createAdmin = async (req, res) => {
 
     return apiResponseSuccess(newAdmin, true, statusCode.create, 'created successfully', res);
   } catch (error) {
-    return apiResponseErr(null, false, error.responseCode ?? statusCode.internalServerError, error.message, res);
+    return apiResponseErr(null, false,  statusCode.internalServerError, error.message, res);
   }
 };
 
@@ -74,12 +74,14 @@ export const login = async (req, res) => {
       res,
     );
   } catch (error) {
-    apiResponseErr(null, false, statusCode.internalServerError, error.errMessage ?? error.message, res);
+    apiResponseErr(null, false, statusCode.internalServerError,  error.message, res);
   }
 };
 
-export const adminSearchTickets = async ({ group, series, number, sem, marketId }) => {
+export const adminSearchTickets = async (req, res) => {
   try {
+
+    const {marketId, group, series, number, sem} = req.body 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -97,23 +99,25 @@ export const adminSearchTickets = async ({ group, series, number, sem, marketId 
     const result = await TicketRange.findOne({
       where: query,
     });
-
     if (result) {
       const ticketService = new TicketService();
 
       const tickets = await ticketService.list(group, series, number, sem, marketId);
       const price = await ticketService.calculatePrice(marketId, sem);
-      return { tickets, price, sem };
+      const ticketData = { tickets, price, sem };
+      return apiResponseSuccess(ticketData , true, statusCode.success, 'Success.', res);
+
     } else {
-      return {
-        data: [],
-        success: true,
-        successCode: 200,
-        message: 'No tickets available in the given range or market.',
-      };
+      return apiResponseSuccess([], true, statusCode.success, 'No tickets available in the given range or market.', res);
     }
   } catch (error) {
-    return new CustomError(error.message, null, statusCode.internalServerError);
+    return apiResponseErr(
+      null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.errMessage ?? error.message,
+      res,
+    );
   }
 };
 
@@ -124,15 +128,13 @@ export const adminPurchaseHistory = async (req, res) => {
     const { marketId } = req.params;
     const offset = (page - 1) * parseInt(limit);
 
+    const whereFilter =  { marketId: marketId }
+    if (sem) {
+      whereFilter['sem'] = sem;
+    }
+
     const purchaseRecords = await PurchaseLottery.findAndCountAll({
-      where: { marketId },
-      include: [
-        {
-          model: UserRange,
-          as: 'userRange',
-          ...(sem && { where: { sem } }),
-        },
-      ],
+      where: { ...whereFilter },
       limit: parseInt(limit),
       offset,
     });
@@ -195,7 +197,13 @@ export const adminPurchaseHistory = async (req, res) => {
     return apiResponsePagination(filteredHistoryWithTickets, true, statusCode.success, 'Success', pagination, res);
   } catch (error) {
     console.error('Error fetching purchase history:', error);
-    return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
+    apiResponseErr(
+      error.data ?? null,
+      false,
+      error.responseCode ?? statusCode.internalServerError,
+      error.errMessage ?? error.message,
+      res
+    )
   }
 };
 
@@ -543,8 +551,6 @@ export const getTicketRange = async (req, res) => {
 
     return apiResponseSuccess(ticketData, true, statusCode.success, 'Success', res);
   } catch (error) {
-    console.error('Error saving ticket range:', error);
-
     return apiResponseErr(null, false, statusCode.internalServerError, error.message, res);
   }
 }
@@ -554,20 +560,20 @@ export const getInactiveMarket = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * parseInt(limit);
 
-    const totalItems = await PurchaseLottery.count({
+    const totalItems = await TicketRange.count({
       where: {
-        resultAnnouncement: true
+        isWin: true
       }
     });
 
-    const ticketData = await PurchaseLottery.findAll({
+    const ticketData = await TicketRange.findAll({
       attributes: [
         [Sequelize.fn("DISTINCT", Sequelize.col("marketId")), "marketId"],
         "marketName",
         "gameName"
       ],
       where: {
-        resultAnnouncement: true
+        isWin: true
       },
       limit: parseInt(limit),
       offset
