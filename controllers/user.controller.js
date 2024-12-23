@@ -107,6 +107,30 @@ export const searchTickets = async ({
       where: query,
     });
 
+    const currentTime = getISTTime();
+
+    await TicketRange.update(
+      { isActive: false },
+      {
+        where: {
+          [Op.or]: [
+            { start_time: { [Op.gt]: currentTime } }, 
+            { end_time: { [Op.lt]: currentTime } }   
+          ]
+        },
+      }
+    );
+
+    await TicketRange.update(
+      { isActive: true },
+      {
+        where: {
+          start_time: { [Op.lte]: currentTime },
+          end_time: { [Op.gte]: currentTime },
+        },
+      }
+    );
+
     const createRange = await UserRange.create({
       generateId: uuidv4(),
       group,
@@ -189,10 +213,10 @@ export const PurchaseTickets = async (req, res) => {
     }
 
     if (!ticketRange.isActive) {
-      return apiResponseSuccess(
+      return apiResponseErr(
         null,
         false,
-        statusCode.success,
+        statusCode.badRequest,
         "Market is suspend",
         res
       );
