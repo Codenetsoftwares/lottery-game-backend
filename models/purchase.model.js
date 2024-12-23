@@ -67,6 +67,10 @@ const PurchaseLottery = sequelize.define(
     hidePurchase : {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    settleTime : {
+      type: DataTypes.DATE,
+      allowNull: true,
     }
   },
   {

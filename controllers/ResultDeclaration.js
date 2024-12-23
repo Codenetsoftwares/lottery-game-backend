@@ -355,17 +355,16 @@ export const ResultDeclare = async (req, res) => {
     );
 
     if (isAllPrizesDeclared) {
-      await PurchaseLottery.update(
-        { resultAnnouncement: true },
-        { where: { marketId } }
-      );
-
       await TicketRange.update(
         { isActive: false, isWin: true },
         { where: { marketId } }
       );
-
     }
+    
+    await PurchaseLottery.update(
+      { resultAnnouncement: true, settleTime: new Date() },
+      { where: { marketId } }
+    );
 
     return apiResponseSuccess(savedResults, true, statusCode.create, 'Lottery results saved successfully.', res);
 
