@@ -194,8 +194,8 @@ export const lotteryMarketAnalysis = async (req, res) => {
 
 export const getBetHistoryP_L = async (req, res) => {
   try {
-    const { userId, userName } = req.body
-    const queryConditions = {}
+    const { userId, userName, marketId } = req.body
+    const queryConditions = { resultAnnouncement: true, marketId };
     if (userId) queryConditions.userId = userId;
     if (userName) queryConditions.userName = userName;
 
@@ -209,7 +209,7 @@ export const getBetHistoryP_L = async (req, res) => {
 
     const betHistory = await Promise.all(
       purchaseLotteries.map(async (purchase) => {
-        const { group, series, number, sem, marketId } = purchase;
+        const { group, series, number, sem, marketId, settleTime, createdAt } = purchase;
         const ticketService = new TicketService();
 
         const tickets = await ticketService.list(
@@ -229,6 +229,8 @@ export const getBetHistoryP_L = async (req, res) => {
           ticketPrice: purchase.price,
           tickets,
           sem,
+          placeTime: createdAt,
+          settleTime: settleTime
         };
       })
     );
